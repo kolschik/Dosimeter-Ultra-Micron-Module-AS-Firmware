@@ -1,10 +1,10 @@
-﻿object About: TAbout
+object About: TAbout
   Left = 0
   Top = 0
   BorderStyle = bsDialog
   Caption = 'About'
-  ClientHeight = 374
-  ClientWidth = 647
+  ClientHeight = 162
+  ClientWidth = 248
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -14,7 +14,6 @@
   OldCreateOrder = False
   Position = poDesktopCenter
   Scaled = False
-  OnCreate = FormCreate
   PixelsPerInch = 96
   TextHeight = 13
   object Label1: TLabel
@@ -22,7 +21,7 @@
     Top = 13
     Width = 164
     Height = 35
-    Caption = 'USB Geiger'
+    Caption = 'USB Spetro'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -29
@@ -213,11 +212,11 @@
     ParentFont = False
   end
   object Label4: TLabel
-    Left = 54
+    Left = 55
     Top = 107
     Width = 145
     Height = 16
-    Caption = #1042#1077#1088#1089#1080#1103' 2.0 ('#1089') Shodan'
+    Caption = #1042#1077#1088#1089#1080#1103' 2.2 ('#1089') Shodan'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -13
@@ -226,432 +225,16 @@
     ParentFont = False
   end
   object Label5: TLabel
-    Left = 86
+    Left = 116
     Top = 121
-    Width = 132
+    Width = 102
     Height = 16
-    Caption = 'shodan@'#1084#1080#1082#1088#1086#1085'.net'
+    Caption = 'adm@misrv.com'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -13
     Font.Name = 'Tahoma'
     Font.Style = [fsBold]
     ParentFont = False
-  end
-  object Label6: TLabel
-    Left = 70
-    Top = 275
-    Width = 120
-    Height = 13
-    Caption = #1056#1077#1075#1080#1089#1090#1088#1072#1094#1080#1086#1085#1085#1099#1081' '#1082#1083#1102#1095
-  end
-  object Label7: TLabel
-    Left = 86
-    Top = 163
-    Width = 90
-    Height = 23
-    Caption = 'MCU Serial'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -19
-    Font.Name = 'Tahoma'
-    Font.Style = []
-    ParentFont = False
-  end
-  object Label8: TLabel
-    Left = 300
-    Top = 8
-    Width = 135
-    Height = 18
-    Caption = #1044#1072#1085#1085#1099#1077' '#1082#1072#1083#1080#1073#1088#1086#1074#1082#1080
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -15
-    Font.Name = 'Tahoma'
-    Font.Style = []
-    ParentFont = False
-  end
-  object Label9: TLabel
-    Left = 509
-    Top = 42
-    Width = 39
-    Height = 18
-    Caption = 'Na-22'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -15
-    Font.Name = 'Tahoma'
-    Font.Style = []
-    ParentFont = False
-  end
-  object Label10: TLabel
-    Left = 515
-    Top = 69
-    Width = 33
-    Height = 18
-    Caption = 'Ti-44'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -15
-    Font.Name = 'Tahoma'
-    Font.Style = []
-    ParentFont = False
-  end
-  object Label11: TLabel
-    Left = 517
-    Top = 96
-    Width = 31
-    Height = 18
-    Caption = 'Y-88'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -15
-    Font.Name = 'Tahoma'
-    Font.Style = []
-    ParentFont = False
-  end
-  object Label12: TLabel
-    Left = 502
-    Top = 123
-    Width = 46
-    Height = 18
-    Caption = 'Cd-109'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -15
-    Font.Name = 'Tahoma'
-    Font.Style = []
-    ParentFont = False
-  end
-  object Label13: TLabel
-    Left = 503
-    Top = 150
-    Width = 46
-    Height = 18
-    Caption = 'Ba-133'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -15
-    Font.Name = 'Tahoma'
-    Font.Style = []
-    ParentFont = False
-  end
-  object Label14: TLabel
-    Left = 503
-    Top = 177
-    Width = 45
-    Height = 18
-    Caption = 'Cs-137'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -15
-    Font.Name = 'Tahoma'
-    Font.Style = []
-    ParentFont = False
-  end
-  object Label15: TLabel
-    Left = 504
-    Top = 201
-    Width = 45
-    Height = 18
-    Caption = 'Eu-152'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -15
-    Font.Name = 'Tahoma'
-    Font.Style = []
-    ParentFont = False
-  end
-  object Label16: TLabel
-    Left = 501
-    Top = 228
-    Width = 47
-    Height = 18
-    Caption = 'Th-228'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -15
-    Font.Name = 'Tahoma'
-    Font.Style = []
-    ParentFont = False
-  end
-  object Label17: TLabel
-    Left = 498
-    Top = 255
-    Width = 51
-    Height = 18
-    Caption = 'Am-241'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -15
-    Font.Name = 'Tahoma'
-    Font.Style = []
-    ParentFont = False
-  end
-  object Label18: TLabel
-    Left = 538
-    Top = 8
-    Width = 72
-    Height = 18
-    Caption = #1053#1072#1089#1090#1088#1086#1081#1082#1080
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -15
-    Font.Name = 'Tahoma'
-    Font.Style = []
-    ParentFont = False
-  end
-  object Изотоп: TLabel
-    Left = 499
-    Top = 282
-    Width = 49
-    Height = 18
-    Caption = #1048#1079#1086#1090#1086#1087
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -15
-    Font.Name = 'Tahoma'
-    Font.Style = []
-    ParentFont = False
-  end
-  object Button1: TButton
-    Left = 93
-    Top = 335
-    Width = 75
-    Height = 25
-    Caption = 'OK'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = []
-    ParentFont = False
-    TabOrder = 0
-    OnClick = Button1Click
-  end
-  object Edit1: TEdit
-    Left = 24
-    Top = 294
-    Width = 214
-    Height = 32
-    Color = clYellow
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -20
-    Font.Name = 'Tahoma'
-    Font.Style = []
-    ParentFont = False
-    TabOrder = 1
-  end
-  object Edit2: TEdit
-    Left = 24
-    Top = 192
-    Width = 214
-    Height = 24
-    Alignment = taCenter
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = []
-    ParentFont = False
-    ReadOnly = True
-    TabOrder = 2
-  end
-  object Edit3: TEdit
-    Left = 24
-    Top = 222
-    Width = 49
-    Height = 21
-    Alignment = taCenter
-    Enabled = False
-    TabOrder = 3
-  end
-  object Edit4: TEdit
-    Left = 79
-    Top = 222
-    Width = 49
-    Height = 21
-    Alignment = taCenter
-    Enabled = False
-    TabOrder = 4
-  end
-  object Edit5: TEdit
-    Left = 134
-    Top = 222
-    Width = 49
-    Height = 21
-    Alignment = taCenter
-    Enabled = False
-    TabOrder = 5
-  end
-  object Edit6: TEdit
-    Left = 189
-    Top = 222
-    Width = 49
-    Height = 21
-    Alignment = taCenter
-    Enabled = False
-    TabOrder = 6
-  end
-  object Memo1: TMemo
-    Left = 256
-    Top = 40
-    Width = 225
-    Height = 286
-    TabOrder = 7
-  end
-  object Button2: TButton
-    Left = 244
-    Top = 332
-    Width = 117
-    Height = 25
-    Caption = #1042#1086#1081#1090#1080' '#1074' '#1088#1077#1078#1080#1084
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = []
-    ParentFont = False
-    TabOrder = 8
-    OnClick = Button2Click
-  end
-  object Button3: TButton
-    Left = 375
-    Top = 332
-    Width = 122
-    Height = 25
-    Caption = #1042#1099#1081#1090#1080' '#1080#1079' '#1088#1077#1078#1080#1084#1072
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = []
-    ParentFont = False
-    TabOrder = 9
-    OnClick = Button3Click
-  end
-  object Na22: TEdit
-    Left = 565
-    Top = 40
-    Width = 68
-    Height = 21
-    Alignment = taRightJustify
-    TabOrder = 10
-    Text = '0'
-  end
-  object Ti44: TEdit
-    Left = 565
-    Top = 67
-    Width = 68
-    Height = 21
-    Alignment = taRightJustify
-    TabOrder = 11
-    Text = '0'
-  end
-  object Y88: TEdit
-    Left = 565
-    Top = 94
-    Width = 68
-    Height = 21
-    Alignment = taRightJustify
-    TabOrder = 12
-    Text = '0'
-  end
-  object Cd109: TEdit
-    Left = 565
-    Top = 121
-    Width = 68
-    Height = 21
-    Alignment = taRightJustify
-    TabOrder = 13
-    Text = '0'
-  end
-  object Ba133: TEdit
-    Left = 565
-    Top = 148
-    Width = 68
-    Height = 21
-    Alignment = taRightJustify
-    TabOrder = 14
-    Text = '0'
-  end
-  object Cs137: TEdit
-    Left = 565
-    Top = 175
-    Width = 68
-    Height = 21
-    Alignment = taRightJustify
-    TabOrder = 15
-    Text = '0'
-  end
-  object Eu152: TEdit
-    Left = 565
-    Top = 202
-    Width = 68
-    Height = 21
-    Alignment = taRightJustify
-    TabOrder = 16
-    Text = '0'
-  end
-  object Th228: TEdit
-    Left = 565
-    Top = 229
-    Width = 68
-    Height = 21
-    Alignment = taRightJustify
-    TabOrder = 17
-    Text = '0'
-  end
-  object Am241: TEdit
-    Left = 565
-    Top = 256
-    Width = 68
-    Height = 21
-    Alignment = taRightJustify
-    TabOrder = 18
-    Text = '0'
-  end
-  object Button4: TButton
-    Left = 538
-    Top = 332
-    Width = 75
-    Height = 25
-    Caption = #1054#1073#1084#1077#1085
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = []
-    ParentFont = False
-    TabOrder = 19
-    OnClick = Button4Click
-  end
-  object Isotop: TComboBox
-    Left = 565
-    Top = 283
-    Width = 68
-    Height = 21
-    DropDownCount = 10
-    TabOrder = 20
-  end
-  object Timer1: TTimer
-    Interval = 5000
-    OnTimer = Timer1Timer
-    Left = 8
-    Top = 64
-  end
-  object Timer2: TTimer
-    Enabled = False
-    Interval = 10000
-    OnTimer = Timer2Timer
-    Left = 8
-    Top = 112
-  end
-  object Timer3: TTimer
-    Interval = 300
-    OnTimer = Timer3Timer
-    Left = 8
-    Top = 160
   end
 end
