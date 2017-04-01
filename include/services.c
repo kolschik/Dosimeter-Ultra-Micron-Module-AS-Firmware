@@ -428,7 +428,7 @@ void sleep_mode(FunctionalState sleep)
 
       delay_ms(1000);           // подождать установки напряжения
       DataUpdate.Need_batt_voltage_update = ENABLE;     // разрешить работу АЦП
-      adc_check_event();        // запустить преобразование
+//      adc_check_event();        // запустить преобразование
       delay_ms(100);            // подождать установки напряжения
 
       //PWR_FastWakeUpCmd(ENABLE);
@@ -443,7 +443,7 @@ void sleep_mode(FunctionalState sleep)
       display_on();             // включить дисплей
       DataUpdate.Need_batt_voltage_update = ENABLE;     // разрешить работу АЦП
       DataUpdate.Need_display_update = ENABLE;
-      adc_check_event();        // запустить преобразование
+//      adc_check_event();        // запустить преобразование
       RTC_ITConfig(RTC_IT_WUT, ENABLE);
       sound_deactivate();
     }

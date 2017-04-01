@@ -340,7 +340,7 @@ void minus_one_ref(uint32_t * param)
   }
 
   DataUpdate.Need_batt_voltage_update = ENABLE;
-  adc_check_event();
+//  adc_check_event();
 }
 
 void plus_one_ref(uint32_t * param)
@@ -359,7 +359,7 @@ void plus_one_ref(uint32_t * param)
   }
 
   DataUpdate.Need_batt_voltage_update = ENABLE;
-  adc_check_event();
+//  adc_check_event();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -137,6 +137,7 @@ void TIM2_IRQHandler(void)
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+uint16_t tmpadc1;
 void ADC1_IRQHandler(void)
 {
   uint16_t address;
@@ -154,13 +155,19 @@ void ADC1_IRQHandler(void)
       }
 
 
-      SPECTRO_MASSIVE[address >> 6]++;
+      SPECTRO_MASSIVE[address >> 1]++;
       IMPULSE_MASSIVE[0]++;     // увеличиваем счетчик
 
-      TIM4->EGR |= 0x0001;      // Подаем звук
-      TIM_CCxCmd(TIM4, TIM_Channel_4, TIM_CCx_Enable);
-      TIM_ITConfig(TIM4, TIM_IT_Update, ENABLE);
 
+      if(tmpadc1 > 5)
+      {
+        tmpadc1 = 0;
+        TIM4->EGR |= 0x0001;    // Подаем звук
+        TIM_CCxCmd(TIM4, TIM_Channel_4, TIM_CCx_Enable);
+        TIM_ITConfig(TIM4, TIM_IT_Update, ENABLE);
+
+      } else
+        tmpadc1++;
     }
   }
 }
@@ -195,6 +202,7 @@ void TIM3_IRQHandler(void)
   if(TIM_GetITStatus(TIM3, TIM_IT_CC2) != RESET)
   {
     TIM_ClearITPendingBit(TIM3, TIM_IT_CC2);
+    PUMP_MASSIVE[0]++;
   }
 }
 
@@ -209,7 +217,7 @@ void TIM4_IRQHandler(void)
   {
     TIM_ClearITPendingBit(TIM4, TIM_IT_Update);
 
-    if(tmptim4 > 1)
+    if(tmptim4 > 2)
     {
       tmptim4 = 0;
       TIM_ITConfig(TIM4, TIM_IT_Update, DISABLE);
@@ -231,21 +239,40 @@ void TIM9_IRQHandler(void)
 
     PumpData.Impulse_past = DISABLE;
 
+    // -----------------------------
+    // ротация массивов
     counter = 0;
+    counter_err = 0;
+    counter_pump = 0;
     for (i = 10; i > 0; i--)
     {
       IMPULSE_MASSIVE[i] = IMPULSE_MASSIVE[i - 1];
+      PUMP_MASSIVE[i] = PUMP_MASSIVE[i - 1];
+      ERR_MASSIVE[i] = ERR_MASSIVE[i - 1];
       counter += IMPULSE_MASSIVE[i - 1];
+      counter_err += ERR_MASSIVE[i - 1];
+      counter_pump += PUMP_MASSIVE[i - 1];
     }
     IMPULSE_MASSIVE[0] = 0;
+    PUMP_MASSIVE[0] = 0;
+    ERR_MASSIVE[0] = 0;
+    // -----------------------------
 
     if(counter > 999)
     {
-      counter /= 1000;
+      sprintf(LED_BUF, "%3u", counter / 1000);  // Пишем в буфер значение счетчика
+    } else
+    {
+      sprintf(LED_BUF, "%3u", counter); // Пишем в буфер значение счетчика
+    }
+    LEDString();                // // Выводим обычным текстом содержание буфера
+
+    // Антиалиасинг ячеек кратных 64
+    for (i = 1; i <= 16; i++)
+    {
+      SPECTRO_MASSIVE[(i << 6) - 1] = (SPECTRO_MASSIVE[(i << 6) - 2] + SPECTRO_MASSIVE[(i << 6)]) / 2;
     }
 
-    sprintf(LED_BUF, "%3u", counter);   // Пишем в буфер значение счетчика
-    LEDString();                // // Выводим обычным текстом содержание буфера
   }
 }
 

@@ -224,6 +224,7 @@ extern uint32_t ix_update;
 #define max_fon_select 1
 #define dose_select 2
 #define eeprom_send_data 3
+#define spectro_data 4
 
 
 // Команды компаратора
@@ -380,8 +381,16 @@ extern uint8_t LED_show_massive[];      // сырое отображение на дисплее
 extern char LED_BUF[];
 extern uint32_t counter;
 extern FunctionalState Need_Ledupdate;
-extern uint16_t SPECTRO_MASSIVE[];
+extern uint32_t SPECTRO_MASSIVE[];
 extern uint32_t IMPULSE_MASSIVE[];
+extern uint32_t PUMP_MASSIVE[];
+extern uint32_t ERR_MASSIVE[];
+extern uint16_t USB_spectro_pointer;
+extern uint8_t temperature;
+extern uint16_t akb_voltage;
+extern uint32_t feu_voltage;
+extern uint32_t counter_err;
+extern uint32_t counter_pump;
 
 void LEDString(void);
 void LEDUpdate(void);

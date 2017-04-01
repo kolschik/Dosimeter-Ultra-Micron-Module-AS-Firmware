@@ -18,6 +18,8 @@ uint16_t Detector_massive[Detector_massive_pointer_max + 1];
 uint32_t ram_Doze_massive[doze_length + 1];     // 1 €чейка = 10 минут, на прот€жении суток
 uint32_t ram_max_fon_massive[doze_length + 1];  // 1 €чейка = 10 минут, на прот€жении суток
 
+uint16_t USB_spectro_pointer = 0;
+
 uint16_t USB_maxfon_massive_pointer = 0;
 uint16_t USB_doze_massive_pointer = 0;
 uint16_t current_pulse_count = 0;
@@ -50,10 +52,17 @@ FunctionalState Sound_key_pressed = DISABLE;
 uint8_t LED_show_massive[4];    // сырое отображение на дисплее
 char LED_BUF[6];
 uint32_t counter = 0;
-uint16_t SPECTRO_MASSIVE[4096];
+uint32_t SPECTRO_MASSIVE[2049];
 FunctionalState Need_Ledupdate = DISABLE;
 uint32_t IMPULSE_MASSIVE[11];
+uint32_t PUMP_MASSIVE[11];
+uint32_t ERR_MASSIVE[11];
 
+uint8_t temperature;
+uint16_t akb_voltage;
+uint32_t feu_voltage = 650;
+uint32_t counter_err = 0;
+uint32_t counter_pump = 0;
 void LEDString(void)            //Displays a string at current cursor location
 {
   unsigned char i = 0;
@@ -72,11 +81,13 @@ int main(void)
   NVIC_PriorityGroupConfig(NVIC_PriorityGroup_1);
   //set_msi();
   set_pll_for_usb();
+  USB_on();
 
   io_init();
 
   adc_init();
-//  adc_calibration();
+  delay_ms(50);
+  adc_calibration();
 
   dac_init();
   dac_on();
@@ -106,6 +117,10 @@ int main(void)
       Need_Ledupdate = DISABLE;
       LEDUpdate();
     }
+
+
+
+    USB_work();
 
   }
 

@@ -1,6 +1,7 @@
 #include "main.h"
 
 //************************************************************************************************************
+/*
 void adc_check_event(void)
 {
   if(DataUpdate.Need_batt_voltage_update)
@@ -22,34 +23,29 @@ void adc_check_event(void)
 // -----------
 }
 
-
+*/
 //************************************************************************************************************
 void adc_calibration(void)
 {
   uint32_t i, x = 0;
+  uint32_t mass[100];
 
-  while (PWR_GetFlagStatus(PWR_FLAG_VREFINTRDY) == DISABLE);
-  ADC_RegularChannelConfig(ADC1, ADC_Channel_17, 1, ADC_SampleTime_96Cycles);   // Конфигурирование канала
-
-  ADC_DelaySelectionConfig(ADC1, ADC_DelayLength_Freeze);       // Задержка до момента чтения данных из АЦП
-
-  ADC_PowerDownCmd(ADC1, ADC_PowerDown_Idle_Delay, ENABLE);     // отключение питания АЦП в интервалах Idle и Delay
-
-  ADC_Cmd(ADC1, ENABLE);        // ВКЛ!
-
-  while (ADC_GetFlagStatus(ADC1, ADC_FLAG_ADONS) == RESET);     // Тупо ждем запуска АЦП
+  ADC_RegularChannelConfig(ADC1, ADC_Channel_17, 1, ADC_SampleTime_384Cycles);  // Конфигурирование канала
 
   for (i = 0; i < 100; i++)
   {
     ADC_SoftwareStartConv(ADC1);        // Стартуем преобразование
     while (ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC) == RESET);     // Тупо ждем завершения преобразования
-    x += ADC_GetConversionValue(ADC1);
+    mass[i] = ADC_GetConversionValue(ADC1);
   }
-  x /= 100;
 
-  ADCData.Calibration_bit_voltage = ((1224 * 1000) / x);        // битовое значение соотв. напряжению референса 1.22в, из него вычисляем скольким микровольтам соответствует 1 бит.
+  for (i = 0; i < 100; i++)
+  {
+    x += mass[i];
+  }
 
-  dac_reload();                 //перезагрузить в ЦАП новое напряжение отсечки накачки
+  ADCData.Calibration_bit_voltage = ((1224 * 1000 * 100) / x);  // битовое значение соотв. напряжению референса 1.22в, из него вычисляем скольким микровольтам соответствует 1 бит.
+
 }
 
 //************************************************************************************************************
@@ -73,8 +69,6 @@ void adc_init(void)
   ADC_InitStructure.ADC_Resolution = ADC_Resolution_12b;        // Разрешение АЦП 12 бит.
   ADC_InitStructure.ADC_ScanConvMode = ENABLE;
   ADC_InitStructure.ADC_ContinuousConvMode = DISABLE;
-//  ADC_InitStructure.ADC_ExternalTrigConvEdge = ADC_ExternalTrigConvEdge_Falling;
-//  ADC_InitStructure.ADC_ExternalTrigConv = ADC_ExternalTrigConv_T2_TRGO;
   ADC_InitStructure.ADC_ExternalTrigConvEdge = ADC_ExternalTrigConvEdge_None;   // период срабатывания старта конверсии
   ADC_InitStructure.ADC_DataAlign = ADC_DataAlign_Right;        // Орентация битов результата
   ADC_InitStructure.ADC_NbrOfConversion = 1;    // Число преобразований
@@ -83,6 +77,12 @@ void adc_init(void)
   ADC_DelaySelectionConfig(ADC1, ADC_DelayLength_Freeze);       // Задержка до момента чтения данных из АЦП
 
   ADC_PowerDownCmd(ADC1, ADC_PowerDown_Idle_Delay, DISABLE);    // отключение питания АЦП в интервалах Idle и Delay
+
+
+  while (PWR_GetFlagStatus(PWR_FLAG_VREFINTRDY) == DISABLE);
+  ADC_RegularChannelConfig(ADC1, ADC_Channel_17, 1, ADC_SampleTime_384Cycles);  // Конфигурирование канала
+
+  ADC_DelaySelectionConfig(ADC1, ADC_DelayLength_Freeze);       // Задержка до момента чтения данных из АЦП
 
   NVIC_InitStructure.NVIC_IRQChannel = ADC1_IRQn;
   NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;

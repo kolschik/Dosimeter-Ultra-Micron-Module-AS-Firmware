@@ -143,12 +143,12 @@ void tim4_Config()              // Генерация звука
 
   TIM_BaseConfig.TIM_Prescaler = (uint16_t) (SystemCoreClock / 1000000) - 1;    // Делитель (1 тик = 1 мкс)
   TIM_BaseConfig.TIM_ClockDivision = 0;
-  TIM_BaseConfig.TIM_Period = 100;      // 100 мкс
+  TIM_BaseConfig.TIM_Period = 366;      // 366 мкс - 2.730 кгц
   TIM_BaseConfig.TIM_CounterMode = TIM_CounterMode_Up;  // Отсчет от нуля до TIM_Period
 
   TIM_OCConfig.TIM_OCMode = TIM_OCMode_PWM1;    // Конфигурируем выход таймера, режим - PWM1
   TIM_OCConfig.TIM_OutputState = TIM_OutputState_Enable;        // Собственно - выход включен
-  TIM_OCConfig.TIM_Pulse = 20;  // длительность импульса 20 мкс
+  TIM_OCConfig.TIM_Pulse = TIM_BaseConfig.TIM_Period / 2;       // длительность импульса 20 мкс
   TIM_OCConfig.TIM_OCPolarity = TIM_OCPolarity_High;    // Полярность => пульс - это единица (+3.3V)
 
 
@@ -180,7 +180,7 @@ void tim4_Config()              // Генерация звука
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////
-void tim9_Config()              // Генерация звука
+void tim9_Config()              //  0.1 секунда
 {
   TIM_TimeBaseInitTypeDef TIM_BaseConfig;
   NVIC_InitTypeDef NVIC_InitStructure;
