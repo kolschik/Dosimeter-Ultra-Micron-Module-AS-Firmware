@@ -119,8 +119,7 @@ void flash_write_page(uint32_t page)    // Write 32 element of massive ram_Doze_
       FLASH_Lock();
       return;
     }
-
-    FLASHStatus_eeprom = FLASH_ProgramHalfPage(Address, ram_Doze_massive);
+// !!!!!!!!!!!!!!!!!! FLASHStatus_eeprom = FLASH_ProgramHalfPage(Address, ram_Doze_massive);
 
     if(FLASHStatus_eeprom == FLASH_COMPLETE)
     {
@@ -142,8 +141,7 @@ void flash_write_page(uint32_t page)    // Write 32 element of massive ram_Doze_
       FLASH_Lock();
       return;
     }
-
-    FLASHStatus_eeprom = FLASH_ProgramHalfPage(Address, ram_max_fon_massive);
+// !!!!!!!!!!!!!!!!!!    FLASHStatus_eeprom = FLASH_ProgramHalfPage(Address, ram_max_fon_massive);
 
     if(FLASHStatus_eeprom == FLASH_COMPLETE)
     {
@@ -156,10 +154,11 @@ void flash_write_page(uint32_t page)    // Write 32 element of massive ram_Doze_
   }
 }
 
-
 //////////////////////////////////////////////////////////////////////////////////////
 uint32_t flash_read_massive(uint32_t virt_element, uint32_t mode)
 {
+/*
+
   uint32_t Address = FLASH_START_ADDR, page = 0, page_num = 0, index = 0;
 
   if(virt_element >= FLASH_MAX_ELEMENT)
@@ -174,11 +173,6 @@ uint32_t flash_read_massive(uint32_t virt_element, uint32_t mode)
 
   } else                        // >31 Элемент не из памяти, лезем во флешку
   {
-/*	x<<1 = *2
-		x<<2 = *4
-		x<<5 = *32
-		x<<8 = *256
-*/
 
     index = virt_element - (DataUpdate.doze_count + 1);
     page = DataUpdate.current_flash_page;
@@ -213,6 +207,7 @@ uint32_t flash_read_massive(uint32_t virt_element, uint32_t mode)
 
     return (*(__IO uint32_t *) Address);
   }
+	*/
   return 0;
 }
 

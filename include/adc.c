@@ -1,36 +1,13 @@
 #include "main.h"
 
-//************************************************************************************************************
-/*
-void adc_check_event(void)
-{
-  if(DataUpdate.Need_batt_voltage_update)
-  {
-    while (PWR_GetFlagStatus(PWR_FLAG_VREFINTRDY) == DISABLE);
-    adc_init();
-    adc_calibration();
-    ADC_Batt_Read();
-
-    ADC_Cmd(ADC1, DISABLE);     // ВЫКЛ!
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC1, DISABLE);
-    RCC_HSICmd(DISABLE);        // Выключаем HSI
-    ADCData.Batt_voltage = ((ADCData.Calibration_bit_voltage * ADCData.Batt_voltage_raw) / 1000) * 2;
-
-    PumpPrescaler();
-
-    DataUpdate.Need_batt_voltage_update = DISABLE;
-  }
-// -----------
-}
-
-*/
-//************************************************************************************************************
 void adc_calibration(void)
 {
   uint32_t i, x = 0;
   uint32_t mass[100];
 
-  ADC_RegularChannelConfig(ADC1, ADC_Channel_17, 1, ADC_SampleTime_384Cycles);  // Конфигурирование канала
+  ADC_AutoInjectedConvCmd(ADC1, DISABLE);
+
+  ADC_RegularChannelConfig(ADC1, ADC_Channel_17, 1, ADC_SampleTime_96Cycles);   // Конфигурирование канала
 
   for (i = 0; i < 100; i++)
   {
@@ -46,7 +23,10 @@ void adc_calibration(void)
 
   ADCData.Calibration_bit_voltage = ((1224 * 1000 * 100) / x);  // битовое значение соотв. напряжению референса 1.22в, из него вычисляем скольким микровольтам соответствует 1 бит.
 
+  ADC_AutoInjectedConvCmd(ADC1, ENABLE);
+
 }
+
 
 //************************************************************************************************************
 void adc_init(void)
@@ -54,16 +34,14 @@ void adc_init(void)
   ADC_InitTypeDef ADC_InitStructure;
   NVIC_InitTypeDef NVIC_InitStructure;
 
-//  uint32_t ccr = ADC->CCR;
-//  ccr &= ~ADC_CCR_ADCPRE;
-//  ccr |= ADC_CCR_ADCPRE_0;
-//  ADC->CCR = ccr;               // устанавливаем скорость перобразования АЦП 500ksps для режима пониженного питания
-
   RCC_HSICmd(ENABLE);           // Включаем HSI
   while (RCC_GetFlagStatus(RCC_FLAG_HSIRDY) == RESET);  // Ждем пока запустатися HSI
+
   RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC1, ENABLE);  // Разрешаем тактирование ADC
 
   ADC_BankSelection(ADC1, ADC_Bank_A);
+
+  ADC->CCR |= ADC_CCR_TSVREFE;  //Вкл. датчик температуры и канал Vrefint(Tstart=10us)
 
   ADC_StructInit(&ADC_InitStructure);
   ADC_InitStructure.ADC_Resolution = ADC_Resolution_12b;        // Разрешение АЦП 12 бит.
@@ -78,9 +56,10 @@ void adc_init(void)
 
   ADC_PowerDownCmd(ADC1, ADC_PowerDown_Idle_Delay, DISABLE);    // отключение питания АЦП в интервалах Idle и Delay
 
+  ADC_TempSensorVrefintCmd(ENABLE);
 
   while (PWR_GetFlagStatus(PWR_FLAG_VREFINTRDY) == DISABLE);
-  ADC_RegularChannelConfig(ADC1, ADC_Channel_17, 1, ADC_SampleTime_384Cycles);  // Конфигурирование канала
+  //ADC_RegularChannelConfig(ADC1, ADC_Channel_17, 1, ADC_SampleTime_384Cycles);  // Конфигурирование канала
 
   ADC_DelaySelectionConfig(ADC1, ADC_DelayLength_Freeze);       // Задержка до момента чтения данных из АЦП
 

@@ -61,7 +61,5 @@ void eeprom_apply_settings(uint32_t);
 void eeprom_write_default_settings(void);
 void eeprom_read_settings(uint32_t);
 void eeprom_loading(uint32_t);
-void cal_write(void);
-uint32_t cal_read(uint32_t);
 
 #endif

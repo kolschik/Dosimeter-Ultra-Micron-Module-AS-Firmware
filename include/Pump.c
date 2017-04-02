@@ -15,8 +15,10 @@ void COMP_IRQHandler(void)
       PumpCmd(DISABLE);
     } else
     {
-      //PumpCmd(ENABLE);
+      if(!GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_15))
+        PumpCmd(ENABLE);
     }
+
   }
 }
 
@@ -171,7 +173,7 @@ void PumpCompCmd(uint8_t cmd)
 
       COMP_InitStructure.COMP_InvertingInput = COMP_InvertingInput_DAC2;
       COMP_InitStructure.COMP_OutputSelect = COMP_OutputSelect_None;
-      COMP_InitStructure.COMP_Speed = COMP_Speed_Fast;
+      COMP_InitStructure.COMP_Speed = COMP_Speed_Slow;
 
       while (PWR_GetFlagStatus(PWR_FLAG_VREFINTRDY) != ENABLE); // Ждем нормализации референса
       COMP_Init(&COMP_InitStructure);
@@ -185,8 +187,8 @@ void PumpCompCmd(uint8_t cmd)
       EXTI_Init(&EXTI_InitStructure);
 
       NVIC_InitStructure.NVIC_IRQChannel = COMP_IRQn;
-      NVIC_InitStructure.NVIC_IRQChannelSubPriority = 2;
-      NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
+      NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
+      NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
       NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
       NVIC_Init(&NVIC_InitStructure);
       EXTI_ClearITPendingBit(EXTI_Line22);
@@ -200,7 +202,7 @@ void PumpCompCmd(uint8_t cmd)
 
       COMP_InitStructure.COMP_InvertingInput = COMP_InvertingInput_DAC2;
       COMP_InitStructure.COMP_OutputSelect = COMP_OutputSelect_None;
-      COMP_InitStructure.COMP_Speed = COMP_Speed_Fast;
+      COMP_InitStructure.COMP_Speed = COMP_Speed_Slow;
 
 
       while (PWR_GetFlagStatus(PWR_FLAG_VREFINTRDY) != ENABLE); // Ждем нормализации референса

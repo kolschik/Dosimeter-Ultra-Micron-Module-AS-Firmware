@@ -20,44 +20,27 @@ uint8_t prepare_data(uint32_t mode, uint16_t * massive_pointer, uint8_t start_ke
   uint8_t fon_4_4 = 0;
   uint32_t used_lenght = 0;
   uint32_t tmp = 0;             // контрольная сумма
-  uint32_t eeprom_data = 0;     // контрольная сумма
 
   while (used_lenght <= (VIRTUAL_COM_PORT_DATA_SIZE - 7))
   {
-    if(mode != eeprom_send_data)
+    if(*massive_pointer >= 2047)
     {
-      if(*massive_pointer >= 2047)
-      {
-        *massive_pointer = 2047;
-        return used_lenght;
-      }
-
-      address_lo = *massive_pointer & 0xff;
-      address_hi = (*massive_pointer >> 8) & 0xff;
-
-      // Если данные сжать нельзя
-      data_key = start_key;
-      tmp = SPECTRO_MASSIVE[*massive_pointer];
-      fon_1_4 = tmp & 0xff;
-      fon_2_4 = (tmp >> 8) & 0xff;
-      fon_3_4 = (tmp >> 16) & 0xff;
-      fon_4_4 = (tmp >> 24) & 0xff;
-      *massive_pointer = *massive_pointer + 1;
-
-    } else
-    {
-      data_key = start_key;
-      address_lo = eeprom_address & 0xff;
-      address_hi = (eeprom_address >> 8) & 0xff;
-
-      eeprom_data = eeprom_read(eeprom_address);
-      eeprom_address += 0x04;
-
-      fon_1_4 = eeprom_data & 0xff;
-      fon_2_4 = (eeprom_data >> 8) & 0xff;
-      fon_3_4 = (eeprom_data >> 16) & 0xff;
-      fon_4_4 = (eeprom_data >> 24) & 0xff;
+      *massive_pointer = 2047;
+      return used_lenght;
     }
+
+    address_lo = *massive_pointer & 0xff;
+    address_hi = (*massive_pointer >> 8) & 0xff;
+
+    // Если данные сжать нельзя
+    data_key = start_key;
+    tmp = SPECTRO_MASSIVE[*massive_pointer];
+    fon_1_4 = tmp & 0xff;
+    fon_2_4 = (tmp >> 8) & 0xff;
+    fon_3_4 = (tmp >> 16) & 0xff;
+    fon_4_4 = (tmp >> 24) & 0xff;
+    *massive_pointer = *massive_pointer + 1;
+
     Send_Buffer[used_lenght] = data_key;        // передать ключ
     Send_Buffer[used_lenght + 1] = address_hi;  // передать по УСАПП 
     Send_Buffer[used_lenght + 2] = address_lo;  // передать по УСАПП 
@@ -88,7 +71,6 @@ void USB_work()
     if(Receive_length != 0)
     {
       current_rcvd_pointer = 0; // сброс счетчика текущей позиции приема
-      Data.USB_not_active = 0;  // Сброс четчика неактивности USB 
 
       while (Receive_length > current_rcvd_pointer)
       {
@@ -125,8 +107,10 @@ void USB_work()
 
 
         case 0x05:             // Отправка основных данных (RCV 1 байт)
+
+
           Send_Buffer[0] = 0x06;        // передать ключ
-          Send_Buffer[1] = temperature; // температура МК
+          Send_Buffer[1] = ADCData.Calibration_bit_voltage & 0xff;      // температура МК
           Send_Buffer[2] = feu_voltage & 0xff;  // напряжение детектора
           Send_Buffer[3] = (feu_voltage >> 8) & 0xff;
           Send_Buffer[4] = (feu_voltage >> 16) & 0xff;
@@ -153,8 +137,11 @@ void USB_work()
           if((current_rcvd_pointer + 3) <= Receive_length)      // Проверка длинны принятого участка
           {
             feu_voltage = Receive_Buffer[current_rcvd_pointer + 1] & 0xff;
-            feu_voltage += (Receive_Buffer[current_rcvd_pointer + 2] << 8) & 0xff;
-            feu_voltage += (Receive_Buffer[current_rcvd_pointer + 3] << 16) & 0xff;
+            feu_voltage += (Receive_Buffer[current_rcvd_pointer + 2] & 0xff) << 8;
+            feu_voltage += (Receive_Buffer[current_rcvd_pointer + 3] & 0xff) << 16;
+
+            eeprom_write(0x00, feu_voltage);
+            dac_reload();
 
             current_rcvd_pointer += 4;
           } else
@@ -210,8 +197,6 @@ void USB_off()
 {
 //---------------------------------------------Отключение USB------------------------------------
   RCC_APB1PeriphClockCmd(RCC_APB1Periph_USB, DISABLE);
-  Power.USB_active = DISABLE;
-
 }
 
 
@@ -224,5 +209,4 @@ void USB_on()
   USB_Interrupts_Config();
   USB_Init();
   SYSCFG->PMC |= (uint32_t) SYSCFG_PMC_USB_PU;  // Connect internal pull-up on USB DP line
-  Power.USB_active = ENABLE;
 }

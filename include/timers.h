@@ -6,8 +6,5 @@ void tim2_Config(void);
 void tim3_Config(void);
 void tim4_Config(void);
 void tim9_Config(void);
-void timer10_Config(void);
-void sound_activate(void);
-void sound_deactivate(void);
-void reset_TIM_prescallers_and_Compare(void);
+void tim10_Config(void);
 #endif

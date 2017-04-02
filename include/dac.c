@@ -10,7 +10,7 @@ void dac_init()
   DAC_StructInit(&DAC_InitStructure);
   DAC_InitStructure.DAC_Trigger = DAC_Trigger_Software;
   DAC_InitStructure.DAC_WaveGeneration = DAC_WaveGeneration_None;
-  DAC_InitStructure.DAC_OutputBuffer = DAC_OutputBuffer_Enable;
+  DAC_InitStructure.DAC_OutputBuffer = DAC_OutputBuffer_Disable;
 
   DAC_Init(DAC_Channel_2, &DAC_InitStructure);
   DAC_Cmd(DAC_Channel_2, ENABLE);
@@ -35,8 +35,6 @@ void dac_off()
 
 void dac_reload()
 {
-  dac_init();
-
   ADCData.DAC_voltage_raw = (feu_voltage * 33000) / 50033;      // 780 вольт = 514 мВ
 
   ADCData.DAC_voltage_raw = (ADCData.DAC_voltage_raw * 1000) / ADCData.Calibration_bit_voltage; // коррекция значения по напряжению опоры
