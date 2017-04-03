@@ -15,8 +15,7 @@ void COMP_IRQHandler(void)
       PumpCmd(DISABLE);
     } else
     {
-      if(!GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_15))
-        PumpCmd(ENABLE);
+      Need_pump = ENABLE;
     }
 
   }
@@ -34,23 +33,28 @@ void PumpCmd(FunctionalState pump)
 
   if(pump == ENABLE)
   {
-    if((PumpData.Active == DISABLE) && (PumpData.Impulse_past == DISABLE))
+    if((PumpData.Active == DISABLE) && (!PUMP_DEAD_TIME))
     {
       PumpData.Active = pump;
-      PumpData.Impulse_past = ENABLE;
+
+      PUMP_DEAD_TIME = ENABLE;  // начинаем отсчет мертвого времени накачки
+
       TIM3->EGR |= 0x0001;      // Устанавливаем бит UG для принудительного сброса счетчика
-      TIM_CCxCmd(TIM3, TIM_Channel_2, TIM_CCx_Enable);  // разрешить накачку   
+
       TIM_ITConfig(TIM3, TIM_IT_CC2, ENABLE);
-      TIM_ITConfig(TIM3, TIM_IT_Update, ENABLE);
       TIM_ClearITPendingBit(TIM3, TIM_IT_CC2);
+
+      TIM_CCxCmd(TIM3, TIM_Channel_2, TIM_CCx_Enable);  // разрешить накачку   
+      TIM_ITConfig(TIM3, TIM_IT_Update, ENABLE);
       TIM_ClearITPendingBit(TIM3, TIM_IT_Update);
     }
 
   } else
   {
-    TIM_ITConfig(TIM3, TIM_IT_CC2, DISABLE);
     TIM_CCxCmd(TIM3, TIM_Channel_2, TIM_CCx_Disable);   // запретить накачку
-    TIM_ClearITPendingBit(TIM3, TIM_IT_CC2);
+    //TIM_ITConfig(TIM3, TIM_IT_CC2, DISABLE);
+    //TIM3->EGR |= 0x0001;        // Устанавливаем бит UG для принудительного сброса счетчика
+    //TIM_ClearITPendingBit(TIM3, TIM_IT_CC2);
     PumpData.Active = pump;
   }
 
@@ -173,7 +177,7 @@ void PumpCompCmd(uint8_t cmd)
 
       COMP_InitStructure.COMP_InvertingInput = COMP_InvertingInput_DAC2;
       COMP_InitStructure.COMP_OutputSelect = COMP_OutputSelect_None;
-      COMP_InitStructure.COMP_Speed = COMP_Speed_Slow;
+      COMP_InitStructure.COMP_Speed = COMP_Speed_Fast;
 
       while (PWR_GetFlagStatus(PWR_FLAG_VREFINTRDY) != ENABLE); // Ждем нормализации референса
       COMP_Init(&COMP_InitStructure);
@@ -202,7 +206,7 @@ void PumpCompCmd(uint8_t cmd)
 
       COMP_InitStructure.COMP_InvertingInput = COMP_InvertingInput_DAC2;
       COMP_InitStructure.COMP_OutputSelect = COMP_OutputSelect_None;
-      COMP_InitStructure.COMP_Speed = COMP_Speed_Slow;
+      COMP_InitStructure.COMP_Speed = COMP_Speed_Fast;
 
 
       while (PWR_GetFlagStatus(PWR_FLAG_VREFINTRDY) != ENABLE); // Ждем нормализации референса

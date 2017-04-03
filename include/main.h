@@ -46,20 +46,26 @@
 #define FLASH_END_ADDR                  0x0801FFFF
 #define FLASH_MAX_PAGE                  (FLASH_END_ADDR - FLASH_START_ADDR) / FLASH_PAGE_SIZE
 #define FLASH_MAX_ELEMENT               FLASH_MAX_PAGE * (FLASH_PAGE_SIZE >> 3)
+#define ADC1_DR_ADDRESS    ((uint32_t)0x40012458)
 
 
 typedef struct
 {
   FunctionalState Active;       //   
-  FunctionalState Impulse_past; //   
+//  FunctionalState Impulse_past; //   
 } PumpDataDef;
 
 typedef struct
 {
-  uint32_t Batt_voltage_raw;    //  
+  uint32_t Batt_voltage_raw;    //
+  uint32_t Temp_voltage_raw;    //
+  uint32_t Ref_voltage_raw;     //
+
+  uint32_t Temp;
+
   uint32_t Batt_voltage;        //  
   uint32_t Power_voltage;       //   
-  uint32_t Calibration_bit_voltage;     //   
+  float Calibration_bit_voltage;        //   
   uint32_t Procent_battery;     //   
   uint32_t DAC_voltage_raw;     //    DAC
 } ADCDataDef;
@@ -72,7 +78,12 @@ extern uint16_t USB_spectro_pointer;
 extern uint8_t LED_show_massive[];      // сырое отображение на дисплее
 extern char LED_BUF[];
 extern uint32_t counter;
+
 extern FunctionalState Need_Ledupdate;
+extern FunctionalState Need_pump;
+extern FunctionalState PUMP_DEAD_TIME;
+extern FunctionalState IMPULSE_DEAD_TIME;
+
 extern uint32_t SPECTRO_MASSIVE[];
 extern uint32_t IMPULSE_MASSIVE[];
 extern uint32_t PUMP_MASSIVE[];
@@ -83,6 +94,7 @@ extern uint16_t akb_voltage;
 extern uint32_t feu_voltage;
 extern uint32_t counter_err;
 extern uint32_t counter_pump;
+extern __IO uint16_t ADC_ConvertedValue[];
 
 void LEDString(void);
 void LEDUpdate(void);

@@ -2,9 +2,6 @@
 #include "main.h"
 #include <stdio.h>
 
-//extern __IO uint32_t CaptureNumber, PeriodValue;
-//uint32_t IC1ReadValue1 = 0, IC1ReadValue2 = 0;
-
 // ===============================================================================================
 void NMI_Handler(void)
 {
@@ -114,12 +111,12 @@ void SysTick_Handler(void)
 * @}
 */
 
-
-void TIM2_IRQHandler(void)
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void TIM2_IRQHandler(void)      // Обновление дисплея
 {
-  if(TIM_GetITStatus(TIM2, TIM_IT_CC1) != RESET)
+  if(TIM_GetITStatus(TIM2, TIM_IT_CC2) != RESET)
   {
-    TIM_ClearITPendingBit(TIM2, TIM_IT_CC1);
+    TIM_ClearITPendingBit(TIM2, TIM_IT_CC2);
 
     LED_show(LED_show_massive[0], C_SEG_ALLOFF, DISABLE);       // отключаем все сигменты
   }
@@ -136,6 +133,31 @@ void TIM2_IRQHandler(void)
 
 
 
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void TIM10_IRQHandler(void)     // Учет мертвого времени датчика
+{
+  if(TIM_GetITStatus(TIM10, TIM_IT_CC1) != RESET)
+  {
+    TIM_ClearITPendingBit(TIM10, TIM_IT_CC1);
+    IMPULSE_DEAD_TIME = DISABLE;
+    TIM_ITConfig(TIM10, TIM_IT_CC1, DISABLE);
+  }
+
+  if(TIM_GetITStatus(TIM10, TIM_IT_Update) != RESET)
+  {
+    TIM_ClearITPendingBit(TIM10, TIM_IT_Update);
+
+    TIM_ITConfig(TIM10, TIM_IT_Update, DISABLE);
+
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 uint16_t tmpadc1;
 void ADC1_IRQHandler(void)
@@ -145,18 +167,31 @@ void ADC1_IRQHandler(void)
   {
     ADC_ClearITPendingBit(ADC1, ADC_IT_JEOC);
 
-    if(PumpData.Impulse_past == DISABLE)        // Если прерывание вызвано не импульсом накачки
+    if(!PUMP_DEAD_TIME)         // Если прерывание вызвано не импульсом накачки
     {
       address = ADC_GetInjectedConversionValue(ADC1, ADC_InjectedChannel_1);
+
+      if(!IMPULSE_DEAD_TIME)    // Проверка что прошлый импульс с датчика был завершен
+      {
+        SPECTRO_MASSIVE[address >> 1]++;        // Если все нормально, добавляем спектр
+
+        IMPULSE_DEAD_TIME = ENABLE;     // начинаем отсчет мертвого времени датчика
+        TIM10->EGR |= 0x0001;
+        TIM_ITConfig(TIM10, TIM_IT_CC1, ENABLE);
+
+      } else
+      {
+        ERR_MASSIVE[0]++;       // Подсчитываем ошибки снятия спектра
+      }
+
 
       if(COMP_GetOutputLevel(COMP_Selection_COMP2) == COMP_OutputLevel_Low)
       {
         PumpCmd(ENABLE);
       }
 
-
-      SPECTRO_MASSIVE[address >> 1]++;
       IMPULSE_MASSIVE[0]++;     // увеличиваем счетчик
+
 
 
       if(tmpadc1 > 5)
@@ -168,6 +203,7 @@ void ADC1_IRQHandler(void)
 
       } else
         tmpadc1++;
+
     }
   }
 }
@@ -191,8 +227,9 @@ void TIM3_IRQHandler(void)
       if(PumpData.Active == DISABLE)    // если накачку надо выключить
       {
         tmptim3 = 0;
-        PumpData.Impulse_past = DISABLE;        // сообщаем что импульс прошел.
         TIM_ITConfig(TIM3, TIM_IT_Update, DISABLE);
+        TIM_ITConfig(TIM3, TIM_IT_CC2, DISABLE);
+        PUMP_DEAD_TIME = DISABLE;
       }
     } else
       tmptim3++;
@@ -202,6 +239,10 @@ void TIM3_IRQHandler(void)
   if(TIM_GetITStatus(TIM3, TIM_IT_CC2) != RESET)
   {
     TIM_ClearITPendingBit(TIM3, TIM_IT_CC2);
+
+//    PUMP_DEAD_TIME = ENABLE;    // начинаем отсчет мертвого времени накачки
+//    TIM10->EGR |= 0x0001;
+//    TIM_ITConfig(TIM10, TIM_IT_CC1, ENABLE);
   }
 
   PUMP_MASSIVE[0]++;
@@ -231,15 +272,12 @@ void TIM4_IRQHandler(void)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // 0.1 секунда
-int tmptim9;
 void TIM9_IRQHandler(void)
 {
   int i;
   if(TIM_GetITStatus(TIM9, TIM_IT_Update) != RESET)
   {
     TIM_ClearITPendingBit(TIM9, TIM_IT_Update);
-
-    PumpData.Impulse_past = DISABLE;
 
     // -----------------------------
     // ротация массивов
@@ -275,18 +313,54 @@ void TIM9_IRQHandler(void)
       SPECTRO_MASSIVE[(i << 6) - 1] = (SPECTRO_MASSIVE[(i << 6) - 2] + SPECTRO_MASSIVE[(i << 6)]) / 2;
     }
 
-    if(tmptim9 > 50)
-    {
-      tmptim9 = 0;
-      adc_calibration();
-      dac_reload();
-    } else
-      tmptim9++;
-
-
   }
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Обработка регулярных каналов АЦП
+void DMA1_Channel1_IRQHandler(void)
+{
+  int i;
+  uint16_t ts_cal1, ts_cal2, TS_data_norm, Vrefint_cal;
+  float Vdda, temperature_norm, tmp;
+
+  if(DMA_GetITStatus(DMA1_IT_TC1))
+  {
+    DMA_ClearITPendingBit(DMA1_IT_GL1);
+
+    // Усреднение 128-х замеров 
+    ADCData.Batt_voltage_raw = 0;
+    ADCData.Temp_voltage_raw = 0;
+    ADCData.Ref_voltage_raw = 0;
+    for (i = 0; i < 384; i += 3)
+    {
+      ADCData.Ref_voltage_raw += ADC_ConvertedValue[i];
+      ADCData.Temp_voltage_raw += ADC_ConvertedValue[i + 1];
+      ADCData.Batt_voltage_raw += ADC_ConvertedValue[i + 2];
+    }
+    ADCData.Ref_voltage_raw >>= 7;
+    ADCData.Temp_voltage_raw >>= 7;
+    ADCData.Batt_voltage_raw >>= 7;
+
+    tmp = 1.224 / (float) ADCData.Ref_voltage_raw;      // битовое значение соотв. напряжению референса 1.22в, из него вычисляем скольким микровольтам соответствует 1 бит.
+    // 0,0007326В на 1 бит
+    if(ADCData.Calibration_bit_voltage != tmp)  // Если бит калибровки изменился, перегрузить ЦАП
+    {
+      ADCData.Calibration_bit_voltage = tmp;
+      dac_reload();
+    }
+    ts_cal1 = *((uint16_t *) ((uint32_t) 0x1FF8007A));
+    ts_cal2 = *((uint16_t *) ((uint32_t) 0x1FF8007E));
+    Vrefint_cal = *((uint16_t *) ((uint32_t) 0x1FF80078));
+
+    Vdda = 3 * ((float) Vrefint_cal / ADCData.Ref_voltage_raw);
+    TS_data_norm = ADCData.Temp_voltage_raw * Vdda / 3;
+    temperature_norm = (((float) (110 - 30) / (ts_cal2 - ts_cal1)) * (TS_data_norm - ts_cal1) + 30);    //с нормализацией
+
+    ADCData.Temp = temperature_norm;
+
+  }
+}
 
 /*******************************************************************************
 * Function Name  : USB_IRQHandler

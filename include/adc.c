@@ -1,38 +1,43 @@
 #include "main.h"
 
-void adc_calibration(void)
-{
-  uint32_t i, x = 0;
-  uint32_t mass[100];
-
-  ADC_AutoInjectedConvCmd(ADC1, DISABLE);
-
-  ADC_RegularChannelConfig(ADC1, ADC_Channel_17, 1, ADC_SampleTime_96Cycles);   // Конфигурирование канала
-
-  for (i = 0; i < 100; i++)
-  {
-    ADC_SoftwareStartConv(ADC1);        // Стартуем преобразование
-    while (ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC) == RESET);     // Тупо ждем завершения преобразования
-    mass[i] = ADC_GetConversionValue(ADC1);
-  }
-
-  for (i = 0; i < 100; i++)
-  {
-    x += mass[i];
-  }
-
-  ADCData.Calibration_bit_voltage = ((1224 * 1000 * 100) / x);  // битовое значение соотв. напряжению референса 1.22в, из него вычисляем скольким микровольтам соответствует 1 бит.
-
-  ADC_AutoInjectedConvCmd(ADC1, ENABLE);
-
-}
-
 
 //************************************************************************************************************
 void adc_init(void)
 {
   ADC_InitTypeDef ADC_InitStructure;
   NVIC_InitTypeDef NVIC_InitStructure;
+  DMA_InitTypeDef DMA_InitStructure;
+
+  /*------------------------ DMA1 configuration ------------------------------*/
+  /* Enable DMA1 clock */
+  RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, ENABLE);
+  /* DMA1 channel1 configuration */
+  DMA_DeInit(DMA1_Channel1);
+  DMA_StructInit(&DMA_InitStructure);
+
+  DMA_InitStructure.DMA_PeripheralBaseAddr = ADC1_DR_ADDRESS;   // Адрес перефирии
+  DMA_InitStructure.DMA_MemoryBaseAddr = (uint32_t) & ADC_ConvertedValue;       // Адрес массива в памяти
+  DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralSRC;    // Направление передачи данных "переферия -> память"
+  DMA_InitStructure.DMA_BufferSize = 384;       // кол-во циклов передачи данных (т.е. какбы размер массива)
+  DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;      // запрещение инкремента указателя перефирии
+  DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;       // разрешение инкремента указателя в памяти
+  DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_HalfWord;   // размер данных перефирии 16 бит
+  DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_HalfWord;   // размер переменной в памяти 16 бит
+  DMA_InitStructure.DMA_Mode = DMA_Mode_Circular;       // циклическая передача
+  DMA_InitStructure.DMA_Priority = DMA_Priority_High;   // задание наивысшего приоритета
+  DMA_InitStructure.DMA_M2M = DMA_M2M_Disable;  // Режим передачи память-память выключен
+  DMA_Init(DMA1_Channel1, &DMA_InitStructure);
+
+  NVIC_InitStructure.NVIC_IRQChannel = DMA1_Channel1_IRQn;
+  NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;
+  NVIC_InitStructure.NVIC_IRQChannelSubPriority = 2;
+  NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+  NVIC_Init(&NVIC_InitStructure);
+
+  DMA_ITConfig(DMA1_Channel1, DMA_IT_TC, ENABLE);
+
+/////////////////////////////////////////////////////////
+
 
   RCC_HSICmd(ENABLE);           // Включаем HSI
   while (RCC_GetFlagStatus(RCC_FLAG_HSIRDY) == RESET);  // Ждем пока запустатися HSI
@@ -46,10 +51,11 @@ void adc_init(void)
   ADC_StructInit(&ADC_InitStructure);
   ADC_InitStructure.ADC_Resolution = ADC_Resolution_12b;        // Разрешение АЦП 12 бит.
   ADC_InitStructure.ADC_ScanConvMode = ENABLE;
-  ADC_InitStructure.ADC_ContinuousConvMode = DISABLE;
-  ADC_InitStructure.ADC_ExternalTrigConvEdge = ADC_ExternalTrigConvEdge_None;   // период срабатывания старта конверсии
+  ADC_InitStructure.ADC_ContinuousConvMode = ENABLE;
+  ADC_InitStructure.ADC_ExternalTrigConv = ADC_ExternalTrigConv_T2_TRGO;
+  ADC_InitStructure.ADC_ExternalTrigConvEdge = ADC_ExternalTrigConvEdge_Falling;        // период срабатывания старта конверсии
   ADC_InitStructure.ADC_DataAlign = ADC_DataAlign_Right;        // Орентация битов результата
-  ADC_InitStructure.ADC_NbrOfConversion = 1;    // Число преобразований
+  ADC_InitStructure.ADC_NbrOfConversion = 3;    // Число преобразований
   ADC_Init(ADC1, &ADC_InitStructure);
 
   ADC_DelaySelectionConfig(ADC1, ADC_DelayLength_Freeze);       // Задержка до момента чтения данных из АЦП
@@ -59,7 +65,14 @@ void adc_init(void)
   ADC_TempSensorVrefintCmd(ENABLE);
 
   while (PWR_GetFlagStatus(PWR_FLAG_VREFINTRDY) == DISABLE);
+
+
+
   //ADC_RegularChannelConfig(ADC1, ADC_Channel_17, 1, ADC_SampleTime_384Cycles);  // Конфигурирование канала
+  /* ADCx Regular Channel Configuration */
+  ADC_RegularChannelConfig(ADC1, ADC_Channel_17, 1, ADC_SampleTime_384Cycles);  // опорное напряжение
+  ADC_RegularChannelConfig(ADC1, ADC_Channel_16, 2, ADC_SampleTime_384Cycles);  // температура
+  ADC_RegularChannelConfig(ADC1, ADC_Channel_19, 3, ADC_SampleTime_384Cycles);  // Напряжение АКБ
 
   ADC_DelaySelectionConfig(ADC1, ADC_DelayLength_Freeze);       // Задержка до момента чтения данных из АЦП
 
@@ -76,55 +89,15 @@ void adc_init(void)
   ADC_InjectedChannelConfig(ADC1, ADC_Channel_0, 1, ADC_SampleTime_4Cycles);
   ADC_ExternalTrigInjectedConvConfig(ADC1, ADC_ExternalTrigInjecConv_Ext_IT15);
   ADC_ExternalTrigInjectedConvEdgeConfig(ADC1, ADC_ExternalTrigInjecConvEdge_Rising);
-  ADC_AutoInjectedConvCmd(ADC1, ENABLE);
+  //ADC_AutoInjectedConvCmd(ADC1, ENABLE);
+
+  DMA_Cmd(DMA1_Channel1, ENABLE);
+  ADC_DMARequestAfterLastTransferCmd(ADC1, ENABLE);
+  ADC_DMACmd(ADC1, ENABLE);
+
 
   ADC_Cmd(ADC1, ENABLE);        // ВКЛ!
-
   while (ADC_GetFlagStatus(ADC1, ADC_FLAG_ADONS) == RESET);     // Тупо ждем запуска АЦП
 }
 
 //************************************************************************************************************
-void ADC_Batt_Read(void)
-{
-  GPIO_InitTypeDef GPIO_InitStructure;
-  uint32_t i;
-
-  while (PWR_GetFlagStatus(PWR_FLAG_VREFINTRDY) == DISABLE);
-  // Ножка изиерения напряжения АКБ
-  GPIO_StructInit(&GPIO_InitStructure);
-  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_14;    // Ножка
-  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AN;  // Аналоговый режим
-  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;      // Без подтяжки
-  GPIO_Init(GPIOB, &GPIO_InitStructure);        // Загружаем конфигурацию
-
-  // ===============================================================================================  
-  //Подключение токосемной цепочки
-  GPIO_StructInit(&GPIO_InitStructure);
-  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_15;    // Ножка
-  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
-  GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
-  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_400KHz;
-  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
-  GPIO_Init(GPIOB, &GPIO_InitStructure);        // Загружаем конфигурацию
-  ADC_RegularChannelConfig(ADC1, ADC_Channel_20, 1, ADC_SampleTime_384Cycles);  // Конфигурирование канала
-
-  GPIO_ResetBits(GPIOB, GPIO_Pin_15);   // Подключаем токосемник
-  ADCData.Batt_voltage_raw = 0;
-  for (i = 0; i < 10; i++)
-  {
-    ADC_SoftwareStartConv(ADC1);        // Стартуем преобразование
-    while (ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC) == RESET);     // Тупо ждем завершения преобразования
-    ADCData.Batt_voltage_raw += ADC_GetConversionValue(ADC1);
-  }
-  ADCData.Batt_voltage_raw /= 10;
-  // ===============================================================================================  
-  // Отключаем токосемную цепь
-  GPIO_StructInit(&GPIO_InitStructure);
-  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_15 | GPIO_Pin_14;
-  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
-  GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
-  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_400KHz;
-  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
-  GPIO_Init(GPIOB, &GPIO_InitStructure);
-  GPIO_SetBits(GPIOB, GPIO_InitStructure.GPIO_Pin);     // Подключаем токосемник
-}

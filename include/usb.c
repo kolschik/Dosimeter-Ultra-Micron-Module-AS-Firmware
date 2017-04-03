@@ -110,7 +110,7 @@ void USB_work()
 
 
           Send_Buffer[0] = 0x06;        // передать ключ
-          Send_Buffer[1] = ADCData.Calibration_bit_voltage & 0xff;      // температура МК
+          Send_Buffer[1] = ADCData.Temp & 0xff; // температура МК
           Send_Buffer[2] = feu_voltage & 0xff;  // напряжение детектора
           Send_Buffer[3] = (feu_voltage >> 8) & 0xff;
           Send_Buffer[4] = (feu_voltage >> 16) & 0xff;
@@ -140,7 +140,7 @@ void USB_work()
             feu_voltage += (Receive_Buffer[current_rcvd_pointer + 2] & 0xff) << 8;
             feu_voltage += (Receive_Buffer[current_rcvd_pointer + 3] & 0xff) << 16;
 
-            eeprom_write(0x00, feu_voltage);
+            eeprom_write(0x10, feu_voltage);
             dac_reload();
 
             current_rcvd_pointer += 4;

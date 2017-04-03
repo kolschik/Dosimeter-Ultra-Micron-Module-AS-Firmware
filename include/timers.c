@@ -14,7 +14,7 @@ void tim2_Config()              // LED индикация
 
   TIM_BaseConfig.TIM_Prescaler = (uint16_t) (SystemCoreClock / 40000) - 1;      // частота 40 кгц.
   TIM_BaseConfig.TIM_ClockDivision = 0;
-  TIM_BaseConfig.TIM_Period = 40;       // Общее количество тиков
+  TIM_BaseConfig.TIM_Period = 40;       // Апдейт 1 кГц
   TIM_BaseConfig.TIM_CounterMode = TIM_CounterMode_Up;
 
 
@@ -24,13 +24,13 @@ void tim2_Config()              // LED индикация
   TIM_OCConfig.TIM_Pulse = 10;  // длительность импульса
   TIM_OCConfig.TIM_OCPolarity = TIM_OCPolarity_High;    // Полярность => пульс - это единица (+3.3V)
 
-  TIM_OC1PreloadConfig(TIM2, TIM_OCPreload_Enable);
+  TIM_OC2PreloadConfig(TIM2, TIM_OCPreload_Enable);
   TIM_ARRPreloadConfig(TIM2, ENABLE);
 
   TIM_TimeBaseInit(TIM2, &TIM_BaseConfig);
-  TIM_OC1Init(TIM2, &TIM_OCConfig);     // Инициализируем второй выход
+  TIM_OC2Init(TIM2, &TIM_OCConfig);     // Инициализируем второй выход
 
-  TIM_OC1PreloadConfig(TIM2, TIM_OCPreload_Enable);
+  TIM_OC2PreloadConfig(TIM2, TIM_OCPreload_Enable);
 
 
   NVIC_InitStructure.NVIC_IRQChannel = TIM2_IRQn;
@@ -40,7 +40,9 @@ void tim2_Config()              // LED индикация
   NVIC_Init(&NVIC_InitStructure);
 
   TIM_ITConfig(TIM2, TIM_IT_Update, ENABLE);
-  TIM_ITConfig(TIM2, TIM_IT_CC1, ENABLE);
+  TIM_ITConfig(TIM2, TIM_IT_CC2, ENABLE);
+
+  TIM_SelectOutputTrigger(TIM2, TIM_TRGOSource_Update);
 
   TIM2->EGR |= 0x0001;          // Устанавливаем бит UG для принудительного сброса счетчика
   TIM_Cmd(TIM2, ENABLE);
@@ -65,12 +67,12 @@ void tim3_Config()              // Генерация ВВ
 
   TIM_OCConfig.TIM_OCMode = TIM_OCMode_PWM1;    // Конфигурируем выход таймера, режим - PWM1
   TIM_OCConfig.TIM_OutputState = TIM_OutputState_Enable;        // Собственно - выход включен
-  TIM_OCConfig.TIM_Pulse = 5;   // длительность импульса - 0.75 мкс
+  TIM_OCConfig.TIM_Pulse = 3;   // длительность импульса - 0.75 мкс
   TIM_OCConfig.TIM_OCPolarity = TIM_OCPolarity_High;    // Полярность => пульс - это единица (+3.3V)
 
   TIM_BaseConfig.TIM_Prescaler = (uint16_t) (SystemCoreClock / 4000000) - 1;    // Делитель (1 тик = 0.25мкс)
   TIM_BaseConfig.TIM_ClockDivision = 0;
-  TIM_BaseConfig.TIM_Period = 90;       // 90 - 37.5 мкс  // ИЗМЕРЕННО ОСЦЫЛОМ, 560!  Общее количество тиков (скваженность) 140мкс (частота накачки 1с/140мкс=** кГц)
+  TIM_BaseConfig.TIM_Period = 56;       // 22.5 мкс - общая длительность интервала накачки вместе с затуханием импульса
   TIM_BaseConfig.TIM_CounterMode = TIM_CounterMode_Up;  // Отсчет от нуля до TIM_Period
 
   TIM_DeInit(TIM3);             // Де-инициализируем таймер №3
@@ -90,7 +92,7 @@ void tim3_Config()              // Генерация ВВ
   NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
   NVIC_Init(&NVIC_InitStructure);
 
-  TIM_ITConfig(TIM3, TIM_IT_CC2, ENABLE);
+  //TIM_ITConfig(TIM3, TIM_IT_CC2, ENABLE);
   TIM_ITConfig(TIM3, TIM_IT_Update, ENABLE);
 
 
@@ -182,6 +184,56 @@ void tim9_Config()              //  0.1 секунда
   TIM9->EGR |= 0x0001;          // Устанавливаем бит UG для принудительного сброса счетчика
 
   TIM_Cmd(TIM9, ENABLE);
+}
+
+/////////////////////////////////////////////////////////////////////////////////
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////
+void tim10_Config()             //  Учет мертвого времени для измерений
+{
+  TIM_TimeBaseInitTypeDef TIM_BaseConfig;
+  NVIC_InitTypeDef NVIC_InitStructure;
+  TIM_OCInitTypeDef TIM_OCConfig;
+
+  RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM10, ENABLE);
+
+  TIM_TimeBaseStructInit(&TIM_BaseConfig);
+
+  TIM_BaseConfig.TIM_Prescaler = (uint16_t) (SystemCoreClock / 1000000) - 1;    // Делитель (1 тик = 1 мкс)
+  TIM_BaseConfig.TIM_ClockDivision = 0;
+  TIM_BaseConfig.TIM_Period = 1000;     // 1 мс
+  TIM_BaseConfig.TIM_CounterMode = TIM_CounterMode_Up;  // Отсчет от нуля до TIM_Period
+
+  TIM_TimeBaseInit(TIM10, &TIM_BaseConfig);
+  TIM_ARRPreloadConfig(TIM10, ENABLE);
+
+  /////////////////////////////////////////////////////////////////////////////////
+  // Мертвое время входного импульса
+  TIM_OCConfig.TIM_OCMode = TIM_OCMode_Timing;
+  TIM_OCConfig.TIM_OutputState = TIM_OutputState_Enable;
+  TIM_OCConfig.TIM_Pulse = 30;  // длительность импульса датчика в мкс
+  TIM_OCConfig.TIM_OCPolarity = TIM_OCPolarity_High;
+
+  TIM_OC1Init(TIM10, &TIM_OCConfig);
+  TIM_OC1PreloadConfig(TIM10, TIM_OCPreload_Enable);
+  /////////////////////////////////////////////////////////////////////////////////
+
+
+  NVIC_InitStructure.NVIC_IRQChannel = TIM10_IRQn;
+  NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+  NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
+  NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+  NVIC_Init(&NVIC_InitStructure);
+
+  TIM_ITConfig(TIM10, TIM_IT_Update, DISABLE);
+  TIM_ITConfig(TIM10, TIM_IT_CC1, ENABLE);
+
+
+  TIM10->EGR |= 0x0001;         // Устанавливаем бит UG для принудительного сброса счетчика
+
+  TIM_Cmd(TIM10, ENABLE);
 }
 
 /////////////////////////////////////////////////////////////////////////////////
