@@ -6,6 +6,7 @@
 
 ADCDataDef ADCData;
 PumpDataDef PumpData;
+SettingsDef Settings;
 
 ////////////
 
@@ -24,10 +25,10 @@ FunctionalState IMPULSE_DEAD_TIME = DISABLE;
 
 uint8_t temperature;
 uint16_t akb_voltage;
-uint32_t feu_voltage = 650;
 uint32_t counter_err = 0;
 uint32_t counter_pump = 0;
 uint16_t USB_spectro_pointer = 0;
+FunctionalState debug_mode = DISABLE;
 __IO uint16_t ADC_ConvertedValue[384];
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -47,7 +48,13 @@ int main(void)
   io_init();
 
 
-  feu_voltage = eeprom_read(0x10);
+  Settings.feu_voltage = eeprom_read(0x10);
+  Settings.ADC_bits = eeprom_read(0x14);
+  Settings.Sound = eeprom_read(0x18);
+  Settings.LED_intens = eeprom_read(0x1C);
+  Settings.T_korr = eeprom_read(0x20);
+  Settings.Impulse_dead_time = eeprom_read(0x28);
+
 
   adc_init();
 

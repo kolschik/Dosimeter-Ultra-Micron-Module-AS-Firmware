@@ -59,19 +59,20 @@ type
     Label2: TLabel;
     Label3: TLabel;
     Label4: TLabel;
-    Label5: TLabel;
     Counts: TEdit;
-    Errors: TEdit;
     Pump: TEdit;
     AKB_Volt: TEdit;
-    Label6: TLabel;
-    Label7: TLabel;
-    Label8: TLabel;
-    Label12: TLabel;
-    Label13: TLabel;
     Temperature: TEdit;
-    Label14: TLabel;
     Label15: TLabel;
+    Panel1: TPanel;
+    Label8: TLabel;
+    Label17: TLabel;
+    LED: TComboBox;
+    Label18: TLabel;
+    TCorr: TEdit;
+    Panel2: TPanel;
+    Sound: TEdit;
+    ADC64Err: TCheckBox;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure ExitBtnClick(Sender: TObject);
@@ -231,6 +232,14 @@ begin
 end;
 
 // =============================================================================
+procedure TmainFrm.OKBtnClick();
+begin
+  MyTray.HideApplication;
+end;
+// =============================================================================
+
+
+// =============================================================================
 procedure TmainFrm.WMSysCommand(var Message: TMessage);
 begin
   if Message.WParam = SC_MAXIMIZE then
@@ -323,9 +332,18 @@ var
 
 begin
 
-  mainFrm.Caption := 'Micron build:' + IntToStr(GetMyVersion);
-  Windows.EnableMenuItem(GetSystemMenu(Handle, false), SC_CLOSE,
-    MF_DISABLED or MF_GRAYED);
+mainFrm.LED.AddItem('10%', nil);
+mainFrm.LED.AddItem('20%', nil);
+mainFrm.LED.AddItem('30%', nil);
+mainFrm.LED.AddItem('50%', nil);
+mainFrm.LED.AddItem('70%', nil);
+mainFrm.LED.AddItem('90%', nil);
+mainFrm.LED.AddItem('100%', nil);
+
+
+  mainFrm.Caption := 'Module-A* build:' + IntToStr(GetMyVersion);
+//  Windows.EnableMenuItem(GetSystemMenu(Handle, false), SC_CLOSE,
+//    MF_DISABLED or MF_GRAYED);
   GetSystemMenu(Handle, false);
   Perform(WM_NCPAINT, Handle, 0);
 
@@ -505,7 +523,7 @@ end;
 procedure TmainFrm.EVoltChange(Sender: TObject);
 begin
   VoltChange := true;
-  mainFrm.EVolt.Color := clYellow;
+  mainFrm.Panel1.Color := clYellow;
 end;
 
 procedure TmainFrm.ExitBtnClick(Sender: TObject);
@@ -520,12 +538,6 @@ begin
 end;
 // =============================================================================
 
-// =============================================================================
-procedure TmainFrm.OKBtnClick();
-begin
-  MyTray.HideApplication;
-end;
-// =============================================================================
 
 // =============================================================================
 procedure TmainFrm.Auto1Click(Sender: TObject);
@@ -571,6 +583,9 @@ procedure TmainFrm.MyTrayDoubleClick(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 begin
   MyTray.ShowApplication;
+  VoltChange := false;
+  mainFrm.Panel1.Color := clMenu;
+
 end;
 // =============================================================================
 
@@ -578,6 +593,8 @@ end;
 procedure TmainFrm.N1Click(Sender: TObject);
 begin
   MyTray.ShowApplication;
+  VoltChange := false;
+  mainFrm.Panel1.Color := clMenu;
 end;
 // =============================================================================
 
@@ -775,15 +792,24 @@ begin
     DevPresent := true;
 
     VoltChange := false;
-    mainFrm.EVolt.Color := clWindow;
+    mainFrm.Panel1.Color := clMenu;
 
     ix := StrToInt(mainFrm.EVolt.Text);
 
-    SetLength(vAns, 4);
-    vAns[0] := $07; // Передача напряжения
+    SetLength(vAns, 11);
+    vAns[0] := $07; // Передача напряжения и настроек
     vAns[1] := ix and $FF;
     vAns[2] := (ix shr 8) and $FF;
     vAns[3] := (ix shr 16) and $FF;
+
+    vAns[4] := mainFrm.ADC64Err.Checked.ToInteger and $FF;
+    vAns[5] := StrToInt(mainFrm.Sound.Text) and $FF;
+    vAns[6] := mainFrm.LED.ItemIndex and $FF;
+    vAns[7] := StrToInt(mainFrm.TCorr.Text) and $FF;
+    vAns[8] := $00;
+    vAns[9] := $00;
+    vAns[10] := $00;
+
 
     RS232.Send(vAns);
   end;
@@ -866,13 +892,17 @@ begin
         if (VoltChange = false) then
         begin
           mainFrm.EVolt.Text :=  IntToStr(aData[used_bytes + 2]  + (aData[used_bytes + 3]  shl 8)  + (aData[used_bytes + 4] shl 16));
-        end;
-        mainFrm.AKB_Volt.Text := IntToStr(aData[used_bytes + 5]  + (aData[used_bytes + 6]  shl 8));
-        mainFrm.Counts.Text :=   IntToStr(aData[used_bytes + 7]  + (aData[used_bytes + 8]  shl 8) + (aData[used_bytes + 9] shl 16)  + (aData[used_bytes + 10] shl 24));
-        mainFrm.Errors.Text :=   IntToStr(aData[used_bytes + 11] + (aData[used_bytes + 12] shl 8) + (aData[used_bytes + 13] shl 16) + (aData[used_bytes + 14] shl 24));
-        mainFrm.Pump.Text :=     IntToStr(aData[used_bytes + 15] + (aData[used_bytes + 16] shl 8) + (aData[used_bytes + 17] shl 16) + (aData[used_bytes + 18] shl 24));
+          mainFrm.AKB_Volt.Text := IntToStr(aData[used_bytes + 5]  + (aData[used_bytes + 6]  shl 8));
+          mainFrm.Counts.Text :=   IntToStr(aData[used_bytes + 7]  + (aData[used_bytes + 8]  shl 8) + (aData[used_bytes + 9] shl 16)  + (aData[used_bytes + 10] shl 24));
+          mainFrm.Pump.Text :=     IntToStr(aData[used_bytes + 15] + (aData[used_bytes + 16] shl 8) + (aData[used_bytes + 17] shl 16) + (aData[used_bytes + 18] shl 24));
+          mainFrm.ADC64Err.Checked :=           aData[used_bytes + 19].ToBoolean;
+          mainFrm.Sound.Text :=        IntToStr(aData[used_bytes + 20]);
+          mainFrm.LED.ItemIndex :=              aData[used_bytes + 21];
+          mainFrm.TCorr.Text :=        IntToStr(aData[used_bytes + 22]);
+         end;
 
-        used_bytes := used_bytes + 19;
+
+        used_bytes := used_bytes + 26;
 
       end else
       // -----------------------------------------------------------------------------------

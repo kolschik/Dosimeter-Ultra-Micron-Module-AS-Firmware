@@ -37,7 +37,7 @@ void dac_reload()
 {
   float voltage;
 
-  voltage = ((float) feu_voltage / 5005.1) * 5.1;       // 780 вольт = 794.78 мВ
+  voltage = ((float) Settings.feu_voltage / 5005.1) * 5.1;      // 780 вольт = 794.78 мВ
   ADCData.DAC_voltage_raw = voltage / ADCData.Calibration_bit_voltage;  // коррекция значения по напряжению опоры
   // 0,0007326В на 1 бит
   // ADCData.DAC_voltage_raw должно быть примерно равно 1084, при 780 вольтах.

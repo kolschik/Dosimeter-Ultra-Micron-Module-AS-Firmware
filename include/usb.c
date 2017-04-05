@@ -34,7 +34,16 @@ uint8_t prepare_data(uint32_t mode, uint16_t * massive_pointer, uint8_t start_ke
 
     // Если данные сжать нельзя
     data_key = start_key;
+
     tmp = SPECTRO_MASSIVE[*massive_pointer];
+
+    // Антиалиасинг ячеек кратных 64
+    if((*massive_pointer & 0x3F) == 0x3F)
+    {
+      tmp = (SPECTRO_MASSIVE[*massive_pointer - 1] + SPECTRO_MASSIVE[*massive_pointer + 1]) >> 1;
+    }
+
+
     fon_1_4 = tmp & 0xff;
     fon_2_4 = (tmp >> 8) & 0xff;
     fon_3_4 = (tmp >> 16) & 0xff;
@@ -111,9 +120,9 @@ void USB_work()
 
           Send_Buffer[0] = 0x06;        // передать ключ
           Send_Buffer[1] = ADCData.Temp & 0xff; // температура МК
-          Send_Buffer[2] = feu_voltage & 0xff;  // напряжение детектора
-          Send_Buffer[3] = (feu_voltage >> 8) & 0xff;
-          Send_Buffer[4] = (feu_voltage >> 16) & 0xff;
+          Send_Buffer[2] = Settings.feu_voltage & 0xff; // напряжение детектора
+          Send_Buffer[3] = (Settings.feu_voltage >> 8) & 0xff;
+          Send_Buffer[4] = (Settings.feu_voltage >> 16) & 0xff;
           Send_Buffer[5] = akb_voltage & 0xff;  // напряжение АКБ
           Send_Buffer[6] = (akb_voltage >> 8) & 0xff;
           Send_Buffer[7] = counter & 0xff;      // колличество импульсов в секунду
@@ -129,27 +138,79 @@ void USB_work()
           Send_Buffer[17] = (counter_pump >> 16) & 0xff;
           Send_Buffer[18] = (counter_pump >> 24) & 0xff;
 
-          Send_length = 19;
+          Send_Buffer[19] = Settings.ADC_bits & 0xff;   // колличество накачек в секунду
+          Send_Buffer[20] = Settings.Sound & 0xff;      // колличество накачек в секунду
+          Send_Buffer[21] = Settings.LED_intens & 0xff; // колличество накачек в секунду
+          Send_Buffer[22] = Settings.T_korr & 0xff;     // колличество накачек в секунду
+          Send_Buffer[23] = 0x00;
+          Send_Buffer[24] = Settings.Impulse_dead_time & 0xff;  // колличество накачек в секунду
+          Send_Buffer[25] = debug_mode & 0xff;  // колличество накачек в секунду
+
+
+
+          Send_length = 26;
           current_rcvd_pointer++;
           break;
 
-        case 0x07:             // Загрузка напряжения (RCV 4 байта)
-          if((current_rcvd_pointer + 3) <= Receive_length)      // Проверка длинны принятого участка
+        case 0x07:             // Загрузка конфигурации (RCV 10 байт)
+          if((current_rcvd_pointer + 10) <= Receive_length)     // Проверка длинны принятого участка
           {
-            feu_voltage = Receive_Buffer[current_rcvd_pointer + 1] & 0xff;
-            feu_voltage += (Receive_Buffer[current_rcvd_pointer + 2] & 0xff) << 8;
-            feu_voltage += (Receive_Buffer[current_rcvd_pointer + 3] & 0xff) << 16;
 
-            eeprom_write(0x10, feu_voltage);
+            // Напряжение ФЭУ - 3 бита
+            Settings.feu_voltage = Receive_Buffer[current_rcvd_pointer + 1] & 0xff;
+            Settings.feu_voltage += (Receive_Buffer[current_rcvd_pointer + 2] & 0xff) << 8;
+            Settings.feu_voltage += (Receive_Buffer[current_rcvd_pointer + 3] & 0xff) << 16;
+            current_rcvd_pointer += 3;
+            eeprom_write(0x10, Settings.feu_voltage);
             dac_reload();
 
-            current_rcvd_pointer += 4;
+            // Битность АЦП - 1 бит
+            Settings.ADC_bits = Receive_Buffer[current_rcvd_pointer + 1] & 0xff;
+            current_rcvd_pointer++;
+            eeprom_write(0x14, Settings.ADC_bits);
+
+            // Звук - 1 бит
+            Settings.Sound = Receive_Buffer[current_rcvd_pointer + 1] & 0xff;
+            current_rcvd_pointer++;
+            eeprom_write(0x18, Settings.Sound);
+
+            // Яркость LED - 1 бит
+            Settings.LED_intens = Receive_Buffer[current_rcvd_pointer + 1] & 0xff;
+            current_rcvd_pointer++;
+            eeprom_write(0x1C, Settings.LED_intens);
+            tim2_Config();
+
+            // Коррекция температуры - 1 бит
+            Settings.T_korr = Receive_Buffer[current_rcvd_pointer + 1] & 0xff;
+            current_rcvd_pointer++;
+            eeprom_write(0x20, Settings.T_korr);
+
+            current_rcvd_pointer++;
+
+            // Мертвое время импульса - 1 бит
+            Settings.Impulse_dead_time = Receive_Buffer[current_rcvd_pointer + 1] & 0xff;
+            current_rcvd_pointer++;
+            eeprom_write(0x28, Settings.Impulse_dead_time);
+            TIM_SetCompare1(TIM10, Settings.Impulse_dead_time);
+
+            // Режим отладки - 1 бит
+            if((Receive_Buffer[current_rcvd_pointer + 1] & 0xff) > 0)
+            {
+              debug_mode = ENABLE;
+            } else
+            {
+              debug_mode = DISABLE;
+            }
+            current_rcvd_pointer++;
+
+
+            ////////////////////////////////////
+            current_rcvd_pointer++;
           } else
           {
             current_rcvd_pointer = Receive_length;      // Принято меньше чем должно быть, завершаем цикл
           }
           break;
-
 
         case 0x39:             // завершение передачи (RCV 1 байт)
           USB_spectro_pointer = 0;

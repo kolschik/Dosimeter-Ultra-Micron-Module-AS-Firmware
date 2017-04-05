@@ -140,6 +140,10 @@ void TIM10_IRQHandler(void)     // Учет мертвого времени датчика
   if(TIM_GetITStatus(TIM10, TIM_IT_CC1) != RESET)
   {
     TIM_ClearITPendingBit(TIM10, TIM_IT_CC1);
+
+    if(debug_mode)
+      GPIO_ResetBits(GPIOA, GPIO_Pin_4);        // Вывод сигнала на внешнее устройство
+
     IMPULSE_DEAD_TIME = DISABLE;
     TIM_ITConfig(TIM10, TIM_IT_CC1, DISABLE);
   }
@@ -171,18 +175,34 @@ void ADC1_IRQHandler(void)
     {
       address = ADC_GetInjectedConversionValue(ADC1, ADC_InjectedChannel_1);
 
-      if(!IMPULSE_DEAD_TIME)    // Проверка что прошлый импульс с датчика был завершен
-      {
-        SPECTRO_MASSIVE[address >> 1]++;        // Если все нормально, добавляем спектр
+      if(!debug_mode)
+        GPIO_SetBits(GPIOA, GPIO_Pin_4);        //  Вывод сигнала на внешнее устройство
 
-        IMPULSE_DEAD_TIME = ENABLE;     // начинаем отсчет мертвого времени датчика
-        TIM10->EGR |= 0x0001;
-        TIM_ITConfig(TIM10, TIM_IT_CC1, ENABLE);
-
-      } else
+//      if(!IMPULSE_DEAD_TIME)    // Проверка что прошлый импульс с датчика был завершен
       {
-        ERR_MASSIVE[0]++;       // Подсчитываем ошибки снятия спектра
+        if(Settings.ADC_bits > 0)
+        {
+          SPECTRO_MASSIVE[address >> 1]++;      // Если все нормально, добавляем спектр
+        } else
+        {
+          SPECTRO_MASSIVE[(address >> 2) << 1]++;       // Если все нормально, добавляем спектр
+          SPECTRO_MASSIVE[((address >> 2) << 1) + 1]++; // Если все нормально, добавляем спектр
+        }
+
+
+//        if(debug_mode)
+//          GPIO_SetBits(GPIOA, GPIO_Pin_4);      //  Вывод сигнала на внешнее устройство
+
+//        IMPULSE_DEAD_TIME = ENABLE;     // начинаем отсчет мертвого времени датчика
+//        TIM_ClearITPendingBit(TIM10, TIM_IT_CC1);
+//        TIM_ITConfig(TIM10, TIM_IT_CC1, ENABLE);
+//        TIM10->EGR |= 0x0001;
+
       }
+//                      else
+//      {
+//        ERR_MASSIVE[0]++;       // Подсчитываем ошибки снятия спектра
+//      }
 
 
       if(COMP_GetOutputLevel(COMP_Selection_COMP2) == COMP_OutputLevel_Low)
@@ -192,9 +212,7 @@ void ADC1_IRQHandler(void)
 
       IMPULSE_MASSIVE[0]++;     // увеличиваем счетчик
 
-
-
-      if(tmpadc1 > 5)
+      if((tmpadc1 > Settings.Sound) && (Settings.Sound > 0))
       {
         tmpadc1 = 0;
         TIM4->EGR |= 0x0001;    // Подаем звук
@@ -203,7 +221,8 @@ void ADC1_IRQHandler(void)
 
       } else
         tmpadc1++;
-
+      if(!debug_mode)
+        GPIO_ResetBits(GPIOA, GPIO_Pin_4);      //  Вывод сигнала на внешнее устройство
     }
   }
 }
@@ -307,11 +326,15 @@ void TIM9_IRQHandler(void)
     }
     LEDString();                // // Выводим обычным текстом содержание буфера
 
-    // Антиалиасинг ячеек кратных 64
-    for (i = 1; i <= 16; i++)
+    // проверяем напряжение         
+    if(COMP_GetOutputLevel(COMP_Selection_COMP2) == COMP_OutputLevel_Low)
     {
-      SPECTRO_MASSIVE[(i << 6) - 1] = (SPECTRO_MASSIVE[(i << 6) - 2] + SPECTRO_MASSIVE[(i << 6)]) / 2;
+      Need_pump = ENABLE;
+    } else
+    {
+      PumpCmd(DISABLE);
     }
+
 
   }
 }

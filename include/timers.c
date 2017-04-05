@@ -21,7 +21,11 @@ void tim2_Config()              // LED индикация
 
   TIM_OCConfig.TIM_OCMode = TIM_OCMode_Timing;  // Конфигурируем выход таймера, режим - PWM1
   TIM_OCConfig.TIM_OutputState = TIM_OutputState_Enable;        // Собственно - выход включен
-  TIM_OCConfig.TIM_Pulse = 10;  // длительность импульса
+  TIM_OCConfig.TIM_Pulse = (Settings.LED_intens + 1) * 5;       // длительность импульса
+
+  if(TIM_OCConfig.TIM_Pulse > TIM_BaseConfig.TIM_Period)
+    TIM_OCConfig.TIM_Pulse = TIM_BaseConfig.TIM_Period;
+
   TIM_OCConfig.TIM_OCPolarity = TIM_OCPolarity_High;    // Полярность => пульс - это единица (+3.3V)
 
   TIM_OC2PreloadConfig(TIM2, TIM_OCPreload_Enable);
@@ -53,8 +57,7 @@ void tim2_Config()              // LED индикация
 
 
 
-///////////////////////////////////////////////////////////////////////////////////////////
-void tim3_Config()              // Генерация ВВ
+void tim3_Config()              //  
 {
   TIM_TimeBaseInitTypeDef TIM_BaseConfig;
   TIM_OCInitTypeDef TIM_OCConfig;
@@ -65,24 +68,24 @@ void tim3_Config()              // Генерация ВВ
   TIM_OCStructInit(&TIM_OCConfig);
   TIM_TimeBaseStructInit(&TIM_BaseConfig);
 
-  TIM_OCConfig.TIM_OCMode = TIM_OCMode_PWM1;    // Конфигурируем выход таймера, режим - PWM1
-  TIM_OCConfig.TIM_OutputState = TIM_OutputState_Enable;        // Собственно - выход включен
-  TIM_OCConfig.TIM_Pulse = 3;   // длительность импульса - 0.75 мкс
-  TIM_OCConfig.TIM_OCPolarity = TIM_OCPolarity_High;    // Полярность => пульс - это единица (+3.3V)
+  TIM_OCConfig.TIM_OCMode = TIM_OCMode_PWM1;    //   ,  - PWM1
+  TIM_OCConfig.TIM_OutputState = TIM_OutputState_Enable;        //  -  
+  TIM_OCConfig.TIM_Pulse = 3;   //   - 0.75 
+  TIM_OCConfig.TIM_OCPolarity = TIM_OCPolarity_High;    //  =>  -   (+3.3V)
 
-  TIM_BaseConfig.TIM_Prescaler = (uint16_t) (SystemCoreClock / 4000000) - 1;    // Делитель (1 тик = 0.25мкс)
+  TIM_BaseConfig.TIM_Prescaler = (uint16_t) (SystemCoreClock / 4000000) - 1;    //  (1  = 0.25)
   TIM_BaseConfig.TIM_ClockDivision = 0;
-  TIM_BaseConfig.TIM_Period = 56;       // 22.5 мкс - общая длительность интервала накачки вместе с затуханием импульса
-  TIM_BaseConfig.TIM_CounterMode = TIM_CounterMode_Up;  // Отсчет от нуля до TIM_Period
+  TIM_BaseConfig.TIM_Period = 56;       // 22.5  -        
+  TIM_BaseConfig.TIM_CounterMode = TIM_CounterMode_Up;  //     TIM_Period
 
-  TIM_DeInit(TIM3);             // Де-инициализируем таймер №3
+  TIM_DeInit(TIM3);             // -  3
 
   TIM_OC2PreloadConfig(TIM3, TIM_OCPreload_Enable);
   TIM_ARRPreloadConfig(TIM3, ENABLE);
 
   TIM_TimeBaseInit(TIM3, &TIM_BaseConfig);
-  TIM_OC2Init(TIM3, &TIM_OCConfig);     // Инициализируем второй выход
 
+  TIM_OC2Init(TIM3, &TIM_OCConfig);     //   
   TIM_OC2PreloadConfig(TIM3, TIM_OCPreload_Enable);
   TIM_ARRPreloadConfig(TIM3, ENABLE);
 
@@ -93,15 +96,13 @@ void tim3_Config()              // Генерация ВВ
   NVIC_Init(&NVIC_InitStructure);
 
   //TIM_ITConfig(TIM3, TIM_IT_CC2, ENABLE);
+
   TIM_ITConfig(TIM3, TIM_IT_Update, ENABLE);
-
-
-  TIM3->EGR |= 0x0001;          // Устанавливаем бит UG для принудительного сброса счетчика
-  TIM_CCxCmd(TIM3, TIM_Channel_2, TIM_CCx_Disable);     // запретить накачку
+  TIM3->EGR |= 0x0001;          //   UG    
+  TIM_CCxCmd(TIM3, TIM_Channel_2, TIM_CCx_Disable);     //  
 
   TIM_Cmd(TIM3, ENABLE);
 }
-
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -213,7 +214,7 @@ void tim10_Config()             //  Учет мертвого времени для измерений
   // Мертвое время входного импульса
   TIM_OCConfig.TIM_OCMode = TIM_OCMode_Timing;
   TIM_OCConfig.TIM_OutputState = TIM_OutputState_Enable;
-  TIM_OCConfig.TIM_Pulse = 30;  // длительность импульса датчика в мкс
+  TIM_OCConfig.TIM_Pulse = Settings.Impulse_dead_time;  // длительность импульса датчика в мкс
   TIM_OCConfig.TIM_OCPolarity = TIM_OCPolarity_High;
 
   TIM_OC1Init(TIM10, &TIM_OCConfig);

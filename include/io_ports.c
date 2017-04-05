@@ -54,6 +54,18 @@ void io_init(void)
 
 // ===============================================================================================  
 
+// ===============================================================================================  
+  // Ножка подачи импульса на внешнее устройство
+  GPIO_StructInit(&GPIO_InitStructure);
+  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4;     // Ножка
+  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
+  GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_40MHz;
+  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+  GPIO_Init(GPIOA, &GPIO_InitStructure);        // Загружаем конфигурацию
+
+// ===============================================================================================  
+
 
 // ===============================================================================================  
   // Ножка звука
@@ -90,6 +102,7 @@ void io_init(void)
   GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
   GPIO_Init(GPIOA, &GPIO_InitStructure);
 // ===============================================================================================  
+
 
 // ===============================================================================================  
   // АКБ

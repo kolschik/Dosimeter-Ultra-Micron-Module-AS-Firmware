@@ -66,13 +66,24 @@ typedef struct
   uint32_t Batt_voltage;        //  
   uint32_t Power_voltage;       //   
   float Calibration_bit_voltage;        //   
-  uint32_t Procent_battery;     //   
   uint32_t DAC_voltage_raw;     //    DAC
 } ADCDataDef;
+
+typedef struct
+{
+  uint32_t feu_voltage;
+  uint8_t ADC_bits;
+  uint8_t Sound;
+  uint8_t LED_intens;
+  uint8_t T_korr;
+  uint8_t Impulse_dead_time;
+
+} SettingsDef;
 
 
 extern ADCDataDef ADCData;
 extern PumpDataDef PumpData;
+extern SettingsDef Settings;
 
 extern uint16_t USB_spectro_pointer;
 extern uint8_t LED_show_massive[];      // сырое отображение на дисплее
@@ -83,6 +94,7 @@ extern FunctionalState Need_Ledupdate;
 extern FunctionalState Need_pump;
 extern FunctionalState PUMP_DEAD_TIME;
 extern FunctionalState IMPULSE_DEAD_TIME;
+extern FunctionalState debug_mode;
 
 extern uint32_t SPECTRO_MASSIVE[];
 extern uint32_t IMPULSE_MASSIVE[];
@@ -91,7 +103,6 @@ extern uint32_t ERR_MASSIVE[];
 extern uint16_t USB_spectro_pointer;
 extern uint8_t temperature;
 extern uint16_t akb_voltage;
-extern uint32_t feu_voltage;
 extern uint32_t counter_err;
 extern uint32_t counter_pump;
 extern __IO uint16_t ADC_ConvertedValue[];

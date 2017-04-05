@@ -3,8 +3,8 @@ object mainFrm: TmainFrm
   Top = 0
   BorderStyle = bsSingle
   Caption = 'USB Spectr'
-  ClientHeight = 269
-  ClientWidth = 406
+  ClientHeight = 451
+  ClientWidth = 403
   Color = clWindow
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -53,313 +53,321 @@ object mainFrm: TmainFrm
     Font.Style = []
     ParentFont = False
   end
-  object Label1: TLabel
+  object Panel1: TPanel
     Left = 9
-    Top = 59
-    Width = 127
-    Height = 18
-    Caption = #1053#1072#1087#1088#1103#1078#1077#1085#1080#1077' '#1060#1069#1059
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -16
-    Font.Name = 'Arial'
-    Font.Style = []
-    ParentFont = False
-  end
-  object Label2: TLabel
-    Left = 11
-    Top = 156
-    Width = 125
-    Height = 22
-    Caption = #1053#1072#1087#1088#1103#1078#1077#1085#1080#1077' '#1040#1050#1041
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -16
-    Font.Name = 'Arial'
-    Font.Style = []
-    ParentFont = False
-  end
-  object Label3: TLabel
-    Left = 101
-    Top = 28
-    Width = 35
-    Height = 18
-    Caption = #1057#1095#1077#1090
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -16
-    Font.Name = 'Arial'
-    Font.Style = []
-    ParentFont = False
-  end
-  object Label4: TLabel
-    Left = 76
-    Top = 187
-    Width = 60
-    Height = 18
-    Caption = #1053#1072#1082#1072#1095#1082#1072
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -16
-    Font.Name = 'Arial'
-    Font.Style = []
-    ParentFont = False
-  end
-  object Label5: TLabel
-    Left = 81
-    Top = 123
-    Width = 55
-    Height = 18
-    Caption = #1054#1096#1080#1073#1082#1080
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -16
-    Font.Name = 'Arial'
-    Font.Style = []
-    ParentFont = False
-  end
-  object Label6: TLabel
-    Left = 239
-    Top = 187
-    Width = 59
-    Height = 18
-    Caption = #1048#1084#1087'/'#1089#1077#1082
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -16
-    Font.Name = 'Arial'
-    Font.Style = []
-    ParentFont = False
-  end
-  object Label7: TLabel
-    Left = 239
-    Top = 27
-    Width = 59
-    Height = 18
-    Caption = #1048#1084#1087'/'#1089#1077#1082
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -16
-    Font.Name = 'Arial'
-    Font.Style = []
-    ParentFont = False
-  end
-  object Label8: TLabel
-    Left = 239
-    Top = 59
-    Width = 11
-    Height = 18
-    Caption = #1042
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -16
-    Font.Name = 'Arial'
-    Font.Style = []
-    ParentFont = False
-  end
-  object Label12: TLabel
-    Left = 239
-    Top = 123
-    Width = 59
-    Height = 18
-    Caption = #1048#1084#1087'/'#1089#1077#1082
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -16
-    Font.Name = 'Arial'
-    Font.Style = []
-    ParentFont = False
-  end
-  object Label13: TLabel
-    Left = 239
-    Top = 155
-    Width = 11
-    Height = 18
-    Caption = #1042
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -16
-    Font.Name = 'Arial'
-    Font.Style = []
-    ParentFont = False
-  end
-  object Label14: TLabel
-    Left = 238
-    Top = 91
-    Width = 35
-    Height = 18
-    Caption = #1075#1088'. '#1057
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -16
-    Font.Name = 'Arial'
-    Font.Style = []
-    ParentFont = False
-  end
-  object Label15: TLabel
-    Left = 41
-    Top = 91
-    Width = 95
-    Height = 18
-    Caption = #1058#1077#1084#1087#1077#1088#1072#1090#1091#1088#1072
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -16
-    Font.Name = 'Arial'
-    Font.Style = []
-    ParentFont = False
-  end
-  object Button4: TButton
-    Left = 8
-    Top = 232
-    Width = 153
-    Height = 25
-    Caption = #1047#1072#1075#1088#1091#1079#1082#1072' '#1089#1087#1077#1082#1090#1088#1072
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -16
-    Font.Name = 'Arial'
-    Font.Style = []
-    ParentFont = False
-    TabOrder = 0
-    OnClick = Button4Click
-  end
-  object Button5: TButton
-    Left = 236
-    Top = 232
-    Width = 162
-    Height = 25
-    Caption = #1054#1095#1080#1089#1090#1082#1072' '#1089#1087#1077#1082#1090#1088#1072
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -16
-    Font.Name = 'Arial'
-    Font.Style = []
-    ParentFont = False
-    TabOrder = 1
-    OnClick = Button5Click
-  end
-  object EVolt: TEdit
-    Left = 142
-    Top = 56
-    Width = 91
-    Height = 26
-    Alignment = taRightJustify
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -16
-    Font.Name = 'Arial'
-    Font.Style = []
-    ParentFont = False
-    TabOrder = 2
-    Text = '0'
-    OnClick = EVoltChange
-  end
-  object Voltage_refresh: TButton
-    Left = 280
-    Top = 54
-    Width = 106
-    Height = 28
-    Caption = #1057#1086#1093#1088#1072#1085#1080#1090#1100
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -16
-    Font.Name = 'Arial'
-    Font.Style = []
-    ParentFont = False
-    TabOrder = 3
-    OnClick = Voltage_refreshClick
-  end
-  object Counts: TEdit
-    Left = 142
-    Top = 24
-    Width = 91
-    Height = 26
-    Alignment = taRightJustify
-    Color = clInactiveCaption
-    Ctl3D = True
+    Top = 244
+    Width = 386
+    Height = 197
+    Alignment = taLeftJustify
+    Caption = #1053#1072#1089#1090#1088#1086#1081#1082#1072
+    Color = clMenu
     DoubleBuffered = False
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -16
     Font.Name = 'Arial'
     Font.Style = []
-    ParentCtl3D = False
+    ParentBackground = False
     ParentDoubleBuffered = False
     ParentFont = False
     ParentShowHint = False
-    ReadOnly = True
     ShowHint = False
-    TabOrder = 4
-    Text = '0'
+    TabOrder = 0
+    VerticalAlignment = taAlignTop
+    object Label1: TLabel
+      Left = 89
+      Top = 65
+      Width = 127
+      Height = 18
+      Caption = #1053#1072#1087#1088#1103#1078#1077#1085#1080#1077' '#1060#1069#1059
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Arial'
+      Font.Style = []
+      ParentFont = False
+    end
+    object Label8: TLabel
+      Left = 89
+      Top = 129
+      Width = 33
+      Height = 18
+      Caption = #1047#1074#1091#1082
+    end
+    object Label17: TLabel
+      Left = 89
+      Top = 97
+      Width = 97
+      Height = 18
+      Caption = #1071#1088#1082#1086#1089#1090#1100' LED'
+    end
+    object Label18: TLabel
+      Left = 89
+      Top = 161
+      Width = 47
+      Height = 18
+      Caption = 't-'#1082#1086#1088#1088'.'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Arial'
+      Font.Style = []
+      ParentFont = False
+    end
+    object EVolt: TEdit
+      Left = 11
+      Top = 62
+      Width = 70
+      Height = 26
+      Alignment = taRightJustify
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Arial'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 0
+      Text = '0'
+      OnClick = EVoltChange
+    end
+    object Voltage_refresh: TButton
+      Left = 267
+      Top = 158
+      Width = 106
+      Height = 28
+      Caption = #1057#1086#1093#1088#1072#1085#1080#1090#1100
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Arial'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 1
+      OnClick = Voltage_refreshClick
+    end
+    object LED: TComboBox
+      Left = 11
+      Top = 94
+      Width = 70
+      Height = 26
+      TabOrder = 2
+      OnClick = EVoltChange
+    end
+    object TCorr: TEdit
+      Left = 11
+      Top = 158
+      Width = 70
+      Height = 26
+      Alignment = taRightJustify
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Arial'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 3
+      Text = '0'
+      OnClick = EVoltChange
+    end
+    object Sound: TEdit
+      Left = 11
+      Top = 126
+      Width = 70
+      Height = 26
+      Alignment = taRightJustify
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Arial'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 4
+      Text = '0'
+      OnClick = EVoltChange
+    end
+    object ADC64Err: TCheckBox
+      Left = 11
+      Top = 34
+      Width = 202
+      Height = 17
+      Caption = #1048#1089#1087#1088#1072#1074#1083#1077#1085#1080#1077' '#1086#1096#1080#1073'. 64'
+      TabOrder = 5
+      OnClick = EVoltChange
+    end
   end
-  object Errors: TEdit
-    Left = 143
-    Top = 120
-    Width = 90
-    Height = 26
-    Alignment = taRightJustify
-    Color = clInactiveCaption
+  object Panel2: TPanel
+    Left = 8
+    Top = 8
+    Width = 386
+    Height = 217
+    Alignment = taLeftJustify
+    Caption = #1047#1072#1084#1077#1088
+    Color = clMenu
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -16
     Font.Name = 'Arial'
     Font.Style = []
+    ParentBackground = False
     ParentFont = False
-    ReadOnly = True
-    TabOrder = 5
-    Text = '0'
-  end
-  object Pump: TEdit
-    Left = 143
-    Top = 184
-    Width = 90
-    Height = 26
-    Alignment = taRightJustify
-    Color = clInactiveCaption
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -16
-    Font.Name = 'Arial'
-    Font.Style = []
-    ParentFont = False
-    ReadOnly = True
-    TabOrder = 6
-    Text = '0'
-  end
-  object AKB_Volt: TEdit
-    Left = 143
-    Top = 152
-    Width = 90
-    Height = 26
-    Alignment = taRightJustify
-    Color = clInactiveCaption
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -16
-    Font.Name = 'Arial'
-    Font.Style = []
-    ParentFont = False
-    ReadOnly = True
-    TabOrder = 7
-    Text = '0'
-  end
-  object Temperature: TEdit
-    Left = 142
-    Top = 88
-    Width = 90
-    Height = 26
-    Alignment = taRightJustify
-    Color = clInactiveCaption
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -16
-    Font.Name = 'Arial'
-    Font.Style = []
-    ParentFont = False
-    ReadOnly = True
-    TabOrder = 8
-    Text = '0'
+    TabOrder = 1
+    VerticalAlignment = taAlignTop
+    object Label15: TLabel
+      Left = 193
+      Top = 62
+      Width = 144
+      Height = 18
+      Caption = #1058#1077#1084#1087#1077#1088#1072#1090#1091#1088#1072' ('#1075#1088'. '#1057')'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Arial'
+      Font.Style = []
+      ParentFont = False
+    end
+    object Label2: TLabel
+      Left = 193
+      Top = 128
+      Width = 150
+      Height = 18
+      Caption = #1053#1072#1087#1088#1103#1078#1077#1085#1080#1077' '#1040#1050#1041' ('#1042')'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Arial'
+      Font.Style = []
+      ParentFont = False
+    end
+    object Label3: TLabel
+      Left = 194
+      Top = 29
+      Width = 88
+      Height = 18
+      Caption = #1057#1095#1077#1090' ('#1080#1084#1087'/'#1089')'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Arial'
+      Font.Style = []
+      ParentFont = False
+    end
+    object Label4: TLabel
+      Left = 193
+      Top = 95
+      Width = 113
+      Height = 18
+      Caption = #1053#1072#1082#1072#1095#1082#1072' ('#1080#1084#1087'/c)'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Arial'
+      Font.Style = []
+      ParentFont = False
+    end
+    object AKB_Volt: TEdit
+      Left = 81
+      Top = 125
+      Width = 90
+      Height = 26
+      Alignment = taRightJustify
+      Color = clInactiveCaption
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Arial'
+      Font.Style = []
+      ParentFont = False
+      ReadOnly = True
+      TabOrder = 0
+      Text = '0'
+    end
+    object Button4: TButton
+      Left = 11
+      Top = 167
+      Width = 181
+      Height = 36
+      Caption = #1047#1072#1075#1088#1091#1079#1082#1072' '#1089#1087#1077#1082#1090#1088#1072
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Arial'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 1
+      OnClick = Button4Click
+    end
+    object Button5: TButton
+      Left = 235
+      Top = 173
+      Width = 138
+      Height = 25
+      Caption = #1054#1095#1080#1089#1090#1082#1072' '#1089#1087#1077#1082#1090#1088#1072
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Arial'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 2
+      OnClick = Button5Click
+    end
+    object Counts: TEdit
+      Left = 81
+      Top = 26
+      Width = 91
+      Height = 26
+      Alignment = taRightJustify
+      Color = clInactiveCaption
+      Ctl3D = True
+      DoubleBuffered = False
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Arial'
+      Font.Style = []
+      ParentCtl3D = False
+      ParentDoubleBuffered = False
+      ParentFont = False
+      ParentShowHint = False
+      ReadOnly = True
+      ShowHint = False
+      TabOrder = 3
+      Text = '0'
+    end
+    object Pump: TEdit
+      Left = 81
+      Top = 92
+      Width = 90
+      Height = 26
+      Alignment = taRightJustify
+      Color = clInactiveCaption
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Arial'
+      Font.Style = []
+      ParentFont = False
+      ReadOnly = True
+      TabOrder = 4
+      Text = '0'
+    end
+    object Temperature: TEdit
+      Left = 81
+      Top = 59
+      Width = 90
+      Height = 26
+      Alignment = taRightJustify
+      Color = clInactiveCaption
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Arial'
+      Font.Style = []
+      ParentFont = False
+      ReadOnly = True
+      TabOrder = 5
+      Text = '0'
+    end
   end
   object MyTray: TJvTrayIcon
     Active = True
@@ -700,8 +708,7 @@ object mainFrm: TmainFrm
     Visibility = [tvAutoHide]
     OnClick = MyTrayClick
     OnDblClick = MyTrayDoubleClick
-    Left = 32
-    Top = 16
+    Left = 192
   end
   object TrayMenu: TPopupMenu
     Left = 64
@@ -813,19 +820,18 @@ object mainFrm: TmainFrm
     end
   end
   object XPManifest1: TXPManifest
-    Left = 48
-    Top = 16
+    Left = 224
   end
   object MessTmr: TTimer
     Enabled = False
-    Interval = 200
+    Interval = 100
     OnTimer = MessTmrTimer
     Left = 8
   end
   object ImageList1: TImageList
-    Left = 336
+    Left = 288
     Bitmap = {
-      494C010105008C00640210001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010105008C006C0210001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000002000000001002000000000000020
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -1097,7 +1103,7 @@ object mainFrm: TmainFrm
       000000000000}
   end
   object Timer1: TTimer
-    Interval = 200
+    Interval = 100
     OnTimer = Timer1Timer
     Left = 88
   end
@@ -1109,8 +1115,8 @@ object mainFrm: TmainFrm
   end
   object SaveDialog1: TSaveDialog
     Filter = 'CSV (*.CSV)|*.csv'
-    Left = 8
-    Top = 15
+    Left = 256
+    Top = 65535
   end
   object CloseTimer: TTimer
     Enabled = False
@@ -1120,7 +1126,7 @@ object mainFrm: TmainFrm
     Top = 65535
   end
   object Com_detect: TTimer
-    Interval = 500
+    Interval = 50
     OnTimer = Com_detectTimer
     Left = 128
     Top = 65535
