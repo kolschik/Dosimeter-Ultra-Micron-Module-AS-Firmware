@@ -105,6 +105,7 @@ extern uint8_t temperature;
 extern uint16_t akb_voltage;
 extern uint32_t counter_err;
 extern uint32_t counter_pump;
+extern uint32_t spectro_time;
 extern __IO uint16_t ADC_ConvertedValue[];
 
 void LEDString(void);

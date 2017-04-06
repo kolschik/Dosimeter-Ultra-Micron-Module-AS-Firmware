@@ -73,6 +73,12 @@ type
     Panel2: TPanel;
     Sound: TEdit;
     ADC64Err: TCheckBox;
+    Label5: TLabel;
+    Label6: TLabel;
+    Spectro_time: TEdit;
+    Source: TComboBox;
+    Label7: TLabel;
+    Selected_time: TComboBox;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure ExitBtnClick(Sender: TObject);
@@ -98,6 +104,8 @@ type
     procedure Button5Click(Sender: TObject);
     procedure Voltage_refreshClick(Sender: TObject);
     procedure EVoltChange(Sender: TObject);
+    procedure SourceChange(Sender: TObject);
+    procedure Selected_timeChange(Sender: TObject);
 
   private
     fBuf: TiaBuf;
@@ -115,6 +123,7 @@ type
     procedure SaveReg;
     function GetMyVersion: uint;
     function PosR2L(const FindS, SrcS: string): Integer;
+    procedure Load_spectr(Type_of_load: Integer);
     procedure MakeIcon();
     procedure WMPowerBroadcast(var MyMessage: TMessage);
       message WM_POWERBROADCAST;
@@ -127,8 +136,10 @@ var
   FeatureReportLen: Integer = 0;
   DevPresent: boolean = false;
   VoltChange: boolean = false;
+  Timed_spectr: boolean = false;
   DenyCommunications: boolean = false;
   pingback: Integer;
+  time: Integer;
   needexit: boolean = false;
   tempcol: TColor = clLime;
   bmp: TBitmap;
@@ -303,6 +314,35 @@ end;
 // =============================================================================
 
 // =============================================================================
+procedure TmainFrm.Selected_timeChange(Sender: TObject);
+begin
+   time:=Integer(mainFrm.Selected_time.Items.Objects[mainFrm.Selected_time.ItemIndex]);
+end;
+// =============================================================================
+
+// =============================================================================
+procedure TmainFrm.SourceChange(Sender: TObject);
+begin
+
+  if(mainFrm.Source.ItemIndex>0) then
+  begin
+    mainFrm.Selected_time.Enabled:=false;
+    time:=0;
+  end
+  else
+  begin
+    mainFrm.Selected_time.Enabled:=true;
+    mainFrm.Selected_time.Itemindex:=0;
+    time:=0;
+  end;
+
+
+// clWindow
+end;
+
+// =============================================================================
+
+// =============================================================================
 procedure TmainFrm.MakeIcon();
 var
   ii: uint;
@@ -339,6 +379,26 @@ mainFrm.LED.AddItem('50%', nil);
 mainFrm.LED.AddItem('70%', nil);
 mainFrm.LED.AddItem('90%', nil);
 mainFrm.LED.AddItem('100%', nil);
+
+mainFrm.Source.AddItem('ќн-лайн', nil);
+mainFrm.Source.AddItem('Flash 1', nil);
+mainFrm.Source.AddItem('Flash 2', nil);
+mainFrm.Source.AddItem('Flash 3', nil);
+mainFrm.Source.AddItem('Flash 4', nil);
+mainFrm.Source.AddItem('Flash 5', nil);
+mainFrm.Source.ItemIndex:=0;
+
+mainFrm.Selected_time.Items.AddObject('Ѕез остановки', TObject(0));
+mainFrm.Selected_time.Items.AddObject('1 минута',      TObject(60));
+mainFrm.Selected_time.Items.AddObject('5 минут',       TObject(300));
+mainFrm.Selected_time.Items.AddObject('10 минут',      TObject(600));
+mainFrm.Selected_time.Items.AddObject('30 минут',      TObject(1800));
+mainFrm.Selected_time.Items.AddObject('1 час',         TObject(3600));
+mainFrm.Selected_time.Items.AddObject('2 часа',        TObject(7200));
+mainFrm.Selected_time.Items.AddObject('3 часа',        TObject(10800));
+mainFrm.Selected_time.Items.AddObject('5 часов',       TObject(18000));
+mainFrm.Selected_time.Items.AddObject('10 часов',      TObject(36000));
+mainFrm.Selected_time.ItemIndex:=0;
 
 
   mainFrm.Caption := 'Module-A* build:' + IntToStr(GetMyVersion);
@@ -599,7 +659,7 @@ end;
 // =============================================================================
 
 // =============================================================================
-procedure TmainFrm.Button4Click(Sender: TObject);
+procedure TmainFrm.Load_spectr(Type_of_load: Integer);
 var
   vAns: TiaBuf;
   ix: uint;
@@ -617,20 +677,20 @@ begin
     spectra_massive_ready[ibx] := false;
   end;
 
-  Timer1.Enabled := false;
-  Timer3.Enabled := false;
-  Timer3.interval := 3000;
-  Timer3.Enabled := true;
+  mainFrm.Timer1.Enabled := false;
+  mainFrm.Timer3.Enabled := false;
+  mainFrm.Timer3.interval := 3000;
+  mainFrm.Timer3.Enabled := true;
   address_last := max_address;
 
   begin
     // DevPresent:=false;
 
-    RS232.Open;
-    RS232.StartListner;
-    CloseTimer.Enabled := false;
-    CloseTimer.interval := 1500;
-    CloseTimer.Enabled := true;
+    mainFrm.RS232.Open;
+    mainFrm.RS232.StartListner;
+    mainFrm.CloseTimer.Enabled := false;
+    mainFrm.CloseTimer.interval := 1500;
+    mainFrm.CloseTimer.Enabled := true;
 
     for ix := 0 to max_address do
     begin
@@ -638,14 +698,14 @@ begin
       spectra_massive_ready[ibx] := false;
     end;
 
-    if (RS232.Active) then
+    if (mainFrm.RS232.Active) then
     begin
       DevPresent := true;
 
       SetLength(vAns, 2);
       vAns[0] := $39; // выполнить сброс счетчиков дозиметра
       vAns[1] := $02; // считать массив спектра
-      RS232.Send(vAns);
+      mainFrm.RS232.Send(vAns);
 
       USB_massive_loading := true;
 
@@ -654,6 +714,15 @@ begin
       Unit1.Form1.Close;
   end;
 end;
+// =============================================================================
+
+// =============================================================================
+procedure TmainFrm.Button4Click(Sender: TObject);
+begin
+
+  Load_spectr(0);
+
+  end;
 // =============================================================================
 
 // =============================================================================
@@ -812,6 +881,7 @@ begin
 
 
     RS232.Send(vAns);
+
   end;
 end;
 // =============================================================================
@@ -886,7 +956,7 @@ begin
   begin
       // -----------------------------------------------------------------------------------
       if (aData[used_bytes] = $06) then
-      begin // загрузка элемента массива спектра
+      begin // загрузка текущих данных
 
         mainFrm.Temperature.Text := IntToStr(aData[used_bytes + 1]);
         if (VoltChange = false) then
@@ -894,11 +964,27 @@ begin
           mainFrm.EVolt.Text :=  IntToStr(aData[used_bytes + 2]  + (aData[used_bytes + 3]  shl 8)  + (aData[used_bytes + 4] shl 16));
           mainFrm.AKB_Volt.Text := IntToStr(aData[used_bytes + 5]  + (aData[used_bytes + 6]  shl 8));
           mainFrm.Counts.Text :=   IntToStr(aData[used_bytes + 7]  + (aData[used_bytes + 8]  shl 8) + (aData[used_bytes + 9] shl 16)  + (aData[used_bytes + 10] shl 24));
+          mainFrm.Spectro_time.Text :=  IntToStr(aData[used_bytes + 11] + (aData[used_bytes + 12] shl 8) + (aData[used_bytes + 13] shl 16) + (aData[used_bytes + 14] shl 24));
           mainFrm.Pump.Text :=     IntToStr(aData[used_bytes + 15] + (aData[used_bytes + 16] shl 8) + (aData[used_bytes + 17] shl 16) + (aData[used_bytes + 18] shl 24));
           mainFrm.ADC64Err.Checked :=           aData[used_bytes + 19].ToBoolean;
           mainFrm.Sound.Text :=        IntToStr(aData[used_bytes + 20]);
           mainFrm.LED.ItemIndex :=              aData[used_bytes + 21];
           mainFrm.TCorr.Text :=        IntToStr(aData[used_bytes + 22]);
+
+          if ( mainFrm.Selected_time.Enabled = true ) then
+          begin
+            if ( time  > 0) then
+              begin
+                if ( time <= StrToInt(mainFrm.Spectro_time.Text) ) then
+                begin
+                  mainFrm.Selected_time.ItemIndex:=0;
+                  Timed_spectr:=true;
+                  mainFrm.Load_spectr(0);
+                  time:=0;
+                end;
+            end;
+          end;
+
          end;
 
 
@@ -934,7 +1020,13 @@ begin
           Unit1.Form1.Close;
 
           SaveDialog1.DefaultExt := '.csv';
-          SaveDialog1.FileName := 'energy.csv';
+          SaveDialog1.FileName := 'Spectr_'+mainFrm.Spectro_time.Text+'s.csv';
+
+          If Timed_spectr then
+          begin
+            Timed_spectr:=false;
+            ShowMessage('—бор спектра завершен!');
+          end;
 
           If SaveDialog1.Execute then
           begin
@@ -948,8 +1040,8 @@ begin
             finally
               CloseFile(Fx);
             end;
-            Timer1.Enabled := true;
           end;
+          Timer1.Enabled := true;
         end;
       end else Break;
       // -----------------------------------------------------------------------------------

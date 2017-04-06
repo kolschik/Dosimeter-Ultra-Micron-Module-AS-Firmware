@@ -65,29 +65,37 @@ void tim3_Config()              //
 
   RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, ENABLE);
 
-  TIM_OCStructInit(&TIM_OCConfig);
+  // Базовая настройка, тик 0.25 мкс, счет 14 мкс
   TIM_TimeBaseStructInit(&TIM_BaseConfig);
-
-  TIM_OCConfig.TIM_OCMode = TIM_OCMode_PWM1;    //   ,  - PWM1
-  TIM_OCConfig.TIM_OutputState = TIM_OutputState_Enable;        //  -  
-  TIM_OCConfig.TIM_Pulse = 3;   //   - 0.75 
-  TIM_OCConfig.TIM_OCPolarity = TIM_OCPolarity_High;    //  =>  -   (+3.3V)
-
-  TIM_BaseConfig.TIM_Prescaler = (uint16_t) (SystemCoreClock / 4000000) - 1;    //  (1  = 0.25)
+  TIM_BaseConfig.TIM_Prescaler = (uint16_t) (SystemCoreClock / 4000000) - 1;
   TIM_BaseConfig.TIM_ClockDivision = 0;
-  TIM_BaseConfig.TIM_Period = 56;       // 22.5  -        
-  TIM_BaseConfig.TIM_CounterMode = TIM_CounterMode_Up;  //     TIM_Period
-
-  TIM_DeInit(TIM3);             // -  3
-
-  TIM_OC2PreloadConfig(TIM3, TIM_OCPreload_Enable);
-  TIM_ARRPreloadConfig(TIM3, ENABLE);
+  TIM_BaseConfig.TIM_Period = 56;
+  TIM_BaseConfig.TIM_CounterMode = TIM_CounterMode_Up;
 
   TIM_TimeBaseInit(TIM3, &TIM_BaseConfig);
+  TIM_ARRPreloadConfig(TIM3, ENABLE);
+
+  // Настройка вывода на накачку, 0.75 мкс
+  TIM_OCStructInit(&TIM_OCConfig);
+  TIM_OCConfig.TIM_OCMode = TIM_OCMode_PWM1;
+  TIM_OCConfig.TIM_OutputState = TIM_OutputState_Enable;
+  TIM_OCConfig.TIM_Pulse = 3;
+  TIM_OCConfig.TIM_OCPolarity = TIM_OCPolarity_High;
 
   TIM_OC2Init(TIM3, &TIM_OCConfig);     //   
   TIM_OC2PreloadConfig(TIM3, TIM_OCPreload_Enable);
-  TIM_ARRPreloadConfig(TIM3, ENABLE);
+
+/*
+  // Настройка счета мертвого времени накачки, 10 мкс
+  TIM_OCStructInit(&TIM_OCConfig);
+  TIM_OCConfig.TIM_OCMode = TIM_OCMode_PWM1;
+  TIM_OCConfig.TIM_OutputState = TIM_OutputState_Enable;
+  TIM_OCConfig.TIM_Pulse = 40;
+  TIM_OCConfig.TIM_OCPolarity = TIM_OCPolarity_High;
+
+  TIM_OC3Init(TIM3, &TIM_OCConfig);     //   
+  TIM_OC3PreloadConfig(TIM3, TIM_OCPreload_Enable);
+*/
 
   NVIC_InitStructure.NVIC_IRQChannel = TIM3_IRQn;
   NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;

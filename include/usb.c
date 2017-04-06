@@ -69,7 +69,7 @@ uint8_t prepare_data(uint32_t mode, uint16_t * massive_pointer, uint8_t start_ke
 //-----------------------------------------------------------------------------------------
 void USB_work()
 {
-  uint32_t wait_count, i;
+  uint32_t wait_count, i, tmp;
   uint32_t current_rcvd_pointer = 0;
 
 //---------------------------------------------Передача данных------------------------------------
@@ -110,6 +110,7 @@ void USB_work()
         case 0x04:             // сброс массива спектра (RCV 1 байт)
           for (i = 0; i <= 2047; i++)
             SPECTRO_MASSIVE[i] = 0;
+          spectro_time = 0;
           if(Send_length == 0)
             current_rcvd_pointer++;     // Если массив исчерпан
           break;
@@ -129,19 +130,21 @@ void USB_work()
           Send_Buffer[8] = (counter >> 8) & 0xff;
           Send_Buffer[9] = (counter >> 16) & 0xff;
           Send_Buffer[10] = (counter >> 24) & 0xff;
-          Send_Buffer[11] = counter_err & 0xff; // колличество ошибок в секунду
-          Send_Buffer[12] = (counter_err >> 8) & 0xff;
-          Send_Buffer[13] = (counter_err >> 16) & 0xff;
-          Send_Buffer[14] = (counter_err >> 24) & 0xff;
+
+          tmp = spectro_time / 10;
+          Send_Buffer[11] = tmp & 0xff; // Время накопления спектра
+          Send_Buffer[12] = (tmp >> 8) & 0xff;  // Время накопления спектра
+          Send_Buffer[13] = (tmp >> 16) & 0xff; // Время накопления спектра
+          Send_Buffer[14] = (tmp >> 24) & 0xff; // Время накопления спектра
+
           Send_Buffer[15] = counter_pump & 0xff;        // колличество накачек в секунду
           Send_Buffer[16] = (counter_pump >> 8) & 0xff;
           Send_Buffer[17] = (counter_pump >> 16) & 0xff;
           Send_Buffer[18] = (counter_pump >> 24) & 0xff;
-
-          Send_Buffer[19] = Settings.ADC_bits & 0xff;   // колличество накачек в секунду
-          Send_Buffer[20] = Settings.Sound & 0xff;      // колличество накачек в секунду
-          Send_Buffer[21] = Settings.LED_intens & 0xff; // колличество накачек в секунду
-          Send_Buffer[22] = Settings.T_korr & 0xff;     // колличество накачек в секунду
+          Send_Buffer[19] = 0x00;       // Время накопления спектра
+          Send_Buffer[20] = Settings.Sound & 0xff;      // Управление звуком
+          Send_Buffer[21] = Settings.LED_intens & 0xff; // Управление интенсовностью подсветки
+          Send_Buffer[22] = Settings.T_korr & 0xff;     // Температурная коррекция
           Send_Buffer[23] = 0x00;
           Send_Buffer[24] = Settings.Impulse_dead_time & 0xff;  // колличество накачек в секунду
           Send_Buffer[25] = debug_mode & 0xff;  // колличество накачек в секунду
@@ -201,6 +204,9 @@ void USB_work()
             {
               debug_mode = DISABLE;
             }
+
+            spectro_time = 0;
+
             current_rcvd_pointer++;
 
 

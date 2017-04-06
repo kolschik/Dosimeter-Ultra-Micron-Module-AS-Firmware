@@ -298,6 +298,8 @@ void TIM9_IRQHandler(void)
   {
     TIM_ClearITPendingBit(TIM9, TIM_IT_Update);
 
+    spectro_time++;             // счет времени накопления спектра
+
     // -----------------------------
     // ротация массивов
     counter = 0;

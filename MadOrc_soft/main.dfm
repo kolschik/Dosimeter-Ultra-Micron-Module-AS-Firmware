@@ -3,7 +3,7 @@ object mainFrm: TmainFrm
   Top = 0
   BorderStyle = bsSingle
   Caption = 'USB Spectr'
-  ClientHeight = 451
+  ClientHeight = 492
   ClientWidth = 403
   Color = clWindow
   Font.Charset = DEFAULT_CHARSET
@@ -55,9 +55,9 @@ object mainFrm: TmainFrm
   end
   object Panel1: TPanel
     Left = 9
-    Top = 244
+    Top = 327
     Width = 386
-    Height = 197
+    Height = 156
     Alignment = taLeftJustify
     Caption = #1053#1072#1089#1090#1088#1086#1081#1082#1072
     Color = clMenu
@@ -76,7 +76,7 @@ object mainFrm: TmainFrm
     VerticalAlignment = taAlignTop
     object Label1: TLabel
       Left = 89
-      Top = 65
+      Top = 45
       Width = 127
       Height = 18
       Caption = #1053#1072#1087#1088#1103#1078#1077#1085#1080#1077' '#1060#1069#1059
@@ -88,22 +88,22 @@ object mainFrm: TmainFrm
       ParentFont = False
     end
     object Label8: TLabel
-      Left = 89
-      Top = 129
+      Left = 313
+      Top = 45
       Width = 33
       Height = 18
       Caption = #1047#1074#1091#1082
     end
     object Label17: TLabel
       Left = 89
-      Top = 97
+      Top = 77
       Width = 97
       Height = 18
       Caption = #1071#1088#1082#1086#1089#1090#1100' LED'
     end
     object Label18: TLabel
-      Left = 89
-      Top = 161
+      Left = 313
+      Top = 77
       Width = 47
       Height = 18
       Caption = 't-'#1082#1086#1088#1088'.'
@@ -116,7 +116,7 @@ object mainFrm: TmainFrm
     end
     object EVolt: TEdit
       Left = 11
-      Top = 62
+      Top = 42
       Width = 70
       Height = 26
       Alignment = taRightJustify
@@ -131,8 +131,8 @@ object mainFrm: TmainFrm
       OnClick = EVoltChange
     end
     object Voltage_refresh: TButton
-      Left = 267
-      Top = 158
+      Left = 266
+      Top = 118
       Width = 106
       Height = 28
       Caption = #1057#1086#1093#1088#1072#1085#1080#1090#1100
@@ -147,15 +147,15 @@ object mainFrm: TmainFrm
     end
     object LED: TComboBox
       Left = 11
-      Top = 94
+      Top = 74
       Width = 70
       Height = 26
       TabOrder = 2
       OnClick = EVoltChange
     end
     object TCorr: TEdit
-      Left = 11
-      Top = 158
+      Left = 235
+      Top = 74
       Width = 70
       Height = 26
       Alignment = taRightJustify
@@ -170,8 +170,8 @@ object mainFrm: TmainFrm
       OnClick = EVoltChange
     end
     object Sound: TEdit
-      Left = 11
-      Top = 126
+      Left = 235
+      Top = 42
       Width = 70
       Height = 26
       Alignment = taRightJustify
@@ -186,8 +186,8 @@ object mainFrm: TmainFrm
       OnClick = EVoltChange
     end
     object ADC64Err: TCheckBox
-      Left = 11
-      Top = 34
+      Left = 183
+      Top = 11
       Width = 202
       Height = 17
       Caption = #1048#1089#1087#1088#1072#1074#1083#1077#1085#1080#1077' '#1086#1096#1080#1073'. 64'
@@ -199,7 +199,7 @@ object mainFrm: TmainFrm
     Left = 8
     Top = 8
     Width = 386
-    Height = 217
+    Height = 313
     Alignment = taLeftJustify
     Caption = #1047#1072#1084#1077#1088
     Color = clMenu
@@ -239,7 +239,7 @@ object mainFrm: TmainFrm
       ParentFont = False
     end
     object Label3: TLabel
-      Left = 194
+      Left = 193
       Top = 29
       Width = 88
       Height = 18
@@ -264,13 +264,52 @@ object mainFrm: TmainFrm
       Font.Style = []
       ParentFont = False
     end
+    object Label5: TLabel
+      Left = 193
+      Top = 195
+      Width = 128
+      Height = 18
+      Caption = #1048#1089#1090#1086#1095#1085#1080#1082' '#1089#1087#1077#1082#1090#1088#1072
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Arial'
+      Font.Style = []
+      ParentFont = False
+    end
+    object Label6: TLabel
+      Left = 193
+      Top = 161
+      Width = 136
+      Height = 18
+      Caption = #1042#1088#1077#1084#1103' '#1085#1072#1082#1086#1087#1083#1077#1085#1080#1103
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Arial'
+      Font.Style = []
+      ParentFont = False
+    end
+    object Label7: TLabel
+      Left = 193
+      Top = 227
+      Width = 127
+      Height = 18
+      Caption = #1042#1088#1077#1084#1103' '#1086#1089#1090#1072#1085#1086#1074#1082#1080
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Arial'
+      Font.Style = []
+      ParentFont = False
+    end
     object AKB_Volt: TEdit
       Left = 81
       Top = 125
       Width = 90
       Height = 26
       Alignment = taRightJustify
-      Color = clInactiveCaption
+      Enabled = False
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -16
@@ -283,7 +322,7 @@ object mainFrm: TmainFrm
     end
     object Button4: TButton
       Left = 11
-      Top = 167
+      Top = 262
       Width = 181
       Height = 36
       Caption = #1047#1072#1075#1088#1091#1079#1082#1072' '#1089#1087#1077#1082#1090#1088#1072
@@ -298,7 +337,7 @@ object mainFrm: TmainFrm
     end
     object Button5: TButton
       Left = 235
-      Top = 173
+      Top = 268
       Width = 138
       Height = 25
       Caption = #1054#1095#1080#1089#1090#1082#1072' '#1089#1087#1077#1082#1090#1088#1072
@@ -317,9 +356,9 @@ object mainFrm: TmainFrm
       Width = 91
       Height = 26
       Alignment = taRightJustify
-      Color = clInactiveCaption
       Ctl3D = True
       DoubleBuffered = False
+      Enabled = False
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -16
@@ -340,7 +379,7 @@ object mainFrm: TmainFrm
       Width = 90
       Height = 26
       Alignment = taRightJustify
-      Color = clInactiveCaption
+      Enabled = False
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -16
@@ -357,7 +396,7 @@ object mainFrm: TmainFrm
       Width = 90
       Height = 26
       Alignment = taRightJustify
-      Color = clInactiveCaption
+      Enabled = False
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -16
@@ -367,6 +406,39 @@ object mainFrm: TmainFrm
       ReadOnly = True
       TabOrder = 5
       Text = '0'
+    end
+    object Spectro_time: TEdit
+      Left = 81
+      Top = 158
+      Width = 90
+      Height = 26
+      Alignment = taRightJustify
+      Enabled = False
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Arial'
+      Font.Style = []
+      ParentFont = False
+      ReadOnly = True
+      TabOrder = 6
+      Text = '0'
+    end
+    object Source: TComboBox
+      Left = 27
+      Top = 192
+      Width = 145
+      Height = 26
+      TabOrder = 7
+      OnChange = SourceChange
+    end
+    object Selected_time: TComboBox
+      Left = 26
+      Top = 224
+      Width = 145
+      Height = 26
+      TabOrder = 8
+      OnChange = Selected_timeChange
     end
   end
   object MyTray: TJvTrayIcon
@@ -831,7 +903,7 @@ object mainFrm: TmainFrm
   object ImageList1: TImageList
     Left = 288
     Bitmap = {
-      494C010105008C006C0210001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010105008C00700210001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000002000000001002000000000000020
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

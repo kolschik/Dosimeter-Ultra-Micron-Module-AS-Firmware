@@ -27,6 +27,7 @@ uint8_t temperature;
 uint16_t akb_voltage;
 uint32_t counter_err = 0;
 uint32_t counter_pump = 0;
+uint32_t spectro_time = 0;
 uint16_t USB_spectro_pointer = 0;
 FunctionalState debug_mode = DISABLE;
 __IO uint16_t ADC_ConvertedValue[384];
