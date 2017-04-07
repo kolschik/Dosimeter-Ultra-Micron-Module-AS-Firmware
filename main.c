@@ -10,7 +10,7 @@ SettingsDef Settings;
 
 ////////////
 
-uint8_t LED_show_massive[4];    // сырое отображение на дисплее
+uint16_t LED_show_massive[4];   // сырое отображение на дисплее
 char LED_BUF[6];
 uint32_t counter = 0;
 uint32_t SPECTRO_MASSIVE[2049];

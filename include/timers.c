@@ -12,9 +12,9 @@ void tim2_Config()              // LED индикация
 
   TIM_TimeBaseStructInit(&TIM_BaseConfig);
 
-  TIM_BaseConfig.TIM_Prescaler = (uint16_t) (SystemCoreClock / 40000) - 1;      // частота 40 кгц.
+  TIM_BaseConfig.TIM_Prescaler = (uint16_t) (SystemCoreClock / 10000) - 1;      // частота 10 кгц.
   TIM_BaseConfig.TIM_ClockDivision = 0;
-  TIM_BaseConfig.TIM_Period = 40;       // Апдейт 1 кГц
+  TIM_BaseConfig.TIM_Period = 40;       // Апдейт 250 Гц (полное обновление 3-х цифр 83 Гц)
   TIM_BaseConfig.TIM_CounterMode = TIM_CounterMode_Up;
 
 

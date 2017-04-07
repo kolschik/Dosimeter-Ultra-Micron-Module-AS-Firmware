@@ -3,6 +3,6 @@
 
 void LEDUpdate(void);
 void LEDString(void);
-void LED_show(uint8_t, uint8_t, FunctionalState);
+void LED_show(uint16_t, uint16_t);
 
 #endif

@@ -24,16 +24,16 @@
 #include "usb_desc.h"
 
 #define C_SEG_ALLOFF 0
-#define C_SEG_A 1
-#define C_SEG_B 2
-#define C_SEG_C 3
-#define C_SEG_D 4
-#define C_SEG_E 5
-#define C_SEG_F 6
-#define C_SEG_G 7
-#define C_DIG1 8
-#define C_DIG2 9
-#define C_DIG3 10
+#define C_SEG_A (uint16_t)0x0008
+#define C_SEG_B (uint16_t)0x0080
+#define C_SEG_C (uint16_t)0x0001
+#define C_SEG_D (uint16_t)0x0040
+#define C_SEG_E (uint16_t)0x0004
+#define C_SEG_F (uint16_t)0x0002
+#define C_SEG_G (uint16_t)0x1000
+#define C_DIG1 (uint16_t) 0x0004
+#define C_DIG2 (uint16_t) 0x0400
+#define C_DIG3 (uint16_t) 0x0800
 
 #define spectro_data 4
 
@@ -86,7 +86,7 @@ extern PumpDataDef PumpData;
 extern SettingsDef Settings;
 
 extern uint16_t USB_spectro_pointer;
-extern uint8_t LED_show_massive[];      // сырое отображение на дисплее
+extern uint16_t LED_show_massive[];     // сырое отображение на дисплее
 extern char LED_BUF[];
 extern uint32_t counter;
 
@@ -110,6 +110,6 @@ extern __IO uint16_t ADC_ConvertedValue[];
 
 void LEDString(void);
 void LEDUpdate(void);
-void LED_show(uint8_t, uint8_t, FunctionalState);
+//void LED_show(uint8_t, uint8_t);
 
 #endif

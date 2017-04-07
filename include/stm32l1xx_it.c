@@ -118,7 +118,7 @@ void TIM2_IRQHandler(void)      // Обновление дисплея
   {
     TIM_ClearITPendingBit(TIM2, TIM_IT_CC2);
 
-    LED_show(LED_show_massive[0], C_SEG_ALLOFF, DISABLE);       // отключаем все сигменты
+    LED_show(LED_show_massive[0], C_SEG_ALLOFF);        // отключаем все сигменты
   }
 
 

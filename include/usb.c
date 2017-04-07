@@ -205,8 +205,6 @@ void USB_work()
               debug_mode = DISABLE;
             }
 
-            spectro_time = 0;
-
             current_rcvd_pointer++;
 
 
