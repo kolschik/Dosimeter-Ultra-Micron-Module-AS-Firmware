@@ -79,7 +79,7 @@ void tim3_Config()              //
   TIM_OCStructInit(&TIM_OCConfig);
   TIM_OCConfig.TIM_OCMode = TIM_OCMode_PWM1;
   TIM_OCConfig.TIM_OutputState = TIM_OutputState_Enable;
-  TIM_OCConfig.TIM_Pulse = 3;
+  TIM_OCConfig.TIM_Pulse = 2;
   TIM_OCConfig.TIM_OCPolarity = TIM_OCPolarity_High;
 
   TIM_OC2Init(TIM3, &TIM_OCConfig);     //   

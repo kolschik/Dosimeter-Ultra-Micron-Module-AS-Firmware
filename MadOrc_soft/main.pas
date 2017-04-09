@@ -72,7 +72,6 @@ type
     TCorr: TEdit;
     Panel2: TPanel;
     Sound: TEdit;
-    ADC64Err: TCheckBox;
     Label5: TLabel;
     Label6: TLabel;
     Spectro_time: TEdit;
@@ -869,7 +868,7 @@ begin
     vAns[2] := (ix shr 8) and $FF;
     vAns[3] := (ix shr 16) and $FF;
 
-    vAns[4] := mainFrm.ADC64Err.Checked.ToInteger and $FF;
+    vAns[4] := $00;
     vAns[5] := StrToInt(mainFrm.Sound.Text) and $FF;
     vAns[6] := mainFrm.LED.ItemIndex and $FF;
     vAns[7] := StrToInt(mainFrm.TCorr.Text) and $FF;
@@ -964,7 +963,6 @@ begin
           mainFrm.Counts.Text :=   IntToStr(aData[used_bytes + 7]  + (aData[used_bytes + 8]  shl 8) + (aData[used_bytes + 9] shl 16)  + (aData[used_bytes + 10] shl 24));
           mainFrm.Spectro_time.Text :=  IntToStr(aData[used_bytes + 11] + (aData[used_bytes + 12] shl 8) + (aData[used_bytes + 13] shl 16) + (aData[used_bytes + 14] shl 24));
           mainFrm.Pump.Text :=     IntToStr(aData[used_bytes + 15] + (aData[used_bytes + 16] shl 8) + (aData[used_bytes + 17] shl 16) + (aData[used_bytes + 18] shl 24));
-          mainFrm.ADC64Err.Checked :=           aData[used_bytes + 19].ToBoolean;
           mainFrm.Sound.Text :=        IntToStr(aData[used_bytes + 20]);
           mainFrm.LED.ItemIndex :=              aData[used_bytes + 21];
           mainFrm.TCorr.Text :=        IntToStr(aData[used_bytes + 22]);

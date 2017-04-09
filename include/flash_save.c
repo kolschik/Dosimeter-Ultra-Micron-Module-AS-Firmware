@@ -90,23 +90,24 @@ void page_erase_flash(uint32_t page)    // Erase 32 elements
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
-void flash_write_page(uint32_t page)    // Write 32 element of massive ram_Doze_massive and ram_max_fon_massive
+void flash_write_massive(uint32_t number_of_massive)
 {
-  uint32_t Address = 0;
+  uint32_t Address = 0, i;
 
-  if(FLASH_MAX_PAGE >= page)    // если не за границами диапазона
+  if(number_of_massive > 8)
+    return;                     // Проверка входящего параметра
+
+  /* Unlock the FLASH Program memory */
+  FLASH_Unlock();
+
+  /* Clear all pending flags */
+  FLASH_ClearFlag(FLASH_FLAG_EOP | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR | FLASH_FLAG_SIZERR | FLASH_FLAG_OPTVERR | FLASH_FLAG_OPTVERRUSR);
+
+////////////////////////////////////////////////////////////////////////
+  for (i = 0; i < 64; i++)      // 2048 / 32 = 64HalfPage 
   {
-
-    Address = FLASH_START_ADDR + (page * FLASH_PAGE_SIZE);
-
-    page_erase_flash(page);     // Стереть страницу перед записью
-
-    /* Unlock the FLASH Program memory */
-    FLASH_Unlock();
-
-    /* Clear all pending flags */
-    FLASH_ClearFlag(FLASH_FLAG_EOP | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR | FLASH_FLAG_SIZERR | FLASH_FLAG_OPTVERR | FLASH_FLAG_OPTVERRUSR);
-
+    // Записываем массив в флеш
+    Address = FLASH_START_ADDR + (i << 7) + (number_of_massive << (11 + 2));
     /* Write the FLASH Program memory using HalfPage operation */
 
     if(Address > FLASH_END_ADDR)
@@ -119,7 +120,8 @@ void flash_write_page(uint32_t page)    // Write 32 element of massive ram_Doze_
       FLASH_Lock();
       return;
     }
-// !!!!!!!!!!!!!!!!!! FLASHStatus_eeprom = FLASH_ProgramHalfPage(Address, ram_Doze_massive);
+
+    FLASHStatus_eeprom = FLASH_ProgramHalfPage(Address, SPECTRO_MASSIVE + (i * 32));
 
     if(FLASHStatus_eeprom == FLASH_COMPLETE)
     {
@@ -127,88 +129,30 @@ void flash_write_page(uint32_t page)    // Write 32 element of massive ram_Doze_
     {
       FLASH_ClearFlag(FLASH_FLAG_EOP | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR | FLASH_FLAG_SIZERR | FLASH_FLAG_OPTVERR | FLASH_FLAG_OPTVERRUSR);
     }
-
-    Address += FLASH_PAGE_SIZE >> 1;
-    /* Write the FLASH Program memory using HalfPage operation */
-
-    if(Address > FLASH_END_ADDR)
-    {
-      FLASH_Lock();
-      return;
-    }
-    if(Address < FLASH_START_ADDR)
-    {
-      FLASH_Lock();
-      return;
-    }
-// !!!!!!!!!!!!!!!!!!    FLASHStatus_eeprom = FLASH_ProgramHalfPage(Address, ram_max_fon_massive);
-
-    if(FLASHStatus_eeprom == FLASH_COMPLETE)
-    {
-    } else
-    {
-      FLASH_ClearFlag(FLASH_FLAG_EOP | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR | FLASH_FLAG_SIZERR | FLASH_FLAG_OPTVERR | FLASH_FLAG_OPTVERRUSR);
-    }
-
-    FLASH_Lock();
   }
+////////////////////////////////////////////////////////////////////////
+  FLASH_Lock();
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
-uint32_t flash_read_massive(uint32_t virt_element, uint32_t mode)
+void flash_read_massive(uint32_t number_of_massive)
 {
-/*
 
-  uint32_t Address = FLASH_START_ADDR, page = 0, page_num = 0, index = 0;
 
-  if(virt_element >= FLASH_MAX_ELEMENT)
-    return 0;                   // Проверка входящего параметра
+  uint32_t Address = FLASH_START_ADDR, i;
 
-  if(virt_element < doze_length)        // 0-31
+  if(number_of_massive > 8)
+    return;                     // Проверка входящего параметра
+
+
+  for (i = 0; i < 2048; i++)
   {
-    if(mode == max_fon_select)
-      return ram_max_fon_massive[virt_element];
-    if(mode == dose_select)
-      return ram_Doze_massive[virt_element];
+    SPECTRO_MASSIVE[i] = 0;     // Очищаем массив спектра в памяти
 
-  } else                        // >31 Элемент не из памяти, лезем во флешку
-  {
-
-    index = virt_element - (DataUpdate.doze_count + 1);
-    page = DataUpdate.current_flash_page;
-//////////////////////////////////////////////////
-    //page_num=index/doze_length; // до оптимизации
-    page_num = index >> 5;      // сколько страниц надо пройти // /32
-
-    if(page_num > page)
-    {
-      page = FLASH_MAX_PAGE + page - page_num;
-    }                           // Если надо пройти больше конца памяти, то скорректировать число
-    else
-    {
-      page = page - page_num - 1;
-    }
-
-    //Остаток от индекса
-    //index=index-(page_num*doze_length); // до оптимизации
-    index = index - (page_num << 5);    // *32
-
-    // до оптимизации
-    //if(mode == max_fon_select) Address = FLASH_START_ADDR + (FLASH_PAGE_SIZE/2) + (page * FLASH_PAGE_SIZE) + (index*4); // вычисляем адрес начала страницы
-    //if(mode == dose_select)    Address = FLASH_START_ADDR +                       (page * FLASH_PAGE_SIZE) + (index*4); // вычисляем адрес начала страницы
-    if(mode == max_fon_select)
-      Address = FLASH_START_ADDR + (FLASH_PAGE_SIZE >> 1) + (page << 8) + (index << 2); // вычисляем адрес начала страницы
-    if(mode == dose_select)
-      Address = FLASH_START_ADDR + (page << 8) + (index << 2);  // вычисляем адрес начала страницы
-    if(Address < FLASH_START_ADDR)
-      return 0;
-    if(Address > FLASH_END_ADDR)
-      return 0;
-
-    return (*(__IO uint32_t *) Address);
+    // Читаем массив из флеша в память
+    Address = FLASH_START_ADDR + (i << 2) + (number_of_massive << (11 + 2));
+    SPECTRO_MASSIVE[i] = (*(__IO uint32_t *) Address);  // ячейка флеша
   }
-	*/
-  return 0;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////

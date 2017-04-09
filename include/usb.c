@@ -111,6 +111,7 @@ void USB_work()
           for (i = 0; i <= 2047; i++)
             SPECTRO_MASSIVE[i] = 0;
           spectro_time = 0;
+          full_erase_flash();   // очистка данных FLASH
           if(Send_length == 0)
             current_rcvd_pointer++;     // Если массив исчерпан
           break;

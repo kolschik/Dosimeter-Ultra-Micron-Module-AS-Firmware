@@ -178,32 +178,7 @@ void ADC1_IRQHandler(void)
       if(!debug_mode)
         GPIO_SetBits(GPIOA, GPIO_Pin_4);        //  Вывод сигнала на внешнее устройство
 
-//      if(!IMPULSE_DEAD_TIME)    // Проверка что прошлый импульс с датчика был завершен
-      {
-        if(Settings.ADC_bits > 0)
-        {
-          SPECTRO_MASSIVE[address >> 1]++;      // Если все нормально, добавляем спектр
-        } else
-        {
-          SPECTRO_MASSIVE[(address >> 2) << 1]++;       // Если все нормально, добавляем спектр
-          SPECTRO_MASSIVE[((address >> 2) << 1) + 1]++; // Если все нормально, добавляем спектр
-        }
-
-
-//        if(debug_mode)
-//          GPIO_SetBits(GPIOA, GPIO_Pin_4);      //  Вывод сигнала на внешнее устройство
-
-//        IMPULSE_DEAD_TIME = ENABLE;     // начинаем отсчет мертвого времени датчика
-//        TIM_ClearITPendingBit(TIM10, TIM_IT_CC1);
-//        TIM_ITConfig(TIM10, TIM_IT_CC1, ENABLE);
-//        TIM10->EGR |= 0x0001;
-
-      }
-//                      else
-//      {
-//        ERR_MASSIVE[0]++;       // Подсчитываем ошибки снятия спектра
-//      }
-
+      SPECTRO_MASSIVE[address >> 1]++;  // Если все нормально, добавляем спектр
 
       if(COMP_GetOutputLevel(COMP_Selection_COMP2) == COMP_OutputLevel_Low)
       {
