@@ -77,6 +77,7 @@ int main(void)
 
   while (TRUE)
   {
+/*
     if(COMP_GetOutputLevel(COMP_Selection_COMP2) == COMP_OutputLevel_Low)
     {
       Need_pump = ENABLE;
@@ -92,6 +93,7 @@ int main(void)
         PumpCmd(ENABLE);
       }
 
+	*/
     if(Need_Ledupdate == ENABLE)
     {
       Need_Ledupdate = DISABLE;

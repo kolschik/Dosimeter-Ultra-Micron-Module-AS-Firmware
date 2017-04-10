@@ -126,6 +126,15 @@ void TIM2_IRQHandler(void)      // Обновление дисплея
   {
     TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
     Need_Ledupdate = ENABLE;
+
+    if(COMP_GetOutputLevel(COMP_Selection_COMP2) == COMP_OutputLevel_Low)
+    {
+      PumpCmd(ENABLE);
+    } else
+    {
+      PumpCmd(DISABLE);
+    }
+
   }
 }
 
@@ -171,20 +180,23 @@ void ADC1_IRQHandler(void)
   {
     ADC_ClearITPendingBit(ADC1, ADC_IT_JEOC);
 
-    if(!PUMP_DEAD_TIME)         // Если прерывание вызвано не импульсом накачки
+    if((PumpData.Active == DISABLE) && (PUMP_DEAD_TIME == DISABLE))     // Если прерывание вызвано не импульсом накачки
     {
       address = ADC_GetInjectedConversionValue(ADC1, ADC_InjectedChannel_1);
 
-      if(!debug_mode)
-        GPIO_SetBits(GPIOA, GPIO_Pin_4);        //  Вывод сигнала на внешнее устройство
+      if(address < 12)
+        return;
+
+//      if(!debug_mode)
+      GPIO_SetBits(GPIOA, GPIO_Pin_4);  //  Вывод сигнала на внешнее устройство
 
       SPECTRO_MASSIVE[address >> 1]++;  // Если все нормально, добавляем спектр
 
-      if(COMP_GetOutputLevel(COMP_Selection_COMP2) == COMP_OutputLevel_Low)
-      {
-        PumpCmd(ENABLE);
-      }
-
+      /*if(COMP_GetOutputLevel(COMP_Selection_COMP2) == COMP_OutputLevel_Low)
+         {
+         PumpCmd(ENABLE);
+         }
+       */
       IMPULSE_MASSIVE[0]++;     // увеличиваем счетчик
 
       if((tmpadc1 > Settings.Sound) && (Settings.Sound > 0))
@@ -196,9 +208,15 @@ void ADC1_IRQHandler(void)
 
       } else
         tmpadc1++;
-      if(!debug_mode)
-        GPIO_ResetBits(GPIOA, GPIO_Pin_4);      //  Вывод сигнала на внешнее устройство
+//      if(!debug_mode)
+      GPIO_ResetBits(GPIOA, GPIO_Pin_4);        //  Вывод сигнала на внешнее устройство
     }
+/*		else
+    {
+      if(PumpData.Active == DISABLE)
+        PUMP_DEAD_TIME = DISABLE;
+    }
+		*/
   }
 }
 
@@ -216,13 +234,14 @@ void TIM3_IRQHandler(void)
   if(TIM_GetITStatus(TIM3, TIM_IT_Update) != RESET)
   {
     TIM_ClearITPendingBit(TIM3, TIM_IT_Update);
-    if(tmptim3 > 1)
+    if(tmptim3 > 0)
     {
       if(PumpData.Active == DISABLE)    // если накачку надо выключить
       {
         tmptim3 = 0;
         TIM_ITConfig(TIM3, TIM_IT_Update, DISABLE);
         TIM_ITConfig(TIM3, TIM_IT_CC2, DISABLE);
+        TIM_CCxCmd(TIM3, TIM_Channel_2, TIM_CCx_Disable);       // запретить накачку
         PUMP_DEAD_TIME = DISABLE;
       }
     } else
