@@ -15,7 +15,7 @@ void COMP_IRQHandler(void)
       PumpCmd(DISABLE);
     } else
     {
-      Need_pump = ENABLE;
+      // PumpCmd(ENABLE);
     }
 
   }
@@ -33,7 +33,7 @@ void PumpCmd(FunctionalState pump)
 
   if(pump == ENABLE)
   {
-    if((PumpData.Active == DISABLE) && (!PUMP_DEAD_TIME))
+    if((PumpData.Active == DISABLE) && (!PUMP_DEAD_TIME) && (!GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_15)))
     {
       PumpData.Active = pump;
 

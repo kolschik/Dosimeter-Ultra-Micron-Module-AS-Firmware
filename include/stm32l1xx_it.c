@@ -126,6 +126,15 @@ void TIM2_IRQHandler(void)      // Обновление дисплея
   {
     TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
     Need_Ledupdate = ENABLE;
+
+    // проверяем напряжение         
+    if(COMP_GetOutputLevel(COMP_Selection_COMP2) == COMP_OutputLevel_Low)
+    {
+      PumpCmd(ENABLE);
+    } else
+    {
+      //PumpCmd(DISABLE);
+    }
   }
 }
 
@@ -163,7 +172,7 @@ void TIM10_IRQHandler(void)     // Учет мертвого времени датчика
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-uint16_t tmpadc1;
+uint16_t tmpadc1, tmpadc2;
 void ADC1_IRQHandler(void)
 {
   uint16_t address;
@@ -174,16 +183,13 @@ void ADC1_IRQHandler(void)
     if(!PUMP_DEAD_TIME)         // Если прерывание вызвано не импульсом накачки
     {
       address = ADC_GetInjectedConversionValue(ADC1, ADC_InjectedChannel_1);
+      if(address < 12)
+        return;
 
-      if(!debug_mode)
-        GPIO_SetBits(GPIOA, GPIO_Pin_4);        //  Вывод сигнала на внешнее устройство
+      GPIO_SetBits(GPIOA, GPIO_Pin_4);  //  Вывод сигнала на внешнее устройство
 
       SPECTRO_MASSIVE[address >> 1]++;  // Если все нормально, добавляем спектр
 
-      if(COMP_GetOutputLevel(COMP_Selection_COMP2) == COMP_OutputLevel_Low)
-      {
-        PumpCmd(ENABLE);
-      }
 
       IMPULSE_MASSIVE[0]++;     // увеличиваем счетчик
 
@@ -196,8 +202,20 @@ void ADC1_IRQHandler(void)
 
       } else
         tmpadc1++;
-      if(!debug_mode)
-        GPIO_ResetBits(GPIOA, GPIO_Pin_4);      //  Вывод сигнала на внешнее устройство
+      GPIO_ResetBits(GPIOA, GPIO_Pin_4);        //  Вывод сигнала на внешнее устройство
+
+
+      if(tmpadc2 > 20)
+      {
+        tmpadc2 = 0;
+        if(COMP_GetOutputLevel(COMP_Selection_COMP2) == COMP_OutputLevel_Low)
+        {
+          PumpCmd(ENABLE);
+        }
+      } else
+
+        tmpadc2++;
+
     }
   }
 }
@@ -237,9 +255,8 @@ void TIM3_IRQHandler(void)
 //    PUMP_DEAD_TIME = ENABLE;    // начинаем отсчет мертвого времени накачки
 //    TIM10->EGR |= 0x0001;
 //    TIM_ITConfig(TIM10, TIM_IT_CC1, ENABLE);
+    PUMP_MASSIVE[0]++;
   }
-
-  PUMP_MASSIVE[0]++;
 }
 
 
@@ -302,17 +319,6 @@ void TIM9_IRQHandler(void)
       sprintf(LED_BUF, "%3u", counter); // Пишем в буфер значение счетчика
     }
     LEDString();                // // Выводим обычным текстом содержание буфера
-
-    // проверяем напряжение         
-    if(COMP_GetOutputLevel(COMP_Selection_COMP2) == COMP_OutputLevel_Low)
-    {
-      Need_pump = ENABLE;
-    } else
-    {
-      PumpCmd(DISABLE);
-    }
-
-
   }
 }
 

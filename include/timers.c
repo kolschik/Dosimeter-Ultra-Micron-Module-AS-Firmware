@@ -67,9 +67,9 @@ void tim3_Config()              //
 
   // Базовая настройка, тик 0.25 мкс, счет 14 мкс
   TIM_TimeBaseStructInit(&TIM_BaseConfig);
-  TIM_BaseConfig.TIM_Prescaler = (uint16_t) (SystemCoreClock / 4000000) - 1;
+  TIM_BaseConfig.TIM_Prescaler = (uint16_t) (SystemCoreClock / 8000000) - 1;
   TIM_BaseConfig.TIM_ClockDivision = 0;
-  TIM_BaseConfig.TIM_Period = 56;
+  TIM_BaseConfig.TIM_Period = 112;
   TIM_BaseConfig.TIM_CounterMode = TIM_CounterMode_Up;
 
   TIM_TimeBaseInit(TIM3, &TIM_BaseConfig);
@@ -79,7 +79,7 @@ void tim3_Config()              //
   TIM_OCStructInit(&TIM_OCConfig);
   TIM_OCConfig.TIM_OCMode = TIM_OCMode_PWM1;
   TIM_OCConfig.TIM_OutputState = TIM_OutputState_Enable;
-  TIM_OCConfig.TIM_Pulse = 2;
+  TIM_OCConfig.TIM_Pulse = 3;
   TIM_OCConfig.TIM_OCPolarity = TIM_OCPolarity_High;
 
   TIM_OC2Init(TIM3, &TIM_OCConfig);     //   

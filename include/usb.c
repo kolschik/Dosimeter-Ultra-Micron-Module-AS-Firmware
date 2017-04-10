@@ -111,7 +111,7 @@ void USB_work()
           for (i = 0; i <= 2047; i++)
             SPECTRO_MASSIVE[i] = 0;
           spectro_time = 0;
-          full_erase_flash();   // очистка данных FLASH
+          //full_erase_flash();   // очистка данных FLASH
           if(Send_length == 0)
             current_rcvd_pointer++;     // Если массив исчерпан
           break;
@@ -167,6 +167,7 @@ void USB_work()
             current_rcvd_pointer += 3;
             eeprom_write(0x10, Settings.feu_voltage);
             dac_reload();
+            DAC_SetChannel2Data(DAC_Align_12b_R, ADCData.DAC_voltage_raw);
 
             // Битность АЦП - 1 бит
             Settings.ADC_bits = Receive_Buffer[current_rcvd_pointer + 1] & 0xff;

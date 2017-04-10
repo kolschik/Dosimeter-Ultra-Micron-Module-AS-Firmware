@@ -19,7 +19,6 @@ uint32_t PUMP_MASSIVE[11];
 uint32_t ERR_MASSIVE[11];
 
 FunctionalState Need_Ledupdate = DISABLE;
-FunctionalState Need_pump = DISABLE;
 FunctionalState PUMP_DEAD_TIME = DISABLE;
 FunctionalState IMPULSE_DEAD_TIME = DISABLE;
 
@@ -77,20 +76,14 @@ int main(void)
 
   while (TRUE)
   {
-    if(COMP_GetOutputLevel(COMP_Selection_COMP2) == COMP_OutputLevel_Low)
+/*    if(COMP_GetOutputLevel(COMP_Selection_COMP2) == COMP_OutputLevel_Low)
     {
-      Need_pump = ENABLE;
+      PumpCmd(ENABLE);
     } else
     {
       PumpCmd(DISABLE);
     }
-
-    if(Need_pump == ENABLE)
-      if(!GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_15))
-      {
-        Need_pump = DISABLE;
-        PumpCmd(ENABLE);
-      }
+*/
 
     if(Need_Ledupdate == ENABLE)
     {

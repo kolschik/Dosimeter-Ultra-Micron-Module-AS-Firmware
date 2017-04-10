@@ -91,7 +91,6 @@ extern char LED_BUF[];
 extern uint32_t counter;
 
 extern FunctionalState Need_Ledupdate;
-extern FunctionalState Need_pump;
 extern FunctionalState PUMP_DEAD_TIME;
 extern FunctionalState IMPULSE_DEAD_TIME;
 extern FunctionalState debug_mode;
