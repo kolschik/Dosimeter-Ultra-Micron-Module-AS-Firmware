@@ -18,6 +18,7 @@ uint32_t IMPULSE_MASSIVE[11];
 uint32_t PUMP_MASSIVE[11];
 uint32_t ERR_MASSIVE[11];
 
+FunctionalState display_on = DISABLE;
 FunctionalState Need_Ledupdate = DISABLE;
 FunctionalState PUMP_DEAD_TIME = DISABLE;
 FunctionalState IMPULSE_DEAD_TIME = DISABLE;

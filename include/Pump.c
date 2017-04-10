@@ -1,7 +1,7 @@
 #include "pump.h"
 #include "main.h"
 
-#pragma O0
+//#pragma O0
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void COMP_IRQHandler(void)
@@ -11,12 +11,12 @@ void COMP_IRQHandler(void)
     EXTI_ClearITPendingBit(EXTI_Line22);
 
     if(COMP_GetOutputLevel(COMP_Selection_COMP2) == COMP_OutputLevel_High)
-    {
+      //{
       PumpCmd(DISABLE);
-    } else
-    {
-      // PumpCmd(ENABLE);
-    }
+    //} else
+    //{
+    // PumpCmd(ENABLE);
+    //}
 
   }
 }
@@ -33,7 +33,8 @@ void PumpCmd(FunctionalState pump)
 
   if(pump == ENABLE)
   {
-    if((PumpData.Active == DISABLE) && (!PUMP_DEAD_TIME) && (!GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_15)))
+    //if((PumpData.Active == DISABLE) && (!PUMP_DEAD_TIME) && (!GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_15)))
+    if((PumpData.Active == DISABLE) && (!PUMP_DEAD_TIME))
     {
       PumpData.Active = pump;
 
@@ -186,13 +187,13 @@ void PumpCompCmd(uint8_t cmd)
       EXTI_StructInit(&EXTI_InitStructure);
       EXTI_InitStructure.EXTI_Line = EXTI_Line22;
       EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;
-      EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising_Falling;
+      EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising;
       EXTI_InitStructure.EXTI_LineCmd = ENABLE;
       EXTI_Init(&EXTI_InitStructure);
 
       NVIC_InitStructure.NVIC_IRQChannel = COMP_IRQn;
-      NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
-      NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+      NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+      NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
       NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
       NVIC_Init(&NVIC_InitStructure);
       EXTI_ClearITPendingBit(EXTI_Line22);

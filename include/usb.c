@@ -38,11 +38,11 @@ uint8_t prepare_data(uint32_t mode, uint16_t * massive_pointer, uint8_t start_ke
     tmp = SPECTRO_MASSIVE[*massive_pointer];
 
     // јнтиалиасинг €чеек кратных 64
-    if((*massive_pointer & 0x3F) == 0x3F)
+/*    if(((*massive_pointer % 0x40) == 0) && (*massive_pointer > 0))
     {
       tmp = (SPECTRO_MASSIVE[*massive_pointer - 1] + SPECTRO_MASSIVE[*massive_pointer + 1]) >> 1;
     }
-
+*/
 
     fon_1_4 = tmp & 0xff;
     fon_2_4 = (tmp >> 8) & 0xff;

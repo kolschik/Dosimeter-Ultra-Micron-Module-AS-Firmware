@@ -90,6 +90,7 @@ extern uint16_t LED_show_massive[];     // сырое отображение на дисплее
 extern char LED_BUF[];
 extern uint32_t counter;
 
+extern FunctionalState display_on;
 extern FunctionalState Need_Ledupdate;
 extern FunctionalState PUMP_DEAD_TIME;
 extern FunctionalState IMPULSE_DEAD_TIME;

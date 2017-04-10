@@ -118,14 +118,17 @@ void TIM2_IRQHandler(void)      // Обновление дисплея
   {
     TIM_ClearITPendingBit(TIM2, TIM_IT_CC2);
 
-    LED_show(LED_show_massive[0], C_SEG_ALLOFF);        // отключаем все сигменты
+    if(display_on)
+      LED_show(LED_show_massive[0], C_SEG_ALLOFF);      // отключаем все сигменты
   }
 
 
   if(TIM_GetITStatus(TIM2, TIM_IT_Update) != RESET)
   {
     TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
-    Need_Ledupdate = ENABLE;
+
+    if(display_on)
+      Need_Ledupdate = ENABLE;
 
     // проверяем напряжение         
     if(COMP_GetOutputLevel(COMP_Selection_COMP2) == COMP_OutputLevel_Low)
@@ -149,9 +152,6 @@ void TIM10_IRQHandler(void)     // Учет мертвого времени датчика
   if(TIM_GetITStatus(TIM10, TIM_IT_CC1) != RESET)
   {
     TIM_ClearITPendingBit(TIM10, TIM_IT_CC1);
-
-    if(debug_mode)
-      GPIO_ResetBits(GPIOA, GPIO_Pin_4);        // Вывод сигнала на внешнее устройство
 
     IMPULSE_DEAD_TIME = DISABLE;
     TIM_ITConfig(TIM10, TIM_IT_CC1, DISABLE);
@@ -186,7 +186,7 @@ void ADC1_IRQHandler(void)
       if(address < 12)
         return;
 
-      GPIO_SetBits(GPIOA, GPIO_Pin_4);  //  Вывод сигнала на внешнее устройство
+//      GPIO_SetBits(GPIOA, GPIO_Pin_4);  //  Вывод сигнала на внешнее устройство
 
       SPECTRO_MASSIVE[address >> 1]++;  // Если все нормально, добавляем спектр
 
@@ -202,10 +202,11 @@ void ADC1_IRQHandler(void)
 
       } else
         tmpadc1++;
-      GPIO_ResetBits(GPIOA, GPIO_Pin_4);        //  Вывод сигнала на внешнее устройство
+
+//      GPIO_ResetBits(GPIOA, GPIO_Pin_4);        //  Вывод сигнала на внешнее устройство
 
 
-      if(tmpadc2 > 20)
+      if(tmpadc2 > 10)
       {
         tmpadc2 = 0;
         if(COMP_GetOutputLevel(COMP_Selection_COMP2) == COMP_OutputLevel_Low)
@@ -213,7 +214,6 @@ void ADC1_IRQHandler(void)
           PumpCmd(ENABLE);
         }
       } else
-
         tmpadc2++;
 
     }
