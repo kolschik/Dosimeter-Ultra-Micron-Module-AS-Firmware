@@ -185,6 +185,15 @@ object mainFrm: TmainFrm
       Text = '0'
       OnClick = EVoltChange
     end
+    object Button1: TButton
+      Left = 104
+      Top = 128
+      Width = 75
+      Height = 25
+      Caption = 'Button1'
+      TabOrder = 5
+      OnClick = Button1Click
+    end
   end
   object Panel2: TPanel
     Left = 8
@@ -885,16 +894,10 @@ object mainFrm: TmainFrm
   object XPManifest1: TXPManifest
     Left = 224
   end
-  object MessTmr: TTimer
-    Enabled = False
-    Interval = 100
-    OnTimer = MessTmrTimer
-    Left = 8
-  end
   object ImageList1: TImageList
     Left = 288
     Bitmap = {
-      494C010105008C007C0210001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010105008C00800210001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000002000000001002000000000000020
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -1166,32 +1169,26 @@ object mainFrm: TmainFrm
       000000000000}
   end
   object Timer1: TTimer
-    Interval = 100
+    Interval = 200
     OnTimer = Timer1Timer
-    Left = 88
-  end
-  object Timer3: TTimer
-    Enabled = False
-    Interval = 100
-    OnTimer = Timer3Timer
-    Left = 48
+    Left = 24
+    Top = 96
   end
   object SaveDialog1: TSaveDialog
     Filter = 'CSV (*.CSV)|*.csv'
     Left = 256
     Top = 65535
   end
-  object CloseTimer: TTimer
-    Enabled = False
-    Interval = 100
-    OnTimer = CloseTimerTimer
-    Left = 160
-    Top = 65535
-  end
   object Com_detect: TTimer
     Interval = 50
     OnTimer = Com_detectTimer
-    Left = 128
-    Top = 65535
+    Left = 24
+    Top = 47
+  end
+  object Incative: TTimer
+    Enabled = False
+    OnTimer = IncativeTimer
+    Left = 24
+    Top = 152
   end
 end

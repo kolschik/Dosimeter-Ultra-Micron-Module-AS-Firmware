@@ -34,9 +34,9 @@ uint8_t prepare_data(uint32_t mode, uint16_t * massive_pointer, uint8_t start_ke
 
     // Если данные сжать нельзя
     data_key = start_key;
-/*
-    tmp = SPECTRO_MASSIVE[*massive_pointer];
 
+    tmp = SPECTRO_MASSIVE[*massive_pointer];
+/*
     // Антиалиасинг ячеек кратных 64
     if((*massive_pointer & 0x3F) == 0x3F)
     {

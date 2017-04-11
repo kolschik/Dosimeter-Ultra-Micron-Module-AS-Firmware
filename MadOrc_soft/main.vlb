@@ -16,11 +16,8 @@ Coordinates=495,331,72,36
 [XPManifest1]
 Coordinates=640,1,87,36
 
-[MessTmr]
-Coordinates=357,461,68,36
-
 []
-Coordinates=404,78,46,51
+Coordinates=279,111,80,36
 Visible=True
 
 [Timer1]
@@ -60,12 +57,6 @@ Coordinates=279,1,84,36
 
 [SaveDialog1]
 Coordinates=279,56,87,36
-
-[Timer3]
-Coordinates=181,155,55,36
-
-[CloseTimer]
-Coordinates=279,111,80,36
 
 [Label9]
 Coordinates=79,1,46,51
