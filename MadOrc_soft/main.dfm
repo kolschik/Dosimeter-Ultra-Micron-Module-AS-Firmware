@@ -185,15 +185,6 @@ object mainFrm: TmainFrm
       Text = '0'
       OnClick = EVoltChange
     end
-    object Button1: TButton
-      Left = 104
-      Top = 128
-      Width = 75
-      Height = 25
-      Caption = 'Button1'
-      TabOrder = 5
-      OnClick = Button1Click
-    end
   end
   object Panel2: TPanel
     Left = 8
@@ -897,7 +888,7 @@ object mainFrm: TmainFrm
   object ImageList1: TImageList
     Left = 288
     Bitmap = {
-      494C010105008C00800210001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010105008C00840210001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000002000000001002000000000000020
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

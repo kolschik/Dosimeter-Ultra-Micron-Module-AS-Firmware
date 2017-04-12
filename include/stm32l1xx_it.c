@@ -126,15 +126,6 @@ void TIM2_IRQHandler(void)      // Обновление дисплея
   {
     TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
     Need_Ledupdate = ENABLE;
-
-    if(COMP_GetOutputLevel(COMP_Selection_COMP2) == COMP_OutputLevel_Low)
-    {
-      PumpCmd(ENABLE);
-    } else
-    {
-      PumpCmd(DISABLE);
-    }
-
   }
 }
 
@@ -144,24 +135,19 @@ void TIM2_IRQHandler(void)      // Обновление дисплея
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void TIM10_IRQHandler(void)     // Учет мертвого времени датчика
+void TIM10_IRQHandler(void)     // Обслуживание контроля напряжения
 {
-  if(TIM_GetITStatus(TIM10, TIM_IT_CC1) != RESET)
-  {
-    TIM_ClearITPendingBit(TIM10, TIM_IT_CC1);
-
-    if(debug_mode)
-      GPIO_ResetBits(GPIOA, GPIO_Pin_4);        // Вывод сигнала на внешнее устройство
-
-    IMPULSE_DEAD_TIME = DISABLE;
-    TIM_ITConfig(TIM10, TIM_IT_CC1, DISABLE);
-  }
-
   if(TIM_GetITStatus(TIM10, TIM_IT_Update) != RESET)
   {
     TIM_ClearITPendingBit(TIM10, TIM_IT_Update);
 
-    TIM_ITConfig(TIM10, TIM_IT_Update, DISABLE);
+    if(COMP_GetOutputLevel(COMP_Selection_COMP2) == COMP_OutputLevel_Low)
+    {
+      PumpCmd(ENABLE);
+    } else
+    {
+      PumpCmd(DISABLE);
+    }
 
   }
 }
@@ -285,6 +271,7 @@ void TIM4_IRQHandler(void)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // 0.1 секунда
+int tim9onesecond;
 void TIM9_IRQHandler(void)
 {
   int i;
@@ -294,6 +281,31 @@ void TIM9_IRQHandler(void)
 
     spectro_time++;             // счет времени накопления спектра
 
+    tim9onesecond++;
+    if(tim9onesecond >= 10)
+    {
+      tim9onesecond = 0;
+
+      switch (MCP73831_state_detect())
+      {
+      case HI_Z_State:
+
+        TIM_Cmd(TIM2, ENABLE);
+
+        break;
+
+      case L_State:
+        TIM_Cmd(TIM2, DISABLE);
+        LED_show(LED_show_massive[0], C_SEG_ALLOFF);
+        break;
+
+      case H_State:
+        TIM_Cmd(TIM2, DISABLE);
+        LED_show(LED_show_massive[0], C_SEG_ALLOFF);
+        break;
+      }
+
+    }
     // -----------------------------
     // ротация массивов
     counter = 0;
@@ -363,11 +375,16 @@ void DMA1_Channel1_IRQHandler(void)
 
     tmp = 1.224 / (float) ADCData.Ref_voltage_raw;      // битовое значение соотв. напряжению референса 1.22в, из него вычисляем скольким микровольтам соответствует 1 бит.
     // 0,0007326В на 1 бит
+
     if(ADCData.Calibration_bit_voltage != tmp)  // Если бит калибровки изменился, перегрузить ЦАП
     {
       ADCData.Calibration_bit_voltage = tmp;
       dac_reload();
     }
+    // Вычисление напряжения АКБ
+    akb_voltage = (float) (ADCData.Calibration_bit_voltage * ADCData.Batt_voltage_raw * 100 * 2);
+
+
     ts_cal1 = *((uint16_t *) ((uint32_t) 0x1FF8007A));
     ts_cal2 = *((uint16_t *) ((uint32_t) 0x1FF8007E));
     Vrefint_cal = *((uint16_t *) ((uint32_t) 0x1FF80078));
@@ -380,6 +397,23 @@ void DMA1_Channel1_IRQHandler(void)
 
   }
 }
+
+///////////////////////////////////////////////////////////////////////////
+
+
+
+///////////////////////////////////////////////////////////////////////////
+// =======================================================
+// Прерывание по кнопке
+void EXTI9_5_IRQHandler(void)
+{
+  if(EXTI_GetITStatus(EXTI_Line8) != RESET)
+  {
+    EXTI_ClearITPendingBit(EXTI_Line8);
+  }
+}
+
+
 
 /*******************************************************************************
 * Function Name  : USB_IRQHandler

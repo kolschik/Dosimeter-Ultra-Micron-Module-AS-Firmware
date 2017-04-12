@@ -75,7 +75,6 @@ type
     Source: TComboBox;
     Label7: TLabel;
     Selected_time: TComboBox;
-    Button1: TButton;
     Incative: TTimer;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -102,7 +101,6 @@ type
     procedure EVoltChange(Sender: TObject);
     procedure SourceChange(Sender: TObject);
     procedure Selected_timeChange(Sender: TObject);
-    procedure Button1Click(Sender: TObject);
     procedure IncativeTimer(Sender: TObject);
 
   private
@@ -674,21 +672,9 @@ begin
   end;
 end;
 // =============================================================================
-procedure TmainFrm.Button1Click(Sender: TObject);
-begin
-        RS232.Close;
-        FreeAndNil(RS232);
 
-        RS232 := TiaRS232.Create;
-        RS232.OnRSReceived := DoOnReceiveEvent;
-        RS232.OnRSSended := DoOnSendedEvent;
-        RS232.Properties.PortNum := comport_number;
 
-        RS232.Open;
-        RS232.StartListner;
-
-end;
-
+// =============================================================================
 procedure TmainFrm.Button4Click(Sender: TObject);
 begin
 
@@ -871,6 +857,7 @@ Var
   ixx: Integer;
   TempStr: string;
   Y, M, D: word;
+  voltage : Extended;
 
 begin
   packet_size := 64;
@@ -897,7 +884,10 @@ begin
         if (VoltChange = false) then
         begin
           mainFrm.EVolt.Text :=  IntToStr(aData[used_bytes + 2]  + (aData[used_bytes + 3]  shl 8)  + (aData[used_bytes + 4] shl 16));
-          mainFrm.AKB_Volt.Text := IntToStr(aData[used_bytes + 5]  + (aData[used_bytes + 6]  shl 8));
+
+          voltage:=aData[used_bytes + 5]  + (aData[used_bytes + 6]  shl 8);
+          mainFrm.AKB_Volt.Text := FloatToStr(voltage/100);
+
           mainFrm.Counts.Text :=   IntToStr(aData[used_bytes + 7]  + (aData[used_bytes + 8]  shl 8) + (aData[used_bytes + 9] shl 16)  + (aData[used_bytes + 10] shl 24));
           mainFrm.Spectro_time.Text :=  IntToStr(aData[used_bytes + 11] + (aData[used_bytes + 12] shl 8) + (aData[used_bytes + 13] shl 16) + (aData[used_bytes + 14] shl 24));
           mainFrm.Pump.Text :=     IntToStr(aData[used_bytes + 15] + (aData[used_bytes + 16] shl 8) + (aData[used_bytes + 17] shl 16) + (aData[used_bytes + 18] shl 24));

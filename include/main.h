@@ -41,6 +41,12 @@
 #define ON_COMP 1
 #define OFF_COMP 2
 
+#define HI_Z_State 2
+#define L_State 0
+#define H_State 1
+#define Unknown_State 4
+
+
 #define FLASH_PAGE_SIZE                 0x100   // ( !   USB !!)
 #define FLASH_START_ADDR                0x0800F000
 #define FLASH_END_ADDR                  0x0801FFFF

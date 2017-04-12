@@ -7,6 +7,44 @@
 #define DOR_OFFSET                 ((uint32_t)0x0000002C)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Определение состояния MCP73831
+
+int MCP73831_state_detect(void)
+{
+  GPIO_InitTypeDef GPIO_InitStructure;
+  uint8_t down, up, i;
+
+  // Проверка PuPd_UP
+  up = GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_1);
+
+  // Проверка PuPd_DOWN
+  GPIO_StructInit(&GPIO_InitStructure);
+  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
+  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_DOWN;
+  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_40MHz;
+  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_1;
+  GPIO_Init(GPIOA, &GPIO_InitStructure);
+  for (i = 0; i < 10; i++);
+  down = GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_1);
+
+  // оставляем в состоянии PuPd_UP
+  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
+  GPIO_Init(GPIOA, &GPIO_InitStructure);
+
+  if((down == 0) && (up == 1))
+    return HI_Z_State;
+
+  if((down == 0) && (up == 0))
+    return L_State;
+
+  if((down == 1) && (up == 1))
+    return H_State;
+
+  return Unknown_State;
+
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Индикация
 
 void LED_show(uint16_t digit, uint16_t segment)
