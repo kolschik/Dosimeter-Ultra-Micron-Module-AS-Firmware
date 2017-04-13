@@ -263,12 +263,14 @@ void USB_off()
 {
 //---------------------------------------------Отключение USB------------------------------------
   RCC_APB1PeriphClockCmd(RCC_APB1Periph_USB, DISABLE);
+  PowerState.USB = DISABLE;
 }
 
 
 void USB_on()
 {
   //---------------------------------------------Включение USB------------------------------------
+  PowerState.USB = ENABLE;
   Set_System();
   SystemCoreClockUpdate();
   Set_USBClock();

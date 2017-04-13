@@ -7,6 +7,246 @@
 #define DOR_OFFSET                 ((uint32_t)0x0000002C)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Отключение питания
+
+void Power_off(void)
+{
+  GPIO_InitTypeDef GPIO_InitStructure;
+  EXTI_InitTypeDef EXTI_InitStructure;
+
+  PowerState.Off_mode = ENABLE;
+  PowerState.Sound = DISABLE;
+  Need_Ledupdate = DISABLE;
+
+  //Остановка всех таймеров
+  TIM_Cmd(TIM2, DISABLE);       // Обслуживание дисплея
+  TIM_DeInit(TIM2);
+  TIM_Cmd(TIM3, DISABLE);       // Генерация ВВ
+  TIM_DeInit(TIM3);
+  TIM_Cmd(TIM4, DISABLE);       // обслуживание звука
+  TIM_DeInit(TIM4);
+  TIM_Cmd(TIM9, DISABLE);       // Счет 0.1 секунды
+  TIM_DeInit(TIM9);
+  TIM_Cmd(TIM10, DISABLE);      // Обслуживание контроля напряжения
+  TIM_DeInit(TIM10);
+  RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, DISABLE);
+  RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, DISABLE);
+  RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4, DISABLE);
+  RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM9, DISABLE);
+  RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM10, DISABLE);
+
+  // Остановка ЦАП-АЦП-ДМА
+  ADC_Cmd(ADC1, DISABLE);
+  ADC_DMACmd(ADC1, DISABLE);
+  ADC_TempSensorVrefintCmd(DISABLE);
+  DMA_Cmd(DMA1_Channel1, DISABLE);
+
+  DAC_Cmd(DAC_Channel_2, DISABLE);
+
+  DAC_DeInit();
+  ADC_DeInit(ADC1);
+  DMA_DeInit(DMA1_Channel1);
+
+  RCC_HSICmd(DISABLE);
+
+  RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, DISABLE);
+  RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC1, DISABLE);
+  RCC_APB1PeriphClockCmd(RCC_APB1Periph_DAC, DISABLE);
+
+
+  // Остановка компаратора
+  PumpCompCmd(OFF_COMP);
+
+
+  // Выключение USB
+  USB_off();
+
+  // Переключение на тактирование от MSI
+  set_msi();
+  PWR_UltraLowPowerCmd(ENABLE);
+  PWR_PVDCmd(DISABLE);
+
+  // Переконфигурация портов GPIOA
+  GPIO_StructInit(&GPIO_InitStructure);
+  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AN;
+  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+
+  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0;     // Сигнал с датчика
+  GPIO_Init(GPIOA, &GPIO_InitStructure);
+
+  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_1;     // сигнал с зарядки
+  GPIO_Init(GPIOA, &GPIO_InitStructure);
+
+  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4;     // сигнал для ультра-микрона
+  GPIO_Init(GPIOA, &GPIO_InitStructure);
+
+  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_5;
+  GPIO_Init(GPIOA, &GPIO_InitStructure);
+
+  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8;
+  GPIO_Init(GPIOA, &GPIO_InitStructure);
+
+  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9;
+  GPIO_Init(GPIOA, &GPIO_InitStructure);
+
+  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10;
+  GPIO_Init(GPIOA, &GPIO_InitStructure);
+
+  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_11;    // USB
+  GPIO_Init(GPIOA, &GPIO_InitStructure);
+
+  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_12;    // USB
+  GPIO_Init(GPIOA, &GPIO_InitStructure);
+
+  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_15;    // Детектор фронта
+  GPIO_Init(GPIOA, &GPIO_InitStructure);
+  EXTI_InitStructure.EXTI_Line = EXTI_Line15;
+  EXTI_InitStructure.EXTI_LineCmd = DISABLE;
+  EXTI_Init(&EXTI_InitStructure);
+
+
+
+  // Переконфигурация портов GPIOB
+  GPIO_StructInit(&GPIO_InitStructure);
+  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AN;
+  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+
+  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_3;
+  GPIO_Init(GPIOB, &GPIO_InitStructure);
+
+  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4;     // ОС по напряжению
+  GPIO_Init(GPIOB, &GPIO_InitStructure);
+
+  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_5;     // Накачка транса
+  GPIO_Init(GPIOB, &GPIO_InitStructure);
+
+  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_7;
+  GPIO_Init(GPIOB, &GPIO_InitStructure);
+
+  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9;     // Вывод звука
+  GPIO_Init(GPIOB, &GPIO_InitStructure);
+
+  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_13;    // Замер АКБ
+  GPIO_Init(GPIOB, &GPIO_InitStructure);
+
+  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_14;    // Замер АКБ
+  GPIO_Init(GPIOB, &GPIO_InitStructure);
+
+  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_15;
+  GPIO_Init(GPIOB, &GPIO_InitStructure);
+
+
+  // Переконфигурация портов GPIOC-GPIOH
+  GPIO_StructInit(&GPIO_InitStructure);
+  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AN;
+  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_400KHz;
+//  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_DOWN;
+  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_All;
+  GPIO_Init(GPIOH, &GPIO_InitStructure);
+  RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOH, DISABLE);
+
+  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AN;
+  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_400KHz;
+//  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_DOWN;
+  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_All;
+  GPIO_Init(GPIOC, &GPIO_InitStructure);
+  RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOC, DISABLE);
+
+  // Выключение аналогово питания
+  GPIO_ResetBits(GPIOB, GPIO_Pin_6);
+
+  // Выключение SYSCFG
+  RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, DISABLE);
+
+  // Выключение отладки
+  DBGMCU_Config(DBGMCU_SLEEP | DBGMCU_STANDBY | DBGMCU_STOP, DISABLE);
+
+  // Конфигурирование дисплея
+  GPIO_StructInit(&GPIO_InitStructure);
+  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
+  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_400KHz;
+  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_DOWN;
+
+  //сигменты
+  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2;
+  GPIO_Init(GPIOA, &GPIO_InitStructure);
+
+  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_3;
+  GPIO_Init(GPIOA, &GPIO_InitStructure);
+
+  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6;
+  GPIO_Init(GPIOA, &GPIO_InitStructure);
+
+  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_7;
+  GPIO_Init(GPIOA, &GPIO_InitStructure);
+
+  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0;
+  GPIO_Init(GPIOB, &GPIO_InitStructure);
+
+  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_1;
+  GPIO_Init(GPIOB, &GPIO_InitStructure);
+
+  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_12;
+  GPIO_Init(GPIOB, &GPIO_InitStructure);
+
+  // разряды
+  GPIO_StructInit(&GPIO_InitStructure);
+  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
+  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_400KHz;
+  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
+
+  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2;
+  GPIO_Init(GPIOB, &GPIO_InitStructure);
+
+  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10;
+  GPIO_Init(GPIOB, &GPIO_InitStructure);
+
+  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_11;
+  GPIO_Init(GPIOB, &GPIO_InitStructure);
+
+
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Включение питания
+
+void Power_on(void)
+{
+  PowerState.Off_mode = DISABLE;
+  io_init();
+  set_pll_for_usb();
+
+  NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
+
+  Settings.feu_voltage = eeprom_read(0x10);
+  Settings.ADC_bits = eeprom_read(0x14);
+  Settings.Sound = eeprom_read(0x18);
+  Settings.LED_intens = eeprom_read(0x1C);
+  Settings.T_korr = eeprom_read(0x20);
+  Settings.Impulse_dead_time = eeprom_read(0x28);
+
+  adc_init();
+
+  dac_init();
+  dac_on();
+  RTC_Config();
+
+  PumpCompCmd(INIT_COMP);
+  PumpCompCmd(ON_COMP);
+
+  tim2_Config();                // Обслуживание дисплея
+  tim3_Config();                // Генерация ВВ
+  tim4_Config();                // обслуживание звука
+  tim9_Config();                // Счет 0.1 секунды
+  tim10_Config();               // Обслуживание контроля напряжения
+
+  EXTI15_Config();              // Детектор фронта
+  EXTI8_Config();               // Кнопка
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Определение состояния MCP73831
 
 int MCP73831_state_detect(void)

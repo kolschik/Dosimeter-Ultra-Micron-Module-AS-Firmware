@@ -1045,6 +1045,11 @@
                 </FileArmAds>
               </FileOption>
             </File>
+            <File>
+              <FileName>rtc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\include\rtc.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -2066,6 +2071,11 @@
               <FileName>Pump.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\include\Pump.c</FilePath>
+            </File>
+            <File>
+              <FileName>rtc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\include\rtc.c</FilePath>
             </File>
           </Files>
         </Group>

@@ -18,7 +18,6 @@ void io_init(void)
   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_40MHz;
   GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
   GPIO_Init(GPIOB, &GPIO_InitStructure);
-  //GPIO_ResetBits(GPIOB, GPIO_Pin_6);
   GPIO_SetBits(GPIOB, GPIO_Pin_6);
 
 
@@ -135,7 +134,7 @@ void io_init(void)
   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_400KHz;
   GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
   GPIO_Init(GPIOB, &GPIO_InitStructure);        // Загружаем конфигурацию
-  GPIO_ResetBits(GPIOB, GPIO_Pin_15);   // Подключаем токосемник
+  GPIO_ResetBits(GPIOB, GPIO_Pin_14);   // Подключаем токосемник
 
   // ===============================================================================================  
   // MCP73831

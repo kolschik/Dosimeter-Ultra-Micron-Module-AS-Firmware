@@ -15,6 +15,7 @@
 #include "stm32_it.h"
 #include "timers.h"
 #include "pump.h"
+#include "rtc.h"
 
 #include "usb.h"
 #include "hw_config.h"
@@ -58,7 +59,6 @@
 typedef struct
 {
   FunctionalState Active;       //   
-//  FunctionalState Impulse_past; //   
 } PumpDataDef;
 
 typedef struct
@@ -84,9 +84,22 @@ typedef struct
   uint8_t T_korr;
   uint8_t Impulse_dead_time;
 
+
 } SettingsDef;
 
+typedef struct
+{
+  FunctionalState USB;
+  FunctionalState Charging;
+  FunctionalState Spectr;
+  FunctionalState Finder;
+  FunctionalState Sound;
+  FunctionalState Off_mode;
 
+} PowerStateDef;
+
+
+extern PowerStateDef PowerState;
 extern ADCDataDef ADCData;
 extern PumpDataDef PumpData;
 extern SettingsDef Settings;
