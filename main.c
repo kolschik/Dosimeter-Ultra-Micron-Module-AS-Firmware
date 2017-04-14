@@ -38,7 +38,7 @@ FunctionalState need_MCP_update = DISABLE;
 /////////////////////////////////////////////////////////////////////////////////////////
 int main(void)
 {
-  uint32_t chkkeysleep = 0;
+  uint32_t chkkeysleep = 0;     //, eeprom_datamassive = 0;
 
   RTC_Config();
   RTC_WriteBackupRegister(RTC_BKP_DR0, 0x0000);
@@ -52,10 +52,9 @@ int main(void)
     while (chkkeysleep < 200000)
     {
       chkkeysleep = 0;
-      PWR_FastWakeUpCmd(DISABLE);
+      PWR_FastWakeUpCmd(ENABLE);
       PWR_EnterSTOPMode(PWR_Regulator_LowPower, PWR_STOPEntry_WFI);
-
-      //delay_ms(100);
+      PWR_FastWakeUpCmd(DISABLE);
 
       while (!GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_8)) // проверка зажатой кнопки
         chkkeysleep++;
@@ -68,6 +67,7 @@ int main(void)
     IWDG_Enable();
     while (1);
   }
+
   Power_on();
 
   PowerState.Sound = ENABLE;    // Звук включить
@@ -152,8 +152,7 @@ int main(void)
       LED_show(1, C_SEG_G);     // Включаем для индикации 1 сегмент
       delay_ms(100);
 
-      TIM4->EGR |= 0x0001;      // длинный пронзительный писк :)
-      TIM_CCxCmd(TIM4, TIM_Channel_4, TIM_CCx_Enable);
+      Power_off();
 
       // перезагрузка устройства для входа в сон
       RTC_WriteBackupRegister(RTC_BKP_DR0, 0x1212);
@@ -164,6 +163,23 @@ int main(void)
       IWDG_Enable();
       while (1);
     }
-    //PWR_EnterSleepMode(PWR_Regulator_ON, PWR_SLEEPEntry_WFI);
+
+    if((PowerState.Engage) && (!PowerState.Spectr))     // Если был осуществлен набор спектра, сохраняем спектр
+    {
+      Power_off();
+
+      eeprom_write((0x100 + 0x04), spectro_time);       // запись времени спектра
+      eeprom_write((0x100 + 0x08), ADCData.Temp & 0xff);        // запись температуры спектра
+      full_erase_flash();       // очистка данных FLASH
+      flash_write_massive(0);
+
+      PowerState.Engage = DISABLE;
+      IWDG_WriteAccessCmd(IWDG_WriteAccess_Enable);
+      IWDG_SetPrescaler(IWDG_Prescaler_4);
+      IWDG_SetReload(2);
+      IWDG_ReloadCounter();
+      IWDG_Enable();
+      while (1);
+    }
   }
 }

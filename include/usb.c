@@ -111,7 +111,6 @@ void USB_work()
           for (i = 0; i <= 2047; i++)
             SPECTRO_MASSIVE[i] = 0;
           spectro_time = 0;
-          full_erase_flash();   // очистка данных FLASH
           if(Send_length == 0)
             current_rcvd_pointer++;     // Если массив исчерпан
           break;
@@ -142,7 +141,7 @@ void USB_work()
           Send_Buffer[16] = (counter_pump >> 8) & 0xff;
           Send_Buffer[17] = (counter_pump >> 16) & 0xff;
           Send_Buffer[18] = (counter_pump >> 24) & 0xff;
-          Send_Buffer[19] = 0x00;       // Время накопления спектра
+          Send_Buffer[19] = eeprom_read(0x100) & 0xff;  // Колличество накопленных спектров
           Send_Buffer[20] = Settings.Sound & 0xff;      // Управление звуком
           Send_Buffer[21] = Settings.LED_intens & 0xff; // Управление интенсовностью подсветки
           Send_Buffer[22] = Settings.T_korr & 0xff;     // Температурная коррекция
@@ -222,6 +221,17 @@ void USB_work()
           current_rcvd_pointer++;
           break;
 
+        case 0x40:             // Загрузка спектра 0
+          for (i = 0; i <= 2047; i++)
+            SPECTRO_MASSIVE[i] = 0;
+          spectro_time = 0;
+          flash_read_massive(0);
+          spectro_time = eeprom_read(0x100 + 0x04);     // время спектра
+          ADCData.Temp = eeprom_read(0x100 + 0x08);     // запись температуры спектра
+
+          current_rcvd_pointer++;
+          break;
+
 
         default:
           current_rcvd_pointer++;
@@ -263,7 +273,20 @@ void USB_off()
 {
 //---------------------------------------------Отключение USB------------------------------------
   RCC_APB1PeriphClockCmd(RCC_APB1Periph_USB, DISABLE);
+
   PowerState.USB = DISABLE;
+  PowerState.Spectr = DISABLE;
+  dac_on();                     // Включение ЦАП
+  PumpCompCmd(INIT_COMP);       // Включение компоратора
+  PumpCompCmd(ON_COMP);
+  TIM_Cmd(TIM10, ENABLE);       // Включение контроля напряжения на ФЭУ
+
+  TIM_Cmd(TIM2, ENABLE);        // Индикацию включить
+  TIM_ClearITPendingBit(TIM2, TIM_IT_CC2);
+  TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
+  LED_show(LED_show_massive[0], C_SEG_ALLOFF);
+
+  PowerState.Sound = ENABLE;    // Звук включить
 }
 
 

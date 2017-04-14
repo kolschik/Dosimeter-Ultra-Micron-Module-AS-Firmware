@@ -49,7 +49,7 @@
 
 
 #define FLASH_PAGE_SIZE                 0x100   // ( !   USB !!)
-#define FLASH_START_ADDR                0x0800F000
+#define FLASH_START_ADDR                0x08008000
 #define FLASH_END_ADDR                  0x0801FFFF
 #define FLASH_MAX_PAGE                  (FLASH_END_ADDR - FLASH_START_ADDR) / FLASH_PAGE_SIZE
 #define FLASH_MAX_ELEMENT               FLASH_MAX_PAGE * (FLASH_PAGE_SIZE >> 3)
@@ -92,6 +92,7 @@ typedef struct
   FunctionalState USB;
   FunctionalState Charging;
   FunctionalState Spectr;
+  FunctionalState Engage;
   FunctionalState Finder;
   FunctionalState Sound;
   FunctionalState Off_mode;

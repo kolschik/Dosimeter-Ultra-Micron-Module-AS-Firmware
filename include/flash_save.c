@@ -92,7 +92,9 @@ void page_erase_flash(uint32_t page)    // Erase 32 elements
 //////////////////////////////////////////////////////////////////////////////////////
 void flash_write_massive(uint32_t number_of_massive)
 {
-  uint32_t Address = 0, i;
+  uint32_t Address_fl = 0, i, ix, massive32[32];
+  __IO FLASH_Status FLASHStatus = FLASH_COMPLETE;
+
 
   if(number_of_massive > 8)
     return;                     // Проверка входящего параметра
@@ -103,33 +105,30 @@ void flash_write_massive(uint32_t number_of_massive)
   /* Clear all pending flags */
   FLASH_ClearFlag(FLASH_FLAG_EOP | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR | FLASH_FLAG_SIZERR | FLASH_FLAG_OPTVERR | FLASH_FLAG_OPTVERRUSR);
 
-////////////////////////////////////////////////////////////////////////
-  for (i = 0; i < 64; i++)      // 2048 / 32 = 64HalfPage 
+
+
+  ////////////////////////////////////////////////////////////////////////
+  i = 0;
+  Address_fl = FLASH_START_ADDR + (i << 7) + (number_of_massive << (11 + 2));
+
+  while (i < 64)                // 2048 / 32 = 64HalfPage 
   {
-    // Записываем массив в флеш
-    Address = FLASH_START_ADDR + (i << 7) + (number_of_massive << (11 + 2));
-    /* Write the FLASH Program memory using HalfPage operation */
+    for (ix = 0; ix < 32; ix++)
+      massive32[ix] = SPECTRO_MASSIVE[(i * 32) + ix];
 
-    if(Address > FLASH_END_ADDR)
-    {
-      FLASH_Lock();
-      return;
-    }
-    if(Address < FLASH_START_ADDR)
-    {
-      FLASH_Lock();
-      return;
-    }
+    FLASHStatus = FLASH_ProgramHalfPage(Address_fl, massive32);
 
-    FLASHStatus_eeprom = FLASH_ProgramHalfPage(Address, SPECTRO_MASSIVE + (i * 32));
-
-    if(FLASHStatus_eeprom == FLASH_COMPLETE)
+    if(FLASHStatus == FLASH_COMPLETE)
     {
+      i++;
+      Address_fl = FLASH_START_ADDR + (i << 7) + (number_of_massive << (11 + 2));
     } else
     {
       FLASH_ClearFlag(FLASH_FLAG_EOP | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR | FLASH_FLAG_SIZERR | FLASH_FLAG_OPTVERR | FLASH_FLAG_OPTVERRUSR);
     }
   }
+
+
 ////////////////////////////////////////////////////////////////////////
   FLASH_Lock();
 }

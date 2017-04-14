@@ -63,7 +63,7 @@ void Power_off(void)
 
 
   // Выключение USB
-  USB_off();
+  RCC_APB1PeriphClockCmd(RCC_APB1Periph_USB, DISABLE);
 
   // Переключение на тактирование от MSI
   set_msi();

@@ -259,16 +259,52 @@ void TIM4_IRQHandler(void)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // 0.1 секунда
-int tim9cnt;
+int tim9cnt, tim9cnt_spectr_heatup;
 void TIM9_IRQHandler(void)
 {
-  int i;
+  uint32_t i;
   if(TIM_GetITStatus(TIM9, TIM_IT_Update) != RESET)
   {
     TIM_ClearITPendingBit(TIM9, TIM_IT_Update);
 
     if(PowerState.Spectr)
       spectro_time++;           // счет времени накопления спектра
+
+    if((!PowerState.USB) && (PowerState.Spectr))        // Автономный сбор спектра
+    {
+      if(tim9cnt_spectr_heatup < 600)   // Ждем 60 секунд
+      {
+        tim9cnt_spectr_heatup++;
+        if((tim9cnt_spectr_heatup % 10) == 0)   // подаем звук каждую секунду и мигаем светодиодом
+        {
+          for (i = 0; i < 1000; i++)
+          {
+            TIM_Cmd(TIM2, DISABLE);     // Индикацию выключить
+            TIM_ClearITPendingBit(TIM2, TIM_IT_CC2);
+            TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
+
+            LED_show(LED_show_massive[0], C_SEG_ALLOFF);
+            LED_show(1, C_SEG_A);       // Включаем для индикации 1 сегмент
+
+            TIM_CCxCmd(TIM4, TIM_Channel_4, TIM_CCx_Enable);
+          }
+          LED_show(LED_show_massive[0], C_SEG_ALLOFF);
+          TIM_ITConfig(TIM4, TIM_IT_Update, ENABLE);    //выключаем звук
+        }
+      } else
+      {
+        if(!PowerState.Engage)
+        {
+          LED_show(1, C_SEG_A); // Включаем для индикации 1 сегмент
+          spectro_time = 0;     // Сброс счета времени накопления спектра
+          for (i = 0; i <= 2047; i++)   // Сброс массива спектра
+            SPECTRO_MASSIVE[i] = 0;
+          PowerState.Engage = ENABLE;   // Запускаем сбор спектра
+        }
+      }
+
+    }
+
 
     if(!GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_8))
     {
@@ -449,6 +485,8 @@ void EXTI9_5_IRQHandler(void)
           if(!PowerState.Spectr)
           {
             PowerState.Spectr = ENABLE;
+            tim9cnt_spectr_heatup = 0;
+            PowerState.Engage = DISABLE;
             dac_on();           // Включение ЦАП
             PumpCompCmd(INIT_COMP);     // Включение компоратора
             PumpCompCmd(ON_COMP);
@@ -476,6 +514,7 @@ void EXTI9_5_IRQHandler(void)
             LED_show(LED_show_massive[0], C_SEG_ALLOFF);
 
             PowerState.Sound = ENABLE;  // Звук включить
+
           }
         }
       }
