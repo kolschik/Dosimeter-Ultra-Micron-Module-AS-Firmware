@@ -16,22 +16,22 @@ unit iaRS232;
 interface
 
 uses
-  SysUtils, iaCOMProperties, Windows, SyncObjs, classes, Dialogs;
+  SysUtils, iaCOMProperties, Windows, SyncObjs, classes;
 
 const
 // онстанты настроек порта по умолчанию
   DEF_PORTNUM = 1;
-  DEF_BAUDRATE = CBR_115200;
+  DEF_BAUDRATE = CBR_19200;
   DEF_PARITY = NOPARITY;
   DEF_STOPBITS = ONESTOPBIT;
   DEF_BYTESIZE = DATABITS_8;
-  DEF_RTS_CONTROL = RTS_CONTROL_ENABLE;
-  DEF_DTR_CONTROL = DTR_CONTROL_ENABLE;
-  DEF_READINTERVALTIMEOUT = 100;
-  DEF_READTOTALTIMEOUTMULTIPLIER = 10;
-  DEF_READTOTALTIMEOUTCONSTANT = 200;
-  DEF_WRITETOTALTIMEOUTMULTIPLIER = 10;
-  DEF_WRITETOTALTIMEOUTCONSTANT = 200;
+  DEF_RTS_CONTROL = RTS_CONTROL_DISABLE;
+  DEF_DTR_CONTROL = DTR_CONTROL_DISABLE;
+  DEF_READINTERVALTIMEOUT = 1000;
+  DEF_READTOTALTIMEOUTMULTIPLIER = 100;
+  DEF_READTOTALTIMEOUTCONSTANT = 2000;
+  DEF_WRITETOTALTIMEOUTMULTIPLIER = 100;
+  DEF_WRITETOTALTIMEOUTCONSTANT = 2000;
   DEF_RTS = False;
   DEF_DTR = False;
   DEF_USE_SYNCHRONIZ_RECEIVE = True;
@@ -468,13 +468,12 @@ begin
       Exit;
 
 {$WARNINGS OFF}
-//  fhPort := CreateFile(PChar('\\.\COM'+IntToStr(fCOMProp.PortNum)),
-    fhPort := CreateFile(PChar('COM'+IntToStr(fCOMProp.PortNum)),
+  fhPort := CreateFile(PChar('\\.\COM'+IntToStr(fCOMProp.PortNum)),
     GENERIC_READ or GENERIC_WRITE,
     0,
     nil,
     OPEN_EXISTING,
-    FILE_ATTRIBUTE_NORMAL,
+    0,
     0);
 
   if fhPort = INVALID_HANDLE_VALUE then
@@ -490,9 +489,6 @@ begin
         or not SetCommTimeouts(fhPort, fComProp.Timeouts)
         or not SetCommMask(fhPort, EV_RXCHAR or EV_RXFLAG) then
           begin
-
-//          ShowMessage(GetLastError().ToString());
-
             if fPortActive then
               Close;
             if not RaiseEiaRS232Error(nil, 0, ERR_RS_SETPORTPROPERROR,
@@ -540,18 +536,18 @@ Var
   E: EiaRS232_Error;
   vRaiseException: Boolean;
 begin
-  vRaiseException := True;
-  FLastRSError.msg := aMSG;
-  FLastRSError.uin := aUIN;
-  If aDoErrorEvent then
-    DoOnError(aData, aCount, aMsg, aUIN, vRaiseException);
-  If vRaiseException or not aManageErrorEvent then
-    Begin
-      E := EiaRS232_Error.Create(aMsg);
-      E.ErrorCodeRS232 := aUIN;
+//  vRaiseException := True;
+//  FLastRSError.msg := aMSG;
+//  FLastRSError.uin := aUIN;
+//  If aDoErrorEvent then
+//    DoOnError(aData, aCount, aMsg, aUIN, vRaiseException);
+//  If vRaiseException or not aManageErrorEvent then
+//    Begin
+//      E := EiaRS232_Error.Create(aMsg);
+//      E.ErrorCodeRS232 := aUIN;
 //      Raise E;
-    end
-  Else
+//    end
+//  Else
     Result := False;
 end;
 

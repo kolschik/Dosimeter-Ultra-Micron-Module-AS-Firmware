@@ -164,34 +164,40 @@ void ADC1_IRQHandler(void)
   uint16_t address;
   if(ADC_GetITStatus(ADC1, ADC_IT_JEOC) != RESET)
   {
-    ADC_ClearITPendingBit(ADC1, ADC_IT_JEOC);
-
     if((PumpData.Active == DISABLE) && (PUMP_DEAD_TIME == DISABLE))     // Если прерывание вызвано не импульсом накачки
     {
       address = ADC_GetInjectedConversionValue(ADC1, ADC_InjectedChannel_1);
 
-      if(address < 12)
-        return;
-
-      if(!PowerState.Spectr)
-        GPIO_SetBits(GPIOA, GPIO_Pin_4);        //  Вывод сигнала на внешнее устройство
-
-      SPECTRO_MASSIVE[address >> 1]++;  // Если все нормально, добавляем спектр
-
-      IMPULSE_MASSIVE[0]++;     // увеличиваем счетчик
-
-      if((tmpadc1 > Settings.Sound) && (Settings.Sound > 0) && PowerState.Sound)
+      if(address < 12)          // Убираем шум в незначемых каналах
       {
-        tmpadc1 = 0;
-        TIM4->EGR |= 0x0001;    // Подаем звук
-        TIM_CCxCmd(TIM4, TIM_Channel_4, TIM_CCx_Enable);
-        TIM_ITConfig(TIM4, TIM_IT_Update, ENABLE);
+        ADC_ClearITPendingBit(ADC1, ADC_IT_JEOC);
+        return;
+      }
 
+      if(PowerState.Spectr)
+      {
+        // Режим спектрометра
+        SPECTRO_MASSIVE[address >> 1]++;        // Если все нормально, добавляем спектр
+        IMPULSE_MASSIVE[0]++;   // увеличиваем счетчик                                
       } else
-        tmpadc1++;
-      if(!PowerState.Spectr)
-        GPIO_ResetBits(GPIOA, GPIO_Pin_4);      //  Вывод сигнала на внешнее устройство
+      {
+        GPIOA->BSRRL = GPIO_Pin_4;      //  Вывод сигнала на внешнее устройство - начало фронта
+        IMPULSE_MASSIVE[0]++;   // увеличиваем счетчик
+        if((tmpadc1 > Settings.Sound) && (Settings.Sound > 0) && PowerState.Sound)
+        {
+          tmpadc1 = 0;
+          TIM4->EGR |= 0x0001;  // Подаем звук
+          TIM_CCxCmd(TIM4, TIM_Channel_4, TIM_CCx_Enable);
+          TIM_ITConfig(TIM4, TIM_IT_Update, ENABLE);
+
+        } else
+        {
+          tmpadc1++;
+        }
+        GPIOA->BSRRH = GPIO_Pin_4;      //  Вывод сигнала на внешнее устройство - конец фронта
+      }
     }
+    ADC_ClearITPendingBit(ADC1, ADC_IT_JEOC);
   }
 }
 
@@ -208,28 +214,29 @@ void TIM3_IRQHandler(void)
   if(TIM_GetITStatus(TIM3, TIM_IT_Update) != RESET)
   {
     TIM_ClearITPendingBit(TIM3, TIM_IT_Update);
-    if(tmptim3 > 0)
+    if(PumpData.Active == DISABLE)      // если накачку надо выключить
     {
-      if(PumpData.Active == DISABLE)    // если накачку надо выключить
+      if(tmptim3 > 0)
       {
         tmptim3 = 0;
         TIM_ITConfig(TIM3, TIM_IT_Update, DISABLE);
         TIM_ITConfig(TIM3, TIM_IT_CC2, DISABLE);
         TIM_CCxCmd(TIM3, TIM_Channel_2, TIM_CCx_Disable);       // запретить накачку
         PUMP_DEAD_TIME = DISABLE;
+
+      } else
+      {
+        tmptim3++;
       }
     } else
-      tmptim3++;
-
+    {
+      tmptim3 = 0;
+    }
   }
 
   if(TIM_GetITStatus(TIM3, TIM_IT_CC2) != RESET)
   {
     TIM_ClearITPendingBit(TIM3, TIM_IT_CC2);
-
-//    PUMP_DEAD_TIME = ENABLE;    // начинаем отсчет мертвого времени накачки
-//    TIM10->EGR |= 0x0001;
-//    TIM_ITConfig(TIM10, TIM_IT_CC1, ENABLE);
   }
 
   PUMP_MASSIVE[0]++;
@@ -321,20 +328,18 @@ void TIM9_IRQHandler(void)
     // -----------------------------
     // ротация массивов
     counter = 0;
-    counter_err = 0;
     counter_pump = 0;
-    for (i = 10; i > 0; i--)
+    for (i = 20; i > 0; i--)
     {
       IMPULSE_MASSIVE[i] = IMPULSE_MASSIVE[i - 1];
       PUMP_MASSIVE[i] = PUMP_MASSIVE[i - 1];
-      ERR_MASSIVE[i] = ERR_MASSIVE[i - 1];
       counter += IMPULSE_MASSIVE[i - 1];
-      counter_err += ERR_MASSIVE[i - 1];
       counter_pump += PUMP_MASSIVE[i - 1];
     }
+    counter >>= 1;              // деление на два
+    counter_pump >>= 1;         // деление на два
     IMPULSE_MASSIVE[0] = 0;
     PUMP_MASSIVE[0] = 0;
-    ERR_MASSIVE[0] = 0;
     // -----------------------------
 
     if(tim9cnt >= 10)

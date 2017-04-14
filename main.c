@@ -15,9 +15,8 @@ uint16_t LED_show_massive[4];   // сырое отображение на дисплее
 char LED_BUF[6];
 uint32_t counter = 0;
 uint32_t SPECTRO_MASSIVE[2049];
-uint32_t IMPULSE_MASSIVE[11];
+uint32_t IMPULSE_MASSIVE[21];
 uint32_t PUMP_MASSIVE[11];
-uint32_t ERR_MASSIVE[11];
 
 FunctionalState Need_Ledupdate = DISABLE;
 FunctionalState Need_pump = DISABLE;
@@ -26,7 +25,6 @@ FunctionalState IMPULSE_DEAD_TIME = DISABLE;
 
 uint8_t temperature;
 uint16_t akb_voltage;
-uint32_t counter_err = 0;
 uint32_t counter_pump = 0;
 uint32_t spectro_time = 0;
 uint16_t USB_spectro_pointer = 0;
