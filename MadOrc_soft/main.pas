@@ -355,11 +355,11 @@ mainFrm.LED.AddItem('90%', nil);
 mainFrm.LED.AddItem('100%', nil);
 
 mainFrm.Source.AddItem('Он-лайн', nil);
-mainFrm.Source.AddItem('Flash 1', nil);
-mainFrm.Source.AddItem('Flash 2', nil);
-mainFrm.Source.AddItem('Flash 3', nil);
-mainFrm.Source.AddItem('Flash 4', nil);
-mainFrm.Source.AddItem('Flash 5', nil);
+mainFrm.Source.AddItem('Flash', nil);
+//mainFrm.Source.AddItem('Flash 2', nil);
+//mainFrm.Source.AddItem('Flash 3', nil);
+//mainFrm.Source.AddItem('Flash 4', nil);
+//mainFrm.Source.AddItem('Flash 5', nil);
 mainFrm.Source.ItemIndex:=0;
 
 mainFrm.Selected_time.Items.AddObject('Без остановки', TObject(0));
@@ -659,10 +659,22 @@ begin
     begin
       DevPresent := true;
 
-      SetLength(vAns, 2);
-      vAns[0] := $39; // выполнить сброс счетчиков дозиметра
-      vAns[1] := $02; // считать массив спектра
-      mainFrm.RS232.Send(vAns);
+      if(Type_of_load=0) then
+      begin
+        SetLength(vAns, 2);
+        vAns[0] := $39; // выполнить сброс счетчиков дозиметра
+        vAns[1] := $02; // считать массив спектра
+        mainFrm.RS232.Send(vAns);
+      end
+      else
+      begin
+        SetLength(vAns, 4);
+        vAns[0] := $39; // выполнить сброс счетчиков дозиметра
+        vAns[1] := $40; // считать массив спектра их флеша
+        vAns[2] := $05; // загрузить данные земера
+        vAns[3] := $02; // считать массив спектра
+        mainFrm.RS232.Send(vAns);
+      end;
 
       USB_massive_loading := true;
 
@@ -678,7 +690,7 @@ end;
 procedure TmainFrm.Button4Click(Sender: TObject);
 begin
 
-  Load_spectr(0);
+  Load_spectr(mainFrm.Source.ItemIndex);
 
   end;
 // =============================================================================
