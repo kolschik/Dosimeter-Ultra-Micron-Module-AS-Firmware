@@ -60,7 +60,7 @@ void adc_init(void)
 
   ADC_DelaySelectionConfig(ADC1, ADC_DelayLength_Freeze);       // Задержка до момента чтения данных из АЦП
 
-  ADC_PowerDownCmd(ADC1, ADC_PowerDown_Idle_Delay, DISABLE);    // отключение питания АЦП в интервалах Idle и Delay
+  ADC_PowerDownCmd(ADC1, ADC_PowerDown_Idle_Delay, ENABLE);     // отключение питания АЦП в интервалах Idle и Delay
 
   ADC_TempSensorVrefintCmd(ENABLE);
 
@@ -89,7 +89,7 @@ void adc_init(void)
   ADC_InjectedChannelConfig(ADC1, ADC_Channel_0, 1, ADC_SampleTime_4Cycles);
   ADC_ExternalTrigInjectedConvConfig(ADC1, ADC_ExternalTrigInjecConv_Ext_IT15);
   ADC_ExternalTrigInjectedConvEdgeConfig(ADC1, ADC_ExternalTrigInjecConvEdge_Rising);
-  //ADC_AutoInjectedConvCmd(ADC1, ENABLE);
+
 
   DMA_Cmd(DMA1_Channel1, ENABLE);
   ADC_DMARequestAfterLastTransferCmd(ADC1, ENABLE);

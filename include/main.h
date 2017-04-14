@@ -95,6 +95,7 @@ typedef struct
   FunctionalState Finder;
   FunctionalState Sound;
   FunctionalState Off_mode;
+  uint8_t key_hold;
 
 } PowerStateDef;
 
@@ -114,6 +115,8 @@ extern FunctionalState Need_pump;
 extern FunctionalState PUMP_DEAD_TIME;
 extern FunctionalState IMPULSE_DEAD_TIME;
 extern FunctionalState debug_mode;
+extern FunctionalState sleep_rtc;
+extern FunctionalState need_MCP_update;
 
 extern uint32_t SPECTRO_MASSIVE[];
 extern uint32_t IMPULSE_MASSIVE[];

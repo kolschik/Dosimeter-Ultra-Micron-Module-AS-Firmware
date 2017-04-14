@@ -18,6 +18,10 @@ void Power_off(void)
   PowerState.Sound = DISABLE;
   Need_Ledupdate = DISABLE;
 
+  TIM_CCxCmd(TIM3, TIM_Channel_2, TIM_CCx_Disable);     // запретить накачку
+  TIM_ITConfig(TIM3, TIM_IT_Update, DISABLE);
+  TIM_ITConfig(TIM3, TIM_IT_CC2, DISABLE);
+
   //Остановка всех таймеров
   TIM_Cmd(TIM2, DISABLE);       // Обслуживание дисплея
   TIM_DeInit(TIM2);
@@ -105,7 +109,6 @@ void Power_off(void)
   EXTI_Init(&EXTI_InitStructure);
 
 
-
   // Переконфигурация портов GPIOB
   GPIO_StructInit(&GPIO_InitStructure);
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AN;
@@ -151,9 +154,6 @@ void Power_off(void)
   GPIO_InitStructure.GPIO_Pin = GPIO_Pin_All;
   GPIO_Init(GPIOC, &GPIO_InitStructure);
   RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOC, DISABLE);
-
-  // Выключение аналогово питания
-  GPIO_ResetBits(GPIOB, GPIO_Pin_6);
 
   // Выключение SYSCFG
   RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, DISABLE);
@@ -205,6 +205,15 @@ void Power_off(void)
   GPIO_Init(GPIOB, &GPIO_InitStructure);
 
 
+  // Выключение аналогово питания
+  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
+  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_400KHz;
+  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_DOWN;
+
+  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6;
+  GPIO_Init(GPIOB, &GPIO_InitStructure);
+
+
 }
 
 
@@ -226,11 +235,12 @@ void Power_on(void)
   Settings.T_korr = eeprom_read(0x20);
   Settings.Impulse_dead_time = eeprom_read(0x28);
 
+  delay_ms(550);                // ожимаем запуска аналогового блока
+
   adc_init();
 
   dac_init();
   dac_on();
-  RTC_Config();
 
   PumpCompCmd(INIT_COMP);
   PumpCompCmd(ON_COMP);
@@ -252,7 +262,7 @@ void Power_on(void)
 int MCP73831_state_detect(void)
 {
   GPIO_InitTypeDef GPIO_InitStructure;
-  uint8_t down, up, i;
+  uint32_t down, up, i;
 
   // Проверка PuPd_UP
   up = GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_1);
@@ -264,7 +274,7 @@ int MCP73831_state_detect(void)
   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_40MHz;
   GPIO_InitStructure.GPIO_Pin = GPIO_Pin_1;
   GPIO_Init(GPIOA, &GPIO_InitStructure);
-  for (i = 0; i < 10; i++);
+  for (i = 0; i < 10000; i++);
   down = GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_1);
 
   // оставляем в состоянии PuPd_UP

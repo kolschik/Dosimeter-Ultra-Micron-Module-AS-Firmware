@@ -32,13 +32,46 @@ uint32_t spectro_time = 0;
 uint16_t USB_spectro_pointer = 0;
 FunctionalState debug_mode = DISABLE;
 __IO uint16_t ADC_ConvertedValue[384];
+FunctionalState sleep_rtc = DISABLE;
+FunctionalState need_MCP_update = DISABLE;
 
 /////////////////////////////////////////////////////////////////////////////////////////
 int main(void)
 {
-  //  NVIC_SetVectorTable(NVIC_VectTab_FLASH, 0x3000);
-//  DBGMCU_Config(DBGMCU_SLEEP | DBGMCU_STANDBY | DBGMCU_STOP, ENABLE);
+  uint32_t chkkeysleep = 0;
+
+  RTC_Config();
+  RTC_WriteBackupRegister(RTC_BKP_DR0, 0x0000);
+  if(sleep_rtc)                 // Проверка необходимости ухода в сон.
+  {
+    io_init();
+    EXTI8_Config();             // Кнопка
+
+    Power_off();
+
+    while (chkkeysleep < 200000)
+    {
+      chkkeysleep = 0;
+      PWR_FastWakeUpCmd(DISABLE);
+      PWR_EnterSTOPMode(PWR_Regulator_LowPower, PWR_STOPEntry_WFI);
+
+      //delay_ms(100);
+
+      while (!GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_8)) // проверка зажатой кнопки
+        chkkeysleep++;
+    }
+
+    IWDG_WriteAccessCmd(IWDG_WriteAccess_Enable);
+    IWDG_SetPrescaler(IWDG_Prescaler_4);
+    IWDG_SetReload(2);
+    IWDG_ReloadCounter();
+    IWDG_Enable();
+    while (1);
+  }
   Power_on();
+
+  PowerState.Sound = ENABLE;    // Звук включить
+
 
   while (TRUE)
   {
@@ -75,13 +108,62 @@ int main(void)
     {
       USB_work();
     }
-    //PWR_EnterSleepMode(PWR_Regulator_ON, PWR_SLEEPEntry_WFI);
-    if(PowerState.Off_mode)
+
+    if(need_MCP_update)
     {
-      PWR_FastWakeUpCmd(ENABLE);
-      PWR_EnterSTOPMode(PWR_Regulator_LowPower, PWR_STOPEntry_WFI);
-      PWR_FastWakeUpCmd(DISABLE);
+      need_MCP_update = DISABLE;
+      switch (MCP73831_state_detect())
+      {
+      case HI_Z_State:
+        PowerState.Charging = DISABLE;
+        break;
+
+      case L_State:
+        PowerState.Charging = ENABLE;
+        break;
+
+      case H_State:
+        PowerState.Charging = ENABLE;
+        break;
+      }
+
     }
 
+    if(PowerState.Off_mode)     // Проверка необходимости ухода в сон.
+    {
+      TIM_Cmd(TIM2, DISABLE);   // Индикацию выключить
+      TIM_ClearITPendingBit(TIM2, TIM_IT_CC2);
+      TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
+
+      LED_show(LED_show_massive[0], C_SEG_ALLOFF);
+
+      LED_show(1, C_SEG_A);     // Включаем для индикации 1 сегмент
+      delay_ms(100);
+      LED_show(1, C_SEG_B);     // Включаем для индикации 1 сегмент
+      delay_ms(100);
+      LED_show(1, C_SEG_C);     // Включаем для индикации 1 сегмент
+      delay_ms(100);
+      LED_show(1, C_SEG_D);     // Включаем для индикации 1 сегмент
+      delay_ms(100);
+      LED_show(1, C_SEG_E);     // Включаем для индикации 1 сегмент
+      delay_ms(100);
+      LED_show(1, C_SEG_F);     // Включаем для индикации 1 сегмент
+      delay_ms(100);
+      LED_show(1, C_SEG_G);     // Включаем для индикации 1 сегмент
+      delay_ms(100);
+
+      TIM4->EGR |= 0x0001;      // длинный пронзительный писк :)
+      TIM_CCxCmd(TIM4, TIM_Channel_4, TIM_CCx_Enable);
+
+      // перезагрузка устройства для входа в сон
+      RTC_WriteBackupRegister(RTC_BKP_DR0, 0x1212);
+      IWDG_WriteAccessCmd(IWDG_WriteAccess_Enable);
+      IWDG_SetPrescaler(IWDG_Prescaler_4);
+      IWDG_SetReload(2);
+      IWDG_ReloadCounter();
+      IWDG_Enable();
+      while (1);
+    }
+    //PWR_EnterSleepMode(PWR_Regulator_ON, PWR_SLEEPEntry_WFI);
   }
 }

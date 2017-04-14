@@ -75,7 +75,7 @@ void tim3_Config()              //
   TIM_TimeBaseInit(TIM3, &TIM_BaseConfig);
   TIM_ARRPreloadConfig(TIM3, ENABLE);
 
-  // Настройка вывода на накачку, 0.75 мкс
+  // Настройка вывода на накачку, 0.5 мкс
   TIM_OCStructInit(&TIM_OCConfig);
   TIM_OCConfig.TIM_OCMode = TIM_OCMode_PWM1;
   TIM_OCConfig.TIM_OutputState = TIM_OutputState_Enable;
@@ -85,25 +85,11 @@ void tim3_Config()              //
   TIM_OC2Init(TIM3, &TIM_OCConfig);     //   
   TIM_OC2PreloadConfig(TIM3, TIM_OCPreload_Enable);
 
-/*
-  // Настройка счета мертвого времени накачки, 10 мкс
-  TIM_OCStructInit(&TIM_OCConfig);
-  TIM_OCConfig.TIM_OCMode = TIM_OCMode_PWM1;
-  TIM_OCConfig.TIM_OutputState = TIM_OutputState_Enable;
-  TIM_OCConfig.TIM_Pulse = 40;
-  TIM_OCConfig.TIM_OCPolarity = TIM_OCPolarity_High;
-
-  TIM_OC3Init(TIM3, &TIM_OCConfig);     //   
-  TIM_OC3PreloadConfig(TIM3, TIM_OCPreload_Enable);
-*/
-
   NVIC_InitStructure.NVIC_IRQChannel = TIM3_IRQn;
   NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
   NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
   NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
   NVIC_Init(&NVIC_InitStructure);
-
-  //TIM_ITConfig(TIM3, TIM_IT_CC2, ENABLE);
 
   TIM_ITConfig(TIM3, TIM_IT_Update, ENABLE);
   TIM3->EGR |= 0x0001;          //   UG    
@@ -182,7 +168,7 @@ void tim9_Config()              //  0.1 секунда
   TIM_ARRPreloadConfig(TIM9, ENABLE);
 
   NVIC_InitStructure.NVIC_IRQChannel = TIM9_IRQn;
-  NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;
+  NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x01;
   NVIC_InitStructure.NVIC_IRQChannelSubPriority = 2;
   NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
   NVIC_Init(&NVIC_InitStructure);

@@ -201,38 +201,6 @@ void ADC1_IRQHandler(void)
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Тик 1 секунду
-void RTC_WKUP_IRQHandler(void)
-{
-  EXTI_ClearITPendingBit(EXTI_Line20);
-  {
-    if(RTC_GetITStatus(RTC_IT_WUT) != RESET)
-    {
-      RTC_ClearITPendingBit(RTC_IT_WUT);
-      switch (MCP73831_state_detect())
-      {
-      case HI_Z_State:
-        PowerState.Charging = DISABLE;
-        break;
-
-      case L_State:
-        PowerState.Charging = ENABLE;
-        break;
-
-      case H_State:
-        PowerState.Charging = ENABLE;
-        break;
-      }
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Накачка
 int tmptim3;
 void TIM3_IRQHandler(void)
@@ -291,6 +259,7 @@ void TIM4_IRQHandler(void)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // 0.1 секунда
+int tim9cnt;
 void TIM9_IRQHandler(void)
 {
   int i;
@@ -301,7 +270,18 @@ void TIM9_IRQHandler(void)
     if(PowerState.Spectr)
       spectro_time++;           // счет времени накопления спектра
 
+    if(!GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_8))
+    {
+      PowerState.key_hold++;
+    } else
+    {
+      PowerState.key_hold = 0;
+    }
 
+    if(PowerState.key_hold > 20)        // Если держим кнопку 3 секунды - отключение устройства
+    {
+      PowerState.Off_mode = ENABLE;
+    }
     // -----------------------------
     // ротация массивов
     counter = 0;
@@ -320,6 +300,16 @@ void TIM9_IRQHandler(void)
     PUMP_MASSIVE[0] = 0;
     ERR_MASSIVE[0] = 0;
     // -----------------------------
+
+    if(tim9cnt >= 10)
+    {
+      tim9cnt = 0;
+      need_MCP_update = ENABLE;
+    } else
+      tim9cnt++;
+
+
+
 
     if(counter > 999)
     {
@@ -400,88 +390,96 @@ void DMA1_Channel1_IRQHandler(void)
 // Прерывание по кнопке
 void EXTI9_5_IRQHandler(void)
 {
-  int i;
+  uint32_t i = 0, jitter = 0;
   if(EXTI_GetITStatus(EXTI_Line8) != RESET)
   {
-    for (i = 0; i < 10000; i++) // устранение дребезга кнопки
+    if(!sleep_rtc)
     {
-      while (!GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_8));
-    }
-
-    if(PowerState.USB)
-    {
-      // Если влключен USB режим, а спектрометр не активен, включить спектрометр
-      if(!PowerState.Spectr)
+      LED_show(LED_show_massive[0], C_SEG_ALLOFF);
+      for (i = 0; i < 100000; i++)      // устранение дребезга кнопки
       {
-        PowerState.Spectr = ENABLE;
-        dac_on();               // Включение ЦАП
-        PumpCompCmd(INIT_COMP); // Включение компоратора
-        PumpCompCmd(ON_COMP);
-        TIM_Cmd(TIM10, ENABLE); // Включение контроля напряжения на ФЭУ
+        while (!GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_8))
+        {
+          if(jitter > 60000)
+            TIM_CCxCmd(TIM4, TIM_Channel_4, TIM_CCx_Enable);    // Если кнопка зажата, издаем звук
 
-        TIM_Cmd(TIM2, DISABLE); // Индикацию выключить
-        LED_show(LED_show_massive[0], C_SEG_ALLOFF);
-
-        PowerState.Sound = DISABLE;     // Звук выключить
-      } else
-        // Если влключен USB режим, и спектрометр активен, выключить спектрометр
-      {
-        PowerState.Spectr = DISABLE;
-        dac_off();              // Выключение ЦАП
-        PumpCompCmd(OFF_COMP);  // Выключение компоратора
-        TIM_Cmd(TIM10, DISABLE);        // Выключение контроля напряжения на ФЭУ
-        PumpCmd(DISABLE);
-
-        TIM_Cmd(TIM2, DISABLE); // Индикацию выключить
-        LED_show(LED_show_massive[0], C_SEG_ALLOFF);
-
-        PowerState.Sound = DISABLE;     // Звук выключить
+          jitter++;
+        }
       }
-    } else
-    {
-      if(PowerState.Spectr == DISABLE)
+      TIM_ITConfig(TIM4, TIM_IT_Update, ENABLE);        //если отжата, выключаем звук
+
+      if(jitter > 60000)
       {
-        PowerState.Spectr = ENABLE;
-        Power_off();
-      } else
-      {
-        PowerState.Spectr = DISABLE;
-        Power_on();
+        if(PowerState.USB)
+        {
+          // Если влключен USB режим, а спектрометр не активен, включить спектрометр
+          if(!PowerState.Spectr)
+          {
+            PowerState.Spectr = ENABLE;
+            dac_on();           // Включение ЦАП
+            PumpCompCmd(INIT_COMP);     // Включение компоратора
+            PumpCompCmd(ON_COMP);
+            TIM_Cmd(TIM10, ENABLE);     // Включение контроля напряжения на ФЭУ
+
+            TIM_Cmd(TIM2, DISABLE);     // Индикацию выключить
+            TIM_ClearITPendingBit(TIM2, TIM_IT_CC2);
+            TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
+            LED_show(LED_show_massive[0], C_SEG_ALLOFF);
+
+            PowerState.Sound = DISABLE; // Звук выключить
+          } else
+            // Если влключен USB режим, и спектрометр активен, выключить спектрометр
+          {
+            PowerState.Spectr = DISABLE;
+            dac_off();          // Выключение ЦАП
+            PumpCompCmd(OFF_COMP);      // Выключение компоратора
+            TIM_Cmd(TIM10, DISABLE);    // Выключение контроля напряжения на ФЭУ
+            PumpCmd(DISABLE);
+
+            TIM_Cmd(TIM2, DISABLE);     // Индикацию выключить
+            TIM_ClearITPendingBit(TIM2, TIM_IT_CC2);
+            TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
+            LED_show(LED_show_massive[0], C_SEG_ALLOFF);
+
+            PowerState.Sound = DISABLE; // Звук выключить
+          }
+        } else
+        {
+          // Если вылключен USB режим, а спектрометр не активен, включить спектрометр
+          if(!PowerState.Spectr)
+          {
+            PowerState.Spectr = ENABLE;
+            dac_on();           // Включение ЦАП
+            PumpCompCmd(INIT_COMP);     // Включение компоратора
+            PumpCompCmd(ON_COMP);
+            TIM_Cmd(TIM10, ENABLE);     // Включение контроля напряжения на ФЭУ
+
+            TIM_Cmd(TIM2, DISABLE);     // Индикацию выключить
+            TIM_ClearITPendingBit(TIM2, TIM_IT_CC2);
+            TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
+            LED_show(LED_show_massive[0], C_SEG_ALLOFF);
+            LED_show(1, C_SEG_A);       // Включаем для индикации 1 сегмент
+
+            PowerState.Sound = DISABLE; // Звук выключить
+          } else
+            // Если вылключен USB режим, и спектрометр активен, перейти в режим поиска
+          {
+            PowerState.Spectr = DISABLE;
+            dac_on();           // Включение ЦАП
+            PumpCompCmd(INIT_COMP);     // Включение компоратора
+            PumpCompCmd(ON_COMP);
+            TIM_Cmd(TIM10, ENABLE);     // Включение контроля напряжения на ФЭУ
+
+            TIM_Cmd(TIM2, ENABLE);      // Индикацию включить
+            TIM_ClearITPendingBit(TIM2, TIM_IT_CC2);
+            TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
+            LED_show(LED_show_massive[0], C_SEG_ALLOFF);
+
+            PowerState.Sound = ENABLE;  // Звук включить
+          }
+        }
       }
     }
-
-/*		
-    {
-      // Если вылключен USB режим, а спектрометр не активен, включить спектрометр
-      if(!PowerState.Spectr)
-      {
-        PowerState.Spectr = ENABLE;
-        dac_on();               // Включение ЦАП
-        PumpCompCmd(INIT_COMP); // Включение компоратора
-        PumpCompCmd(ON_COMP);
-        TIM_Cmd(TIM10, ENABLE); // Включение контроля напряжения на ФЭУ
-
-        TIM_Cmd(TIM2, DISABLE); // Индикацию выключить
-        LED_show(LED_show_massive[0], C_SEG_ALLOFF);
-        LED_show(1, C_SEG_A);   // Включаем для индикации 1 сегмент
-
-        PowerState.Sound = DISABLE;     // Звук выключить
-      } else
-        // Если вылключен USB режим, и спектрометр активен, перейти в режим поиска
-      {
-        PowerState.Spectr = DISABLE;
-        dac_on();               // Включение ЦАП
-        PumpCompCmd(INIT_COMP); // Включение компоратора
-        PumpCompCmd(ON_COMP);
-        TIM_Cmd(TIM10, ENABLE); // Включение контроля напряжения на ФЭУ
-
-        TIM_Cmd(TIM2, ENABLE);  // Индикацию включить
-        LED_show(LED_show_massive[0], C_SEG_ALLOFF);
-
-        PowerState.Sound = ENABLE;      // Звук включить
-      }
-    }
-*/
 
     EXTI_ClearITPendingBit(EXTI_Line8);
   }
