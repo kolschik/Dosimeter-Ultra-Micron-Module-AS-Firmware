@@ -141,7 +141,7 @@ void USB_work()
           Send_Buffer[16] = (counter_pump >> 8) & 0xff;
           Send_Buffer[17] = (counter_pump >> 16) & 0xff;
           Send_Buffer[18] = (counter_pump >> 24) & 0xff;
-          Send_Buffer[19] = eeprom_read(0x100) & 0xff;  // Колличество накопленных спектров
+          Send_Buffer[19] = Settings.Start_channel & 0xff;      // Колличество накопленных спектров
           Send_Buffer[20] = Settings.Sound & 0xff;      // Управление звуком
           Send_Buffer[21] = Settings.LED_intens & 0xff; // Управление интенсовностью подсветки
           Send_Buffer[22] = Settings.T_korr & 0xff;     // Температурная коррекция
@@ -167,10 +167,10 @@ void USB_work()
             eeprom_write(0x10, Settings.feu_voltage);
             dac_reload();
 
-            // Битность АЦП - 1 бит
-            Settings.ADC_bits = Receive_Buffer[current_rcvd_pointer + 1] & 0xff;
+            // Первый канал АЦП - 1 бит
+            Settings.Start_channel = Receive_Buffer[current_rcvd_pointer + 1] & 0xff;
             current_rcvd_pointer++;
-            eeprom_write(0x14, Settings.ADC_bits);
+            eeprom_write(0x2C, Settings.Start_channel);
 
             // Звук - 1 бит
             Settings.Sound = Receive_Buffer[current_rcvd_pointer + 1] & 0xff;
@@ -182,7 +182,13 @@ void USB_work()
             current_rcvd_pointer++;
             eeprom_write(0x1C, Settings.LED_intens);
             tim2_Config();
-
+            if(PowerState.USB)
+            {
+              TIM_Cmd(TIM2, DISABLE);   // Индикацию выключить
+              TIM_ClearITPendingBit(TIM2, TIM_IT_CC2);
+              TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
+              LED_show(LED_show_massive[0], C_SEG_ALLOFF);
+            }
             // Коррекция температуры - 1 бит
             Settings.T_korr = Receive_Buffer[current_rcvd_pointer + 1] & 0xff;
             current_rcvd_pointer++;

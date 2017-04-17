@@ -83,6 +83,7 @@ typedef struct
   uint8_t LED_intens;
   uint8_t T_korr;
   uint8_t Impulse_dead_time;
+  uint8_t Start_channel;
 
 
 } SettingsDef;

@@ -114,6 +114,19 @@ object mainFrm: TmainFrm
       Font.Style = []
       ParentFont = False
     end
+    object Label12: TLabel
+      Left = 89
+      Top = 109
+      Width = 141
+      Height = 18
+      Caption = #1055#1077#1088#1074#1099#1081' '#1082#1072#1085#1072#1083' '#1040#1062#1055
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Arial'
+      Font.Style = []
+      ParentFont = False
+    end
     object EVolt: TEdit
       Left = 11
       Top = 42
@@ -182,6 +195,22 @@ object mainFrm: TmainFrm
       Font.Style = []
       ParentFont = False
       TabOrder = 4
+      Text = '0'
+      OnClick = EVoltChange
+    end
+    object Start_channel: TEdit
+      Left = 10
+      Top = 106
+      Width = 70
+      Height = 26
+      Alignment = taRightJustify
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Arial'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 5
       Text = '0'
       OnClick = EVoltChange
     end
@@ -888,7 +917,7 @@ object mainFrm: TmainFrm
   object ImageList1: TImageList
     Left = 288
     Bitmap = {
-      494C010105008C00880210001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010105008C008C0210001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000002000000001002000000000000020
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

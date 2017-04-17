@@ -162,17 +162,22 @@ uint16_t tmpadc1;
 void ADC1_IRQHandler(void)
 {
   uint16_t address;
+
+  // с момента начала переднего фронта прошло 5.2 мкс
   if(ADC_GetITStatus(ADC1, ADC_IT_JEOC) != RESET)
   {
-    if((PumpData.Active == DISABLE) && (PUMP_DEAD_TIME == DISABLE))     // Если прерывание вызвано не импульсом накачки
-    {
-      address = ADC_GetInjectedConversionValue(ADC1, ADC_InjectedChannel_1);
+    ADC_ClearITPendingBit(ADC1, ADC_IT_JEOC);
 
-      if(address < 12)          // Убираем шум в незначемых каналах
+    // с момента начала переднего фронта прошло 7 мкс
+    address = ADC_GetInjectedConversionValue(ADC1, ADC_InjectedChannel_1);
+
+    if((!PumpData.Active) && (!PUMP_DEAD_TIME)) // Если прерывание вызвано не импульсом накачки
+    {
+      if(address < (Settings.Start_channel << 1))       // Убираем шум в незначемых каналах
       {
-        ADC_ClearITPendingBit(ADC1, ADC_IT_JEOC);
         return;
       }
+
 
       if(PowerState.Spectr)
       {
@@ -197,7 +202,6 @@ void ADC1_IRQHandler(void)
         GPIOA->BSRRH = GPIO_Pin_4;      //  Вывод сигнала на внешнее устройство - конец фронта
       }
     }
-    ADC_ClearITPendingBit(ADC1, ADC_IT_JEOC);
   }
 }
 
@@ -231,6 +235,11 @@ void TIM3_IRQHandler(void)
     } else
     {
       tmptim3 = 0;
+      if(COMP_GetOutputLevel(COMP_Selection_COMP2) == COMP_OutputLevel_High)
+      {
+        PumpCmd(DISABLE);
+      }
+
     }
   }
 
@@ -342,10 +351,25 @@ void TIM9_IRQHandler(void)
     PUMP_MASSIVE[0] = 0;
     // -----------------------------
 
-    if(tim9cnt >= 10)
+    if(tim9cnt >= 25)           // Каждые 2.5 секунды
     {
       tim9cnt = 0;
-      need_MCP_update = ENABLE;
+      need_MCP_update = ENABLE; // надо проверить USB
+
+      if(PowerState.USB)
+        LED_show(LED_show_massive[0], C_SEG_ALLOFF);
+
+      if(akb_voltage < 340)     // меньше 3.4 вольта, выключить устройство!
+      {
+        // перезагрузка устройства для входа в сон
+        RTC_WriteBackupRegister(RTC_BKP_DR0, 0x1212);
+        IWDG_WriteAccessCmd(IWDG_WriteAccess_Enable);
+        IWDG_SetPrescaler(IWDG_Prescaler_4);
+        IWDG_SetReload(2);
+        IWDG_ReloadCounter();
+        IWDG_Enable();
+        while (1);
+      }
     } else
       tim9cnt++;
 
@@ -453,37 +477,19 @@ void EXTI9_5_IRQHandler(void)
       {
         if(PowerState.USB)
         {
-          // Если влключен USB режим, а спектрометр не активен, включить спектрометр
-          if(!PowerState.Spectr)
-          {
-            PowerState.Spectr = ENABLE;
-            dac_on();           // Включение ЦАП
-            PumpCompCmd(INIT_COMP);     // Включение компоратора
-            PumpCompCmd(ON_COMP);
-            TIM_Cmd(TIM10, ENABLE);     // Включение контроля напряжения на ФЭУ
+          // Если влключен USB режим, выключить индикацию, включить спектрометр
+          PowerState.Spectr = ENABLE;
+          dac_on();             // Включение ЦАП
+          PumpCompCmd(INIT_COMP);       // Включение компоратора
+          PumpCompCmd(ON_COMP);
+          TIM_Cmd(TIM10, ENABLE);       // Включение контроля напряжения на ФЭУ
 
-            TIM_Cmd(TIM2, DISABLE);     // Индикацию выключить
-            TIM_ClearITPendingBit(TIM2, TIM_IT_CC2);
-            TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
-            LED_show(LED_show_massive[0], C_SEG_ALLOFF);
+          TIM_Cmd(TIM2, DISABLE);       // Индикацию выключить
+          TIM_ClearITPendingBit(TIM2, TIM_IT_CC2);
+          TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
+          LED_show(LED_show_massive[0], C_SEG_ALLOFF);
 
-            PowerState.Sound = DISABLE; // Звук выключить
-          } else
-            // Если влключен USB режим, и спектрометр активен, выключить спектрометр
-          {
-            PowerState.Spectr = DISABLE;
-            dac_off();          // Выключение ЦАП
-            PumpCompCmd(OFF_COMP);      // Выключение компоратора
-            TIM_Cmd(TIM10, DISABLE);    // Выключение контроля напряжения на ФЭУ
-            PumpCmd(DISABLE);
-
-            TIM_Cmd(TIM2, DISABLE);     // Индикацию выключить
-            TIM_ClearITPendingBit(TIM2, TIM_IT_CC2);
-            TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
-            LED_show(LED_show_massive[0], C_SEG_ALLOFF);
-
-            PowerState.Sound = DISABLE; // Звук выключить
-          }
+          PowerState.Sound = DISABLE;   // Звук выключить
         } else
         {
           // Если вылключен USB режим, а спектрометр не активен, включить спектрометр

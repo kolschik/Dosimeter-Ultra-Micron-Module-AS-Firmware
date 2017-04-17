@@ -58,9 +58,9 @@ void adc_init(void)
   ADC_InitStructure.ADC_NbrOfConversion = 3;    // Число преобразований
   ADC_Init(ADC1, &ADC_InitStructure);
 
-  ADC_DelaySelectionConfig(ADC1, ADC_DelayLength_Freeze);       // Задержка до момента чтения данных из АЦП
+  ADC_DelaySelectionConfig(ADC1, ADC_DelayLength_Freeze);       // Задержка старта нового преобразования до момента чтения данных из АЦП
 
-  ADC_PowerDownCmd(ADC1, ADC_PowerDown_Idle_Delay, ENABLE);     // отключение питания АЦП в интервалах Idle и Delay
+  ADC_PowerDownCmd(ADC1, ADC_PowerDown_Idle_Delay, DISABLE);    // отключение питания АЦП в интервалах Idle и Delay
 
   ADC_TempSensorVrefintCmd(ENABLE);
 
@@ -73,8 +73,6 @@ void adc_init(void)
   ADC_RegularChannelConfig(ADC1, ADC_Channel_17, 1, ADC_SampleTime_384Cycles);  // опорное напряжение
   ADC_RegularChannelConfig(ADC1, ADC_Channel_16, 2, ADC_SampleTime_384Cycles);  // температура
   ADC_RegularChannelConfig(ADC1, ADC_Channel_19, 3, ADC_SampleTime_384Cycles);  // Напряжение АКБ
-
-  ADC_DelaySelectionConfig(ADC1, ADC_DelayLength_Freeze);       // Задержка до момента чтения данных из АЦП
 
   NVIC_InitStructure.NVIC_IRQChannel = ADC1_IRQn;
   NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;

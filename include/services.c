@@ -234,6 +234,7 @@ void Power_on(void)
   Settings.LED_intens = eeprom_read(0x1C);
   Settings.T_korr = eeprom_read(0x20);
   Settings.Impulse_dead_time = eeprom_read(0x28);
+  Settings.Start_channel = eeprom_read(0x2C);
 
   delay_ms(550);                // ожимаем запуска аналогового блока
 

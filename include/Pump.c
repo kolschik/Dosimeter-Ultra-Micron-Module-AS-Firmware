@@ -89,8 +89,8 @@ void PumpCompCmd(uint8_t cmd)
       EXTI_Init(&EXTI_InitStructure);
 
       NVIC_InitStructure.NVIC_IRQChannel = COMP_IRQn;
-      NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
-      NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+      NVIC_InitStructure.NVIC_IRQChannelSubPriority = 2;
+      NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;
       NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
       NVIC_Init(&NVIC_InitStructure);
       EXTI_ClearITPendingBit(EXTI_Line22);

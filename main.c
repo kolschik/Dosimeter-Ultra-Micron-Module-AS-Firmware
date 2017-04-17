@@ -16,7 +16,7 @@ char LED_BUF[6];
 uint32_t counter = 0;
 uint32_t SPECTRO_MASSIVE[2049];
 uint32_t IMPULSE_MASSIVE[21];
-uint32_t PUMP_MASSIVE[11];
+uint32_t PUMP_MASSIVE[21];
 
 FunctionalState Need_Ledupdate = DISABLE;
 FunctionalState Need_pump = DISABLE;
@@ -77,15 +77,16 @@ int main(void)
     if(PowerState.Charging && !PowerState.USB)  // Если питание подано, а USB еще не включен, включаем!
     {
       USB_on();
-      PowerState.Spectr = DISABLE;
-      dac_off();                // Выключение ЦАП
-      PumpCompCmd(OFF_COMP);    // Выключение компоратора
-      TIM_Cmd(TIM10, DISABLE);  // Выключение контроля напряжения на ФЭУ
-      PumpCmd(DISABLE);
+      PowerState.Spectr = ENABLE;
+      dac_on();                 // Включение ЦАП
+      PumpCompCmd(INIT_COMP);   // Включение компоратора
+      PumpCompCmd(ON_COMP);
+      TIM_Cmd(TIM10, ENABLE);   // Включение контроля напряжения на ФЭУ
 
       TIM_Cmd(TIM2, DISABLE);   // Индикацию выключить
+      TIM_ClearITPendingBit(TIM2, TIM_IT_CC2);
+      TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
       LED_show(LED_show_massive[0], C_SEG_ALLOFF);
-
       PowerState.Sound = DISABLE;       // Звук выключить
 
     }
