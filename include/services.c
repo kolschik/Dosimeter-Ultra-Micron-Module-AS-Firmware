@@ -223,6 +223,7 @@ void Power_off(void)
 void Power_on(void)
 {
   PowerState.Off_mode = DISABLE;
+  PumpData.Agressive = ENABLE;
   io_init();
   set_pll_for_usb();
 

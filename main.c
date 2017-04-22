@@ -33,6 +33,10 @@ __IO uint16_t ADC_ConvertedValue[384];
 FunctionalState sleep_rtc = DISABLE;
 FunctionalState need_MCP_update = DISABLE;
 
+uint32_t pump_per_second = 2700;
+int pump_per_second_mass[23];
+
+
 /////////////////////////////////////////////////////////////////////////////////////////
 int main(void)
 {

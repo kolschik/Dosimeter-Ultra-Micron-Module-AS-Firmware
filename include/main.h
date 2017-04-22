@@ -41,6 +41,7 @@
 #define INIT_COMP 0
 #define ON_COMP 1
 #define OFF_COMP 2
+#define NVIC_DEINIT 3
 
 #define HI_Z_State 2
 #define L_State 0
@@ -59,6 +60,11 @@
 typedef struct
 {
   FunctionalState Active;       //   
+  FunctionalState Agressive;    //  
+  uint32_t Average_pump;        // Среднее колличество импульсов накачки, требуемое для поддержания заданного напряжения
+  int two_sec_sum;              // Сумма состояния компаратора за две секунды
+  uint32_t good_stable_pumps;   // стабильных состояний компаратора
+
 } PumpDataDef;
 
 typedef struct
@@ -129,6 +135,11 @@ extern uint16_t akb_voltage;
 extern uint32_t counter_pump;
 extern uint32_t spectro_time;
 extern __IO uint16_t ADC_ConvertedValue[];
+
+extern uint32_t pump_per_second;
+extern int pump_per_second_mass[];
+#define timer_freq 4000000
+
 
 void LEDString(void);
 void LEDUpdate(void);

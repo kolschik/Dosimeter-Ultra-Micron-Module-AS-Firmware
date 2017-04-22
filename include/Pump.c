@@ -9,8 +9,6 @@ void COMP_IRQHandler(void)
   if(EXTI_GetITStatus(EXTI_Line22) != RESET)
   {
     EXTI_ClearITPendingBit(EXTI_Line22);
-
-//    if(COMP_GetOutputLevel(COMP_Selection_COMP2) == COMP_OutputLevel_High)
     {
       PumpCmd(DISABLE);
     }
@@ -21,36 +19,33 @@ void COMP_IRQHandler(void)
 
 
 
-
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void PumpCmd(FunctionalState pump)
 {
-
-  if(pump == ENABLE)
+  if(PumpData.Agressive)        // ≈сли накачку надо жестко стабилизировать
   {
-    if((PumpData.Active == DISABLE) && (!PUMP_DEAD_TIME))
+    if(pump == ENABLE)
     {
+      if((PumpData.Active == DISABLE) && (!PUMP_DEAD_TIME))
+      {
+        PumpData.Active = pump;
+
+        //PUMP_DEAD_TIME = ENABLE;        // начинаем отсчет мертвого времени накачки
+
+        // ”становка нового значени€ таймера накачки 6000 имп./c.
+        TIM_SetAutoreload(TIM3, (timer_freq / 6000));
+
+        TIM_CCxCmd(TIM3, TIM_Channel_2, TIM_CCx_Enable);        // разрешить накачку   
+//        TIM_ITConfig(TIM3, TIM_IT_Update, ENABLE);
+//        TIM_ClearITPendingBit(TIM3, TIM_IT_Update);
+      }
+
+    } else
+    {
+      TIM_CCxCmd(TIM3, TIM_Channel_2, TIM_CCx_Disable); // запретить накачку
       PumpData.Active = pump;
-
-      PUMP_DEAD_TIME = ENABLE;  // начинаем отсчет мертвого времени накачки
-
-      TIM3->EGR |= 0x0001;      // ”станавливаем бит UG дл€ принудительного сброса счетчика
-
-      TIM_ITConfig(TIM3, TIM_IT_CC2, ENABLE);
-      TIM_ClearITPendingBit(TIM3, TIM_IT_CC2);
-
-      TIM_CCxCmd(TIM3, TIM_Channel_2, TIM_CCx_Enable);  // разрешить накачку   
-      TIM_ITConfig(TIM3, TIM_IT_Update, ENABLE);
-      TIM_ClearITPendingBit(TIM3, TIM_IT_Update);
     }
-
-  } else
-  {
-    TIM_CCxCmd(TIM3, TIM_Channel_2, TIM_CCx_Disable);   // запретить накачку
-    PumpData.Active = pump;
   }
-
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -124,6 +119,23 @@ void PumpCompCmd(uint8_t cmd)
 
       break;
     }
+
+  case NVIC_DEINIT:
+    {
+
+      EXTI_StructInit(&EXTI_InitStructure);
+      EXTI_InitStructure.EXTI_Line = EXTI_Line22;
+      EXTI_InitStructure.EXTI_LineCmd = DISABLE;
+      EXTI_Init(&EXTI_InitStructure);
+
+      NVIC_InitStructure.NVIC_IRQChannel = COMP_IRQn;
+      NVIC_InitStructure.NVIC_IRQChannelCmd = DISABLE;
+      NVIC_Init(&NVIC_InitStructure);
+      EXTI_ClearITPendingBit(EXTI_Line22);
+
+      break;
+    }
+
   default:
     {
       break;

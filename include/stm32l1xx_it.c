@@ -141,14 +141,20 @@ void TIM10_IRQHandler(void)     // Обслуживание контроля напряжения
   {
     TIM_ClearITPendingBit(TIM10, TIM_IT_Update);
 
+
     if(COMP_GetOutputLevel(COMP_Selection_COMP2) == COMP_OutputLevel_Low)
     {
-      PumpCmd(ENABLE);
+      if(PumpData.Agressive)    // Если накачку надо жестко стабилизировать
+        PumpCmd(ENABLE);
+
+      pump_per_second_mass[0]++;        // Статистический учет состояния компаратора
     } else
     {
-      PumpCmd(DISABLE);
-    }
+      if(PumpData.Agressive)    // Если накачку надо жестко стабилизировать
+        PumpCmd(DISABLE);
 
+      pump_per_second_mass[0]--;        // Статистический учет состояния компаратора
+    }
   }
 }
 
@@ -212,43 +218,58 @@ void ADC1_IRQHandler(void)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Накачка
-int tmptim3;
+uint32_t tmptim3 = 0, counts;
+
 void TIM3_IRQHandler(void)
 {
+  uint32_t i;
   if(TIM_GetITStatus(TIM3, TIM_IT_Update) != RESET)
   {
     TIM_ClearITPendingBit(TIM3, TIM_IT_Update);
-    if(PumpData.Active == DISABLE)      // если накачку надо выключить
-    {
-      if(tmptim3 > 0)
-      {
-        tmptim3 = 0;
-        TIM_ITConfig(TIM3, TIM_IT_Update, DISABLE);
-        TIM_ITConfig(TIM3, TIM_IT_CC2, DISABLE);
-        TIM_CCxCmd(TIM3, TIM_Channel_2, TIM_CCx_Disable);       // запретить накачку
-        PUMP_DEAD_TIME = DISABLE;
 
+    // Проверка, включен ли канал таймера
+    i = TIM3->CCER & (uint16_t) (TIM_CCx_Enable << TIM_Channel_2);
+    if(i > 0)
+      PUMP_DEAD_TIME = ENABLE;  // начинаем отсчет мертвого времени накачки
+
+
+    if(PumpData.Agressive)      // Если накачку надо жестко стабилизировать
+    {
+
+      if(PumpData.Active == DISABLE)    // если накачку надо выключить
+      {
+        if(tmptim3 > 0)
+        {
+          tmptim3 = 0;
+          //TIM_ITConfig(TIM3, TIM_IT_Update, DISABLE);
+          //TIM_ITConfig(TIM3, TIM_IT_CC2, DISABLE);
+          TIM_CCxCmd(TIM3, TIM_Channel_2, TIM_CCx_Disable);     // запретить накачку
+          //PUMP_DEAD_TIME = DISABLE;
+
+        } else
+        {
+          tmptim3++;
+        }
       } else
       {
-        tmptim3++;
+        tmptim3 = 0;
+        if(COMP_GetOutputLevel(COMP_Selection_COMP2) == COMP_OutputLevel_High)
+        {
+          PumpCmd(DISABLE);
+        }
       }
-    } else
-    {
-      tmptim3 = 0;
-      if(COMP_GetOutputLevel(COMP_Selection_COMP2) == COMP_OutputLevel_High)
-      {
-        PumpCmd(DISABLE);
-      }
-
     }
   }
 
-  if(TIM_GetITStatus(TIM3, TIM_IT_CC2) != RESET)
+  if(TIM_GetITStatus(TIM3, TIM_IT_CC1) != RESET)
   {
-    TIM_ClearITPendingBit(TIM3, TIM_IT_CC2);
+    TIM_ClearITPendingBit(TIM3, TIM_IT_CC1);
+    if(PUMP_DEAD_TIME)
+    {
+      PUMP_MASSIVE[0]++;
+      PUMP_DEAD_TIME = DISABLE; // заканчиваем отсчет мертвого времени накачки
+    }
   }
-
-  PUMP_MASSIVE[0]++;
 }
 
 
@@ -338,18 +359,86 @@ void TIM9_IRQHandler(void)
     // ротация массивов
     counter = 0;
     counter_pump = 0;
+    PumpData.two_sec_sum = 0;
+
     for (i = 20; i > 0; i--)
     {
       IMPULSE_MASSIVE[i] = IMPULSE_MASSIVE[i - 1];
       PUMP_MASSIVE[i] = PUMP_MASSIVE[i - 1];
       counter += IMPULSE_MASSIVE[i - 1];
       counter_pump += PUMP_MASSIVE[i - 1];
+
+      pump_per_second_mass[i] = pump_per_second_mass[i - 1];
+      PumpData.two_sec_sum += pump_per_second_mass[i - 1];      // Сумма за две секунды
+
     }
     counter >>= 1;              // деление на два
     counter_pump >>= 1;         // деление на два
     IMPULSE_MASSIVE[0] = 0;
     PUMP_MASSIVE[0] = 0;
+
+    pump_per_second_mass[0] = 0;
+
+    // Если требуется значительная компенсация, переключаем в режим жесткой накачки
+    if((PumpData.two_sec_sum > 4500) || (PumpData.two_sec_sum < -4500))
+    {
+      PumpData.good_stable_pumps--;
+      if(PumpData.good_stable_pumps > 100)
+        PumpData.good_stable_pumps = 100;
+      if(PumpData.good_stable_pumps < 70)
+      {
+        PumpData.good_stable_pumps = 0;
+        if(!PumpData.Agressive)
+        {
+          PumpData.Agressive = ENABLE;
+          PumpCompCmd(INIT_COMP);
+        }
+      }
+    } else
+    {
+      PumpData.good_stable_pumps++;
+      if(PumpData.good_stable_pumps > 100)      // 10 секунд накачка стабильна
+      {
+        PumpCompCmd(NVIC_DEINIT);
+        PumpData.Average_pump = counter_pump;
+        counts = counter_pump;
+        PumpData.Agressive = DISABLE;
+        TIM_CCxCmd(TIM3, TIM_Channel_2, TIM_CCx_Enable);        // разрешить накачку   
+      }
+    }
     // -----------------------------
+
+    if(!PumpData.Agressive)     // Если накачку надо нежно стабилизировать
+    {
+      pump_per_second = counts + ((pump_per_second_mass[1] + pump_per_second_mass[2] + pump_per_second_mass[3]) / 50);
+
+
+      // Удержание накачки в окне стабилизации (+-100 имп/c, не не менее 50-ти импульсов)
+      if(PumpData.Average_pump > 150)
+      {
+        if(pump_per_second < (PumpData.Average_pump - 100))
+          pump_per_second = PumpData.Average_pump - 100;
+      } else
+      {
+        if(pump_per_second < 50)
+          pump_per_second = 50;
+      }
+
+      if(pump_per_second > (PumpData.Average_pump + 100))
+        pump_per_second = PumpData.Average_pump + 100;
+      // -----------------------------
+
+      // Установка нового значения таймера накачки
+      i = timer_freq / (pump_per_second);
+      if(i > 0xFFFF)
+        i = 0xFFFF;
+
+      TIM_SetAutoreload(TIM3, i);
+      counts = counter_pump;
+      // -----------------------------
+    }
+    // -----------------------------
+
 
     if(tim9cnt >= 25)           // Каждые 2.5 секунды
     {
@@ -386,10 +475,11 @@ void TIM9_IRQHandler(void)
     LEDString();                // // Выводим обычным текстом содержание буфера
 
     // проверяем напряжение         
-    if(COMP_GetOutputLevel(COMP_Selection_COMP2) == COMP_OutputLevel_High)
-    {
-      PumpCmd(DISABLE);
-    }
+    if(PumpData.Agressive)      // Если накачку надо жестко стабилизировать
+      if(COMP_GetOutputLevel(COMP_Selection_COMP2) == COMP_OutputLevel_High)
+      {
+        PumpCmd(DISABLE);
+      }
 
 
   }
