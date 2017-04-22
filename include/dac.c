@@ -42,8 +42,8 @@ void dac_reload()
   // 0,0007326¬ на 1 бит
   // ADCData.DAC_voltage_raw должно быть примерно равно 1084, при 780 вольтах.
 
-  if((ADCData.DAC_voltage_raw > (DAC_GetDataOutputValue(DAC_Channel_2) + 1))    // вилка по напр€жению +-1 бит
-     || (ADCData.DAC_voltage_raw < (DAC_GetDataOutputValue(DAC_Channel_2) - 1)))
+  if((ADCData.DAC_voltage_raw > (DAC_GetDataOutputValue(DAC_Channel_2) + 3))    // вилка по напр€жению +-1 бит
+     || (ADCData.DAC_voltage_raw < (DAC_GetDataOutputValue(DAC_Channel_2) - 3)))
   {
     dac_off();
     dac_on();

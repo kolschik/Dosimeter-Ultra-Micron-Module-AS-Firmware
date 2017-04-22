@@ -81,6 +81,7 @@ typedef struct
   uint32_t DAC_voltage_raw;     //    DAC
 } ADCDataDef;
 
+
 typedef struct
 {
   uint32_t feu_voltage;
@@ -90,9 +91,9 @@ typedef struct
   uint8_t T_korr;
   uint8_t Impulse_dead_time;
   uint8_t Start_channel;
-
-
+  uint8_t ADC_time;
 } SettingsDef;
+
 
 typedef struct
 {

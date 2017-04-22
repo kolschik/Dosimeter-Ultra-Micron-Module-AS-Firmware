@@ -84,7 +84,26 @@ void adc_init(void)
   ADC_ITConfig(ADC1, ADC_IT_JEOC, ENABLE);
 
   ADC_InjectedSequencerLengthConfig(ADC1, 0);
-  ADC_InjectedChannelConfig(ADC1, ADC_Channel_0, 1, ADC_SampleTime_16Cycles);
+
+  switch (Settings.ADC_time)
+  {
+  case 0:
+    ADC_InjectedChannelConfig(ADC1, ADC_Channel_0, 1, ADC_SampleTime_4Cycles);
+    break;
+
+  case 1:
+    ADC_InjectedChannelConfig(ADC1, ADC_Channel_0, 1, ADC_SampleTime_9Cycles);
+    break;
+
+  case 2:
+    ADC_InjectedChannelConfig(ADC1, ADC_Channel_0, 1, ADC_SampleTime_16Cycles);
+    break;
+
+  default:
+    ADC_InjectedChannelConfig(ADC1, ADC_Channel_0, 1, ADC_SampleTime_24Cycles);
+    break;
+  }
+
   ADC_ExternalTrigInjectedConvConfig(ADC1, ADC_ExternalTrigInjecConv_Ext_IT15);
   ADC_ExternalTrigInjectedConvEdgeConfig(ADC1, ADC_ExternalTrigInjecConvEdge_Rising);
 

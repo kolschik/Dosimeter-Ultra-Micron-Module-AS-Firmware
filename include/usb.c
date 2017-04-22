@@ -145,7 +145,7 @@ void USB_work()
           Send_Buffer[20] = Settings.Sound & 0xff;      // Управление звуком
           Send_Buffer[21] = Settings.LED_intens & 0xff; // Управление интенсовностью подсветки
           Send_Buffer[22] = Settings.T_korr & 0xff;     // Температурная коррекция
-          Send_Buffer[23] = 0x00;
+          Send_Buffer[23] = Settings.ADC_time & 0xff;
           Send_Buffer[24] = Settings.Impulse_dead_time & 0xff;  // колличество накачек в секунду
           Send_Buffer[25] = debug_mode & 0xff;  // колличество накачек в секунду
 
@@ -211,11 +211,30 @@ void USB_work()
               debug_mode = DISABLE;
             }
 
-            current_rcvd_pointer++;
-
-
             ////////////////////////////////////
+            // Время АЦП - 1 бит
+            Settings.ADC_time = Receive_Buffer[current_rcvd_pointer + 1] & 0xff;
             current_rcvd_pointer++;
+            eeprom_write(0x30, Settings.ADC_time);
+            switch (Settings.ADC_time)
+            {
+            case 0:
+              ADC_InjectedChannelConfig(ADC1, ADC_Channel_0, 1, ADC_SampleTime_4Cycles);
+              break;
+
+            case 1:
+              ADC_InjectedChannelConfig(ADC1, ADC_Channel_0, 1, ADC_SampleTime_9Cycles);
+              break;
+
+            case 2:
+              ADC_InjectedChannelConfig(ADC1, ADC_Channel_0, 1, ADC_SampleTime_16Cycles);
+              break;
+
+            default:
+              ADC_InjectedChannelConfig(ADC1, ADC_Channel_0, 1, ADC_SampleTime_24Cycles);
+              break;
+            }
+
           } else
           {
             current_rcvd_pointer = Receive_length;      // Принято меньше чем должно быть, завершаем цикл

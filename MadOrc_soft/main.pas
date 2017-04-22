@@ -78,6 +78,9 @@ type
     Incative: TTimer;
     Label12: TLabel;
     Start_channel: TEdit;
+    Label13: TLabel;
+    ADC_time: TComboBox;
+    Label14: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure ExitBtnClick(Sender: TObject);
@@ -170,9 +173,6 @@ var
 implementation
 
 {$R *.dfm}
-{$R sounds.res}
-
-uses Unit1;
 
 function TmainFrm.PosR2L(const FindS, SrcS: string): Integer;
 { Функция возвращает начало последнего вхождения
@@ -242,8 +242,6 @@ end;
 procedure TmainFrm.OKBtnClick();
 begin
   MyTray.HideApplication;
-  mainFrm.Timer1.Enabled:=FALSE;
-
 end;
 // =============================================================================
 
@@ -360,11 +358,16 @@ mainFrm.LED.AddItem('100%', nil);
 
 mainFrm.Source.AddItem('Он-лайн', nil);
 mainFrm.Source.AddItem('Flash', nil);
-//mainFrm.Source.AddItem('Flash 2', nil);
-//mainFrm.Source.AddItem('Flash 3', nil);
-//mainFrm.Source.AddItem('Flash 4', nil);
-//mainFrm.Source.AddItem('Flash 5', nil);
 mainFrm.Source.ItemIndex:=0;
+
+mainFrm.ADC_time.AddItem('0.25', nil);
+mainFrm.ADC_time.AddItem('0.56', nil);
+mainFrm.ADC_time.AddItem('1.00', nil);
+mainFrm.ADC_time.AddItem('1.50', nil);
+mainFrm.ADC_time.ItemIndex:=0;
+
+mainFrm.Panel2.Visible:=false;
+mainFrm.Panel1.Visible:=false;
 
 mainFrm.Selected_time.Items.AddObject('Без остановки', TObject(0));
 mainFrm.Selected_time.Items.AddObject('1 минута',      TObject(60));
@@ -634,10 +637,7 @@ var
   ibx: uint;
 begin
 
-  Unit1.Form1.Show;
   myDate := Now;
-
-  Unit1.Form1.max_fon.Caption := '0%';
 
   for ibx := 0 to max_address do
   begin
@@ -685,7 +685,6 @@ begin
 
     end
     else
-      Unit1.Form1.Close;
   end;
 end;
 // =============================================================================
@@ -817,7 +816,7 @@ begin
     vAns[7] := StrToInt(mainFrm.TCorr.Text) and $FF;
     vAns[8] := $00;
     vAns[9] := $00;
-    vAns[10] := $00;
+    vAns[10] := mainFrm.ADC_time.ItemIndex and $FF;
 
 
     RS232.Send(vAns);
@@ -897,6 +896,9 @@ begin
       if (aData[used_bytes] = $06) then
       begin // загрузка текущих данных
 
+      mainFrm.Panel2.Visible:=true;
+      mainFrm.Panel1.Visible:=true;
+
         mainFrm.Temperature.Text := IntToStr(aData[used_bytes + 1]);
         if (VoltChange = false) then
         begin
@@ -913,6 +915,7 @@ begin
           mainFrm.Sound.Text :=        IntToStr(aData[used_bytes + 20]);
           mainFrm.LED.ItemIndex :=              aData[used_bytes + 21];
           mainFrm.TCorr.Text :=        IntToStr(aData[used_bytes + 22]);
+          mainFrm.ADC_time.ItemIndex :=         aData[used_bytes + 23];
 
           if ( mainFrm.Selected_time.Enabled = true ) then
           begin
@@ -959,8 +962,6 @@ begin
           vAns[0] := $39;
 
           USB_massive_loading := false;
-          Unit1.Form1.Close;
-
           SaveDialog1.DefaultExt := '.csv';
           SaveDialog1.FileName := 'Spectr_'+mainFrm.Spectro_time.Text+'s.csv';
 
@@ -1020,6 +1021,9 @@ begin
         FreeAndNil(RS232);
 
         mainFrm.Incative.Enabled:=False;
+
+        mainFrm.Panel2.Visible:=false;
+        mainFrm.Panel1.Visible:=false;
 
         RS232 := TiaRS232.Create;
         RS232.OnRSReceived := DoOnReceiveEvent;
