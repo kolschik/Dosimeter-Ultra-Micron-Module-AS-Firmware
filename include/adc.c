@@ -84,7 +84,7 @@ void adc_init(void)
   ADC_ITConfig(ADC1, ADC_IT_JEOC, ENABLE);
 
   ADC_InjectedSequencerLengthConfig(ADC1, 0);
-  ADC_InjectedChannelConfig(ADC1, ADC_Channel_0, 1, ADC_SampleTime_4Cycles);
+  ADC_InjectedChannelConfig(ADC1, ADC_Channel_0, 1, ADC_SampleTime_16Cycles);
   ADC_ExternalTrigInjectedConvConfig(ADC1, ADC_ExternalTrigInjecConv_Ext_IT15);
   ADC_ExternalTrigInjectedConvEdgeConfig(ADC1, ADC_ExternalTrigInjecConvEdge_Rising);
 
