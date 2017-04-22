@@ -382,9 +382,9 @@ void TIM9_IRQHandler(void)
     // Если требуется значительная компенсация, переключаем в режим жесткой накачки
     if((PumpData.two_sec_sum > 4500) || (PumpData.two_sec_sum < -4500))
     {
-      PumpData.good_stable_pumps--;
       if(PumpData.good_stable_pumps > 100)
         PumpData.good_stable_pumps = 100;
+
       if(PumpData.good_stable_pumps < 70)
       {
         PumpData.good_stable_pumps = 0;
@@ -393,6 +393,9 @@ void TIM9_IRQHandler(void)
           PumpData.Agressive = ENABLE;
           PumpCompCmd(INIT_COMP);
         }
+      } else
+      {
+        PumpData.good_stable_pumps--;
       }
     } else
     {

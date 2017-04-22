@@ -242,6 +242,8 @@ end;
 procedure TmainFrm.OKBtnClick();
 begin
   MyTray.HideApplication;
+  mainFrm.Timer1.Enabled:=FALSE;
+
 end;
 // =============================================================================
 
@@ -594,12 +596,12 @@ end;
 procedure TmainFrm.MyTrayClick(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 begin
-  if Button <> mbRight then
-  begin
-    if (not DevPresent) then
-      MyTray.BalloonHint('12', '34', TBalloonType(3), 5000, true)
-    else
-  end;
+//  if Button <> mbRight then
+//  begin
+//    if (not DevPresent) then
+//      MyTray.BalloonHint('12', '34', TBalloonType(3), 5000, true)
+//    else
+//  end;
 end;
 // =============================================================================
 
@@ -610,6 +612,7 @@ begin
   MyTray.ShowApplication;
   VoltChange := false;
   mainFrm.Panel1.Color := clMenu;
+  mainFrm.Timer1.Enabled := true;
 
 end;
 // =============================================================================
