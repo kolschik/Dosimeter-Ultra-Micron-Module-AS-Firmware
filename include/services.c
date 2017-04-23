@@ -224,6 +224,7 @@ void Power_on(void)
 {
   PowerState.Off_mode = DISABLE;
   PumpData.Agressive = ENABLE;
+  PowerState.Low_bat = DISABLE;
   io_init();
   set_pll_for_usb();
 
@@ -481,6 +482,41 @@ void LEDUpdate(void)
     LED_show(LED_show_massive[0], C_SEG_C);
     LED_show(LED_show_massive[0], C_SEG_D);
     LED_show(LED_show_massive[0], C_SEG_F);
+    LED_show(LED_show_massive[0], C_SEG_G);
+    break;
+
+  case 0x63:                   // Буква c
+    LED_show(LED_show_massive[0], C_SEG_G);
+    LED_show(LED_show_massive[0], C_SEG_E);
+    LED_show(LED_show_massive[0], C_SEG_D);
+    break;
+
+  case 0x68:                   // Буква h
+    LED_show(LED_show_massive[0], C_SEG_F);
+    LED_show(LED_show_massive[0], C_SEG_E);
+    LED_show(LED_show_massive[0], C_SEG_G);
+    LED_show(LED_show_massive[0], C_SEG_C);
+    break;
+
+  case 0x67:                   // Буква g
+    LED_show(LED_show_massive[0], C_SEG_A);
+    LED_show(LED_show_massive[0], C_SEG_F);
+    LED_show(LED_show_massive[0], C_SEG_G);
+    LED_show(LED_show_massive[0], C_SEG_B);
+    LED_show(LED_show_massive[0], C_SEG_C);
+    LED_show(LED_show_massive[0], C_SEG_D);
+    break;
+
+  case 0x4C:                   // Буква L
+    LED_show(LED_show_massive[0], C_SEG_F);
+    LED_show(LED_show_massive[0], C_SEG_E);
+    LED_show(LED_show_massive[0], C_SEG_D);
+    break;
+
+  case 0x6F:                   // Буква o
+    LED_show(LED_show_massive[0], C_SEG_E);
+    LED_show(LED_show_massive[0], C_SEG_D);
+    LED_show(LED_show_massive[0], C_SEG_C);
     LED_show(LED_show_massive[0], C_SEG_G);
     break;
   }

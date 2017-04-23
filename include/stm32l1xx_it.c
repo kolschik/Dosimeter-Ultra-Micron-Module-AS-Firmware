@@ -453,30 +453,41 @@ void TIM9_IRQHandler(void)
 
       if(akb_voltage < 340)     // меньше 3.4 вольта, выключить устройство!
       {
-        // перезагрузка устройства для входа в сон
-        RTC_WriteBackupRegister(RTC_BKP_DR0, 0x1212);
-        IWDG_WriteAccessCmd(IWDG_WriteAccess_Enable);
-        IWDG_SetPrescaler(IWDG_Prescaler_4);
-        IWDG_SetReload(2);
-        IWDG_ReloadCounter();
-        IWDG_Enable();
-        while (1);
+        if(!PowerState.Low_bat)
+        {
+          PowerState.Low_bat = ENABLE;
+        } else
+        {
+          // перезагрузка устройства для входа в сон
+          RTC_WriteBackupRegister(RTC_BKP_DR0, 0x1212);
+          IWDG_WriteAccessCmd(IWDG_WriteAccess_Enable);
+          IWDG_SetPrescaler(IWDG_Prescaler_4);
+          IWDG_SetReload(2);
+          IWDG_ReloadCounter();
+          IWDG_Enable();
+          while (1);
+        }
       }
     } else
       tim9cnt++;
 
 
 
-
-    if(counter > 999)
+    if(!PowerState.Low_bat)
     {
-      sprintf(LED_BUF, "%3u", counter / 1000);  // Пишем в буфер значение счетчика
+      if(counter > 999)
+      {
+        sprintf(LED_BUF, "%3u", counter / 1000);        // Пишем в буфер значение счетчика
+      } else
+      {
+        sprintf(LED_BUF, "%3u", counter);       // Пишем в буфер значение счетчика
+      }
     } else
     {
-      sprintf(LED_BUF, "%3u", counter); // Пишем в буфер значение счетчика
+      sprintf(LED_BUF, "Lo ");
     }
-    LEDString();                // // Выводим обычным текстом содержание буфера
 
+    LEDString();                // // Выводим обычным текстом содержание буфера
     // проверяем напряжение         
     if(PumpData.Agressive)      // Если накачку надо жестко стабилизировать
       if(COMP_GetOutputLevel(COMP_Selection_COMP2) == COMP_OutputLevel_High)

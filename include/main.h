@@ -99,6 +99,7 @@ typedef struct
 {
   FunctionalState USB;
   FunctionalState Charging;
+  FunctionalState Low_bat;
   FunctionalState Spectr;
   FunctionalState Engage;
   FunctionalState Finder;

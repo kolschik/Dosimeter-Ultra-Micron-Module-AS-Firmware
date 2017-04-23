@@ -40,7 +40,7 @@ int pump_per_second_mass[23];
 /////////////////////////////////////////////////////////////////////////////////////////
 int main(void)
 {
-  uint32_t chkkeysleep = 0;     //, eeprom_datamassive = 0;
+  uint32_t chkkeysleep = 0, ix; //, eeprom_datamassive = 0;
 
   RTC_Config();
   RTC_WriteBackupRegister(RTC_BKP_DR0, 0x0000);
@@ -49,17 +49,45 @@ int main(void)
     io_init();
     EXTI8_Config();             // Кнопка
 
-    Power_off();
-
-    while (chkkeysleep < 200000)
+    while (chkkeysleep < 200)
     {
+      Power_off();
+
       chkkeysleep = 0;
       PWR_FastWakeUpCmd(ENABLE);
       PWR_EnterSTOPMode(PWR_Regulator_LowPower, PWR_STOPEntry_WFI);
       PWR_FastWakeUpCmd(DISABLE);
 
+      SystemCoreClockUpdate();
+      Settings.LED_intens = eeprom_read(0x1C);
+      tim2_Config();
+      io_init();
+      NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
+
       while (!GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_8)) // проверка зажатой кнопки
+      {
         chkkeysleep++;
+        if(MCP73831_state_detect() == L_State)
+        {
+          sprintf(LED_BUF, "chg");      // Пишем в буфер значение счетчика
+        } else
+        {
+          ix = chkkeysleep / 20;
+          if(ix > 9)
+            ix = 10;
+
+          sprintf(LED_BUF, "%3u", 10 - ix);     // Пишем в буфер значение счетчика
+        }
+
+        LEDString();            // // Выводим обычным текстом содержание буфера
+
+        if(Need_Ledupdate == ENABLE)
+        {
+          Need_Ledupdate = DISABLE;
+          LEDUpdate();
+        }
+
+      }
     }
 
     IWDG_WriteAccessCmd(IWDG_WriteAccess_Enable);

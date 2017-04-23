@@ -120,7 +120,7 @@ void USB_work()
 
 
           Send_Buffer[0] = 0x06;        // передать ключ
-          Send_Buffer[1] = ADCData.Temp & 0xff; // температура МК
+          Send_Buffer[1] = (ADCData.Temp - Settings.T_korr) & 0xff;     // температура МК
           Send_Buffer[2] = Settings.feu_voltage & 0xff; // напряжение детектора
           Send_Buffer[3] = (Settings.feu_voltage >> 8) & 0xff;
           Send_Buffer[4] = (Settings.feu_voltage >> 16) & 0xff;
