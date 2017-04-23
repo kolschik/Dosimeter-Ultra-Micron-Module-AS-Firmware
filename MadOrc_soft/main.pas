@@ -912,7 +912,7 @@ begin
           mainFrm.Counts.Text :=   IntToStr(aData[used_bytes + 7]  + (aData[used_bytes + 8]  shl 8) + (aData[used_bytes + 9] shl 16)  + (aData[used_bytes + 10] shl 24));
 
           Spectro_time_raw:=  aData[used_bytes + 11] + (aData[used_bytes + 12] shl 8) + (aData[used_bytes + 13] shl 16) + (aData[used_bytes + 14] shl 24);
-          mainFrm.Spectro_time.Text :=  IntToStr(Spectro_time_raw div 3600)+'ч. '+IntToStr((Spectro_time_raw Mod 3600) div 60)+'мин. '+IntToStr(Spectro_time_raw Mod 60)+'сек.';
+          mainFrm.Spectro_time.Text :=  IntToStr(Spectro_time_raw div 3600)+'ч. '+IntToStr((Spectro_time_raw Mod 3600) div 60)+'м. '+IntToStr(Spectro_time_raw Mod 60)+'с.';
 
           mainFrm.Pump.Text :=     IntToStr(aData[used_bytes + 15] + (aData[used_bytes + 16] shl 8) + (aData[used_bytes + 17] shl 16) + (aData[used_bytes + 18] shl 24));
 
