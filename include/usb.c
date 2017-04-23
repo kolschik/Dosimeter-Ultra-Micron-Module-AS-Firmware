@@ -36,9 +36,9 @@ uint8_t prepare_data(uint32_t mode, uint16_t * massive_pointer, uint8_t start_ke
     data_key = start_key;
 
     tmp = SPECTRO_MASSIVE[*massive_pointer];
-
+/*
     // Антиалиасинг ячеек кратных 64
-/*    if(((*massive_pointer % 0x40) == 0) && (*massive_pointer > 0))
+    if((*massive_pointer & 0x3F) == 0x3F)
     {
       tmp = (SPECTRO_MASSIVE[*massive_pointer - 1] + SPECTRO_MASSIVE[*massive_pointer + 1]) >> 1;
     }
@@ -111,7 +111,6 @@ void USB_work()
           for (i = 0; i <= 2047; i++)
             SPECTRO_MASSIVE[i] = 0;
           spectro_time = 0;
-          //full_erase_flash();   // очистка данных FLASH
           if(Send_length == 0)
             current_rcvd_pointer++;     // Если массив исчерпан
           break;
@@ -121,7 +120,7 @@ void USB_work()
 
 
           Send_Buffer[0] = 0x06;        // передать ключ
-          Send_Buffer[1] = ADCData.Temp & 0xff; // температура МК
+          Send_Buffer[1] = (ADCData.Temp - Settings.T_korr) & 0xff;     // температура МК
           Send_Buffer[2] = Settings.feu_voltage & 0xff; // напряжение детектора
           Send_Buffer[3] = (Settings.feu_voltage >> 8) & 0xff;
           Send_Buffer[4] = (Settings.feu_voltage >> 16) & 0xff;
@@ -142,11 +141,11 @@ void USB_work()
           Send_Buffer[16] = (counter_pump >> 8) & 0xff;
           Send_Buffer[17] = (counter_pump >> 16) & 0xff;
           Send_Buffer[18] = (counter_pump >> 24) & 0xff;
-          Send_Buffer[19] = 0x00;       // Время накопления спектра
+          Send_Buffer[19] = Settings.Start_channel & 0xff;      // Колличество накопленных спектров
           Send_Buffer[20] = Settings.Sound & 0xff;      // Управление звуком
           Send_Buffer[21] = Settings.LED_intens & 0xff; // Управление интенсовностью подсветки
           Send_Buffer[22] = Settings.T_korr & 0xff;     // Температурная коррекция
-          Send_Buffer[23] = 0x00;
+          Send_Buffer[23] = Settings.ADC_time & 0xff;
           Send_Buffer[24] = Settings.Impulse_dead_time & 0xff;  // колличество накачек в секунду
           Send_Buffer[25] = debug_mode & 0xff;  // колличество накачек в секунду
 
@@ -167,12 +166,11 @@ void USB_work()
             current_rcvd_pointer += 3;
             eeprom_write(0x10, Settings.feu_voltage);
             dac_reload();
-            DAC_SetChannel2Data(DAC_Align_12b_R, ADCData.DAC_voltage_raw);
 
-            // Битность АЦП - 1 бит
-            Settings.ADC_bits = Receive_Buffer[current_rcvd_pointer + 1] & 0xff;
+            // Первый канал АЦП - 1 бит
+            Settings.Start_channel = Receive_Buffer[current_rcvd_pointer + 1] & 0xff;
             current_rcvd_pointer++;
-            eeprom_write(0x14, Settings.ADC_bits);
+            eeprom_write(0x2C, Settings.Start_channel);
 
             // Звук - 1 бит
             Settings.Sound = Receive_Buffer[current_rcvd_pointer + 1] & 0xff;
@@ -184,7 +182,13 @@ void USB_work()
             current_rcvd_pointer++;
             eeprom_write(0x1C, Settings.LED_intens);
             tim2_Config();
-
+            if(PowerState.USB)
+            {
+              TIM_Cmd(TIM2, DISABLE);   // Индикацию выключить
+              TIM_ClearITPendingBit(TIM2, TIM_IT_CC2);
+              TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
+              LED_show(LED_show_massive[0], C_SEG_ALLOFF);
+            }
             // Коррекция температуры - 1 бит
             Settings.T_korr = Receive_Buffer[current_rcvd_pointer + 1] & 0xff;
             current_rcvd_pointer++;
@@ -207,11 +211,30 @@ void USB_work()
               debug_mode = DISABLE;
             }
 
-            current_rcvd_pointer++;
-
-
             ////////////////////////////////////
+            // Время АЦП - 1 бит
+            Settings.ADC_time = Receive_Buffer[current_rcvd_pointer + 1] & 0xff;
             current_rcvd_pointer++;
+            eeprom_write(0x30, Settings.ADC_time);
+            switch (Settings.ADC_time)
+            {
+            case 0:
+              ADC_InjectedChannelConfig(ADC1, ADC_Channel_0, 1, ADC_SampleTime_4Cycles);
+              break;
+
+            case 1:
+              ADC_InjectedChannelConfig(ADC1, ADC_Channel_0, 1, ADC_SampleTime_9Cycles);
+              break;
+
+            case 2:
+              ADC_InjectedChannelConfig(ADC1, ADC_Channel_0, 1, ADC_SampleTime_16Cycles);
+              break;
+
+            default:
+              ADC_InjectedChannelConfig(ADC1, ADC_Channel_0, 1, ADC_SampleTime_24Cycles);
+              break;
+            }
+
           } else
           {
             current_rcvd_pointer = Receive_length;      // Принято меньше чем должно быть, завершаем цикл
@@ -220,6 +243,17 @@ void USB_work()
 
         case 0x39:             // завершение передачи (RCV 1 байт)
           USB_spectro_pointer = 0;
+          current_rcvd_pointer++;
+          break;
+
+        case 0x40:             // Загрузка спектра 0
+          for (i = 0; i <= 2047; i++)
+            SPECTRO_MASSIVE[i] = 0;
+          spectro_time = 0;
+          flash_read_massive(0);
+          spectro_time = eeprom_read(0x100 + 0x04);     // время спектра
+          ADCData.Temp = eeprom_read(0x100 + 0x08);     // запись температуры спектра
+
           current_rcvd_pointer++;
           break;
 
@@ -264,12 +298,27 @@ void USB_off()
 {
 //---------------------------------------------Отключение USB------------------------------------
   RCC_APB1PeriphClockCmd(RCC_APB1Periph_USB, DISABLE);
+
+  PowerState.USB = DISABLE;
+  PowerState.Spectr = DISABLE;
+  dac_on();                     // Включение ЦАП
+  PumpCompCmd(INIT_COMP);       // Включение компоратора
+  PumpCompCmd(ON_COMP);
+  TIM_Cmd(TIM10, ENABLE);       // Включение контроля напряжения на ФЭУ
+
+  TIM_Cmd(TIM2, ENABLE);        // Индикацию включить
+  TIM_ClearITPendingBit(TIM2, TIM_IT_CC2);
+  TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
+  LED_show(LED_show_massive[0], C_SEG_ALLOFF);
+
+  PowerState.Sound = ENABLE;    // Звук включить
 }
 
 
 void USB_on()
 {
   //---------------------------------------------Включение USB------------------------------------
+  PowerState.USB = ENABLE;
   Set_System();
   SystemCoreClockUpdate();
   Set_USBClock();

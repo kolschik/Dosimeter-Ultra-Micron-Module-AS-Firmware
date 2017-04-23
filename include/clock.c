@@ -45,9 +45,7 @@
 //-------------------------------------------------------------------------------------------------------
 void set_msi()
 {
-//  GPIO_InitTypeDef GPIO_InitStructure;
-
-//  TIM_CCxCmd(TIM9, TIM_Channel_1, TIM_CCx_Disable);     // запретить накачку
+  GPIO_InitTypeDef GPIO_InitStructure;
 
   FLASH_SetLatency(FLASH_Latency_1);
   FLASH_PrefetchBufferCmd(ENABLE);
@@ -113,25 +111,24 @@ void set_msi()
 
 
 // Переконфигурируем FLASH
-  /*
-     FLASH_SetLatency(FLASH_Latency_0);
+/*
+		 FLASH_SetLatency(FLASH_Latency_0);
      FLASH_PrefetchBufferCmd(DISABLE);
      FLASH_ReadAccess64Cmd(DISABLE);
-   */
+*/
+  PWR_VoltageScalingConfig(PWR_VoltageScaling_Range3);  // Voltage Scaling Range 3 (VCORE = 1.2V)
+  while (PWR_GetFlagStatus(PWR_FLAG_VOS) != RESET);     // Wait Until the Voltage Regulator is ready
 
-//  PWR_VoltageScalingConfig(PWR_VoltageScaling_Range3);  // Voltage Scaling Range 3 (VCORE = 1.2V)
-//  while (PWR_GetFlagStatus(PWR_FLAG_VOS) != RESET);     // Wait Until the Voltage Regulator is ready
 
-//  reset_TIM_prescallers_and_Compare();
-//  PumpPrescaler();
-
-/*  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AN;
+  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AN;
   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_400KHz;
   GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_DOWN;
   GPIO_InitStructure.GPIO_Pin = GPIO_Pin_All;
   GPIO_Init(GPIOH, &GPIO_InitStructure);
   RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOH, DISABLE);
-*/
+
+  SystemCoreClockUpdate();
+
 }
 
 //-------------------------------------------------------------------------------------------------------
@@ -179,8 +176,8 @@ void set_pll_for_usb()
   /* Wait till PLL is used as system clock source */
   while (RCC_GetSYSCLKSource() != 0x0C);
 
-//  reset_TIM_prescallers_and_Compare();
-//  PumpPrescaler();
+  SystemCoreClockUpdate();
+
 }
 
 //-------------------------------------------------------------------------------------------------------

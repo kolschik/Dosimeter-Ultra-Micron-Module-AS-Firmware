@@ -58,7 +58,7 @@ void adc_init(void)
   ADC_InitStructure.ADC_NbrOfConversion = 3;    // Число преобразований
   ADC_Init(ADC1, &ADC_InitStructure);
 
-  ADC_DelaySelectionConfig(ADC1, ADC_DelayLength_Freeze);       // Задержка до момента чтения данных из АЦП
+  ADC_DelaySelectionConfig(ADC1, ADC_DelayLength_Freeze);       // Задержка старта нового преобразования до момента чтения данных из АЦП
 
   ADC_PowerDownCmd(ADC1, ADC_PowerDown_Idle_Delay, DISABLE);    // отключение питания АЦП в интервалах Idle и Delay
 
@@ -74,11 +74,9 @@ void adc_init(void)
   ADC_RegularChannelConfig(ADC1, ADC_Channel_16, 2, ADC_SampleTime_384Cycles);  // температура
   ADC_RegularChannelConfig(ADC1, ADC_Channel_19, 3, ADC_SampleTime_384Cycles);  // Напряжение АКБ
 
-  ADC_DelaySelectionConfig(ADC1, ADC_DelayLength_Freeze);       // Задержка до момента чтения данных из АЦП
-
   NVIC_InitStructure.NVIC_IRQChannel = ADC1_IRQn;
   NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-  NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+  NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
   NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
   NVIC_Init(&NVIC_InitStructure);
 
@@ -86,10 +84,29 @@ void adc_init(void)
   ADC_ITConfig(ADC1, ADC_IT_JEOC, ENABLE);
 
   ADC_InjectedSequencerLengthConfig(ADC1, 0);
-  ADC_InjectedChannelConfig(ADC1, ADC_Channel_0, 1, ADC_SampleTime_4Cycles);
+
+  switch (Settings.ADC_time)
+  {
+  case 0:
+    ADC_InjectedChannelConfig(ADC1, ADC_Channel_0, 1, ADC_SampleTime_4Cycles);
+    break;
+
+  case 1:
+    ADC_InjectedChannelConfig(ADC1, ADC_Channel_0, 1, ADC_SampleTime_9Cycles);
+    break;
+
+  case 2:
+    ADC_InjectedChannelConfig(ADC1, ADC_Channel_0, 1, ADC_SampleTime_16Cycles);
+    break;
+
+  default:
+    ADC_InjectedChannelConfig(ADC1, ADC_Channel_0, 1, ADC_SampleTime_24Cycles);
+    break;
+  }
+
   ADC_ExternalTrigInjectedConvConfig(ADC1, ADC_ExternalTrigInjecConv_Ext_IT15);
   ADC_ExternalTrigInjectedConvEdgeConfig(ADC1, ADC_ExternalTrigInjecConvEdge_Rising);
-  //ADC_AutoInjectedConvCmd(ADC1, ENABLE);
+
 
   DMA_Cmd(DMA1_Channel1, ENABLE);
   ADC_DMARequestAfterLastTransferCmd(ADC1, ENABLE);

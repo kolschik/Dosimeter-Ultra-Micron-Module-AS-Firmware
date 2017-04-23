@@ -15,6 +15,7 @@
 #include "stm32_it.h"
 #include "timers.h"
 #include "pump.h"
+#include "rtc.h"
 
 #include "usb.h"
 #include "hw_config.h"
@@ -40,9 +41,16 @@
 #define INIT_COMP 0
 #define ON_COMP 1
 #define OFF_COMP 2
+#define NVIC_DEINIT 3
+
+#define HI_Z_State 2
+#define L_State 0
+#define H_State 1
+#define Unknown_State 4
+
 
 #define FLASH_PAGE_SIZE                 0x100   // ( !   USB !!)
-#define FLASH_START_ADDR                0x0800F000
+#define FLASH_START_ADDR                0x08008000
 #define FLASH_END_ADDR                  0x0801FFFF
 #define FLASH_MAX_PAGE                  (FLASH_END_ADDR - FLASH_START_ADDR) / FLASH_PAGE_SIZE
 #define FLASH_MAX_ELEMENT               FLASH_MAX_PAGE * (FLASH_PAGE_SIZE >> 3)
@@ -52,7 +60,11 @@
 typedef struct
 {
   FunctionalState Active;       //   
-//  FunctionalState Impulse_past; //   
+  FunctionalState Agressive;    //  
+  uint32_t Average_pump;        // Среднее колличество импульсов накачки, требуемое для поддержания заданного напряжения
+  int two_sec_sum;              // Сумма состояния компаратора за две секунды
+  uint32_t good_stable_pumps;   // стабильных состояний компаратора
+
 } PumpDataDef;
 
 typedef struct
@@ -69,6 +81,7 @@ typedef struct
   uint32_t DAC_voltage_raw;     //    DAC
 } ADCDataDef;
 
+
 typedef struct
 {
   uint32_t feu_voltage;
@@ -77,10 +90,27 @@ typedef struct
   uint8_t LED_intens;
   uint8_t T_korr;
   uint8_t Impulse_dead_time;
-
+  uint8_t Start_channel;
+  uint8_t ADC_time;
 } SettingsDef;
 
 
+typedef struct
+{
+  FunctionalState USB;
+  FunctionalState Charging;
+  FunctionalState Low_bat;
+  FunctionalState Spectr;
+  FunctionalState Engage;
+  FunctionalState Finder;
+  FunctionalState Sound;
+  FunctionalState Off_mode;
+  uint8_t key_hold;
+
+} PowerStateDef;
+
+
+extern PowerStateDef PowerState;
 extern ADCDataDef ADCData;
 extern PumpDataDef PumpData;
 extern SettingsDef Settings;
@@ -95,18 +125,23 @@ extern FunctionalState Need_Ledupdate;
 extern FunctionalState PUMP_DEAD_TIME;
 extern FunctionalState IMPULSE_DEAD_TIME;
 extern FunctionalState debug_mode;
+extern FunctionalState sleep_rtc;
+extern FunctionalState need_MCP_update;
 
 extern uint32_t SPECTRO_MASSIVE[];
 extern uint32_t IMPULSE_MASSIVE[];
 extern uint32_t PUMP_MASSIVE[];
-extern uint32_t ERR_MASSIVE[];
 extern uint16_t USB_spectro_pointer;
 extern uint8_t temperature;
 extern uint16_t akb_voltage;
-extern uint32_t counter_err;
 extern uint32_t counter_pump;
 extern uint32_t spectro_time;
 extern __IO uint16_t ADC_ConvertedValue[];
+
+extern uint32_t pump_per_second;
+extern int pump_per_second_mass[];
+#define timer_freq 4000000
+
 
 void LEDString(void);
 void LEDUpdate(void);

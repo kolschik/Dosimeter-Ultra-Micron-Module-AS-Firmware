@@ -34,7 +34,6 @@ type
     ExitBtn: TMenuItem;
     AboutBtn: TMenuItem;
     XPManifest1: TXPManifest;
-    MessTmr: TTimer;
     Timer1: TTimer;
     PortSub: TMenuItem;
     COM11: TMenuItem;
@@ -45,9 +44,7 @@ type
     Label9: TLabel;
     Label10: TLabel;
     Label11: TLabel;
-    Timer3: TTimer;
     SaveDialog1: TSaveDialog;
-    CloseTimer: TTimer;
     Com_detect: TTimer;
     Auto1: TMenuItem;
     Button4: TButton;
@@ -78,11 +75,16 @@ type
     Source: TComboBox;
     Label7: TLabel;
     Selected_time: TComboBox;
+    Incative: TTimer;
+    Label12: TLabel;
+    Start_channel: TEdit;
+    Label13: TLabel;
+    ADC_time: TComboBox;
+    Label14: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure ExitBtnClick(Sender: TObject);
     procedure OKBtnClick();
-    procedure MessTmrTimer(Sender: TObject);
     procedure MyTrayDoubleClick(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure MyTrayClick(Sender: TObject; Button: TMouseButton;
@@ -95,7 +97,6 @@ type
     procedure COM31Click(Sender: TObject);
     procedure COM41Click(Sender: TObject);
     procedure COM51Click(Sender: TObject);
-    procedure Timer3Timer(Sender: TObject);
     procedure CloseTimerTimer(Sender: TObject);
     procedure Com_detectTimer(Sender: TObject);
     procedure Auto1Click(Sender: TObject);
@@ -105,6 +106,7 @@ type
     procedure EVoltChange(Sender: TObject);
     procedure SourceChange(Sender: TObject);
     procedure Selected_timeChange(Sender: TObject);
+    procedure IncativeTimer(Sender: TObject);
 
   private
     fBuf: TiaBuf;
@@ -118,12 +120,10 @@ type
   protected
   public
     RS232: TiaRS232;
-    procedure RefreshRAD;
     procedure SaveReg;
     function GetMyVersion: uint;
     function PosR2L(const FindS, SrcS: string): Integer;
     procedure Load_spectr(Type_of_load: Integer);
-    procedure MakeIcon();
     procedure WMPowerBroadcast(var MyMessage: TMessage);
       message WM_POWERBROADCAST;
     procedure WMSysCommand(var Message: TMessage); message WM_SYSCOMMAND;
@@ -173,9 +173,6 @@ var
 implementation
 
 {$R *.dfm}
-{$R sounds.res}
-
-uses Unit1;
 
 function TmainFrm.PosR2L(const FindS, SrcS: string): Integer;
 { Функция возвращает начало последнего вхождения
@@ -286,7 +283,6 @@ begin
       firmware_date := '';
 
       DenyCommunications := true;
-      RS232.StopListner;
       RS232.Close;
     end;
   end;
@@ -341,25 +337,6 @@ end;
 
 // =============================================================================
 
-// =============================================================================
-procedure TmainFrm.MakeIcon();
-var
-  ii: uint;
-begin
-
-  if (not DevPresent) then
-  begin
-    ImageList1.GetIcon(0, MyTray.Icon);
-  end;
-end;
-// =============================================================================
-
-// =============================================================================
-procedure TmainFrm.RefreshRAD;
-begin
-  MakeIcon();
-end;
-// =============================================================================
 
 // =============================================================================
 procedure TmainFrm.FormCreate(Sender: TObject);
@@ -380,12 +357,17 @@ mainFrm.LED.AddItem('90%', nil);
 mainFrm.LED.AddItem('100%', nil);
 
 mainFrm.Source.AddItem('Он-лайн', nil);
-mainFrm.Source.AddItem('Flash 1', nil);
-mainFrm.Source.AddItem('Flash 2', nil);
-mainFrm.Source.AddItem('Flash 3', nil);
-mainFrm.Source.AddItem('Flash 4', nil);
-mainFrm.Source.AddItem('Flash 5', nil);
+mainFrm.Source.AddItem('Flash', nil);
 mainFrm.Source.ItemIndex:=0;
+
+mainFrm.ADC_time.AddItem('0.25', nil);
+mainFrm.ADC_time.AddItem('0.56', nil);
+mainFrm.ADC_time.AddItem('1.00', nil);
+mainFrm.ADC_time.AddItem('1.50', nil);
+mainFrm.ADC_time.ItemIndex:=0;
+
+mainFrm.Panel2.Visible:=false;
+mainFrm.Panel1.Visible:=false;
 
 mainFrm.Selected_time.Items.AddObject('Без остановки', TObject(0));
 mainFrm.Selected_time.Items.AddObject('1 минута',      TObject(60));
@@ -415,7 +397,6 @@ mainFrm.Selected_time.ItemIndex:=0;
   // Setting the default value
 
   MyTray.IconIndex := -1;
-  MessTmr.Enabled := true;
   reg := TRegistry.Create; // Открываем реестр
   reg.RootKey := HKEY_CURRENT_USER;
   if reg.OpenKey('Software\Micron\Spectr', false) then
@@ -459,10 +440,10 @@ procedure TmainFrm.CloseTimerTimer(Sender: TObject);
 begin
   if (RS232.Active = true) then
   begin
-    RS232.StopListner;
-    RS232.Close;
-    CloseTimer.Enabled := false;
-    CloseTimer.interval := 100;
+//    RS232.StopListner;
+//    RS232.Close;
+//    CloseTimer.Enabled := false;
+//    CloseTimer.interval := 100;
   end;
 end;
 // =============================================================================
@@ -593,7 +574,8 @@ begin
     firmware_date := '';
   end;
 
-  needexit := true; // вежливо просим свалить из памяти
+    application.Terminate;
+
 end;
 // =============================================================================
 
@@ -612,28 +594,17 @@ begin
 end;
 // =============================================================================
 
-// =============================================================================
-procedure TmainFrm.MessTmrTimer(Sender: TObject);
-var
-  iz: uchar;
-begin
-  RefreshRAD;
-
-  if needexit then
-    application.Terminate;
-end;
-// =============================================================================
 
 // =============================================================================
 procedure TmainFrm.MyTrayClick(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 begin
-  if Button <> mbRight then
-  begin
-    if (not DevPresent) then
-      MyTray.BalloonHint('12', '34', TBalloonType(3), 5000, true)
-    else
-  end;
+//  if Button <> mbRight then
+//  begin
+//    if (not DevPresent) then
+//      MyTray.BalloonHint('12', '34', TBalloonType(3), 5000, true)
+//    else
+//  end;
 end;
 // =============================================================================
 
@@ -644,6 +615,7 @@ begin
   MyTray.ShowApplication;
   VoltChange := false;
   mainFrm.Panel1.Color := clMenu;
+  mainFrm.Timer1.Enabled := true;
 
 end;
 // =============================================================================
@@ -665,10 +637,7 @@ var
   ibx: uint;
 begin
 
-  Unit1.Form1.Show;
   myDate := Now;
-
-  Unit1.Form1.max_fon.Caption := '0%';
 
   for ibx := 0 to max_address do
   begin
@@ -677,9 +646,6 @@ begin
   end;
 
   mainFrm.Timer1.Enabled := false;
-  mainFrm.Timer3.Enabled := false;
-  mainFrm.Timer3.interval := 3000;
-  mainFrm.Timer3.Enabled := true;
   address_last := max_address;
 
   begin
@@ -687,9 +653,6 @@ begin
 
     mainFrm.RS232.Open;
     mainFrm.RS232.StartListner;
-    mainFrm.CloseTimer.Enabled := false;
-    mainFrm.CloseTimer.interval := 1500;
-    mainFrm.CloseTimer.Enabled := true;
 
     for ix := 0 to max_address do
     begin
@@ -701,23 +664,37 @@ begin
     begin
       DevPresent := true;
 
-      SetLength(vAns, 2);
-      vAns[0] := $39; // выполнить сброс счетчиков дозиметра
-      vAns[1] := $02; // считать массив спектра
-      mainFrm.RS232.Send(vAns);
+      if(Type_of_load=0) then
+      begin
+        SetLength(vAns, 2);
+        vAns[0] := $39; // выполнить сброс счетчиков дозиметра
+        vAns[1] := $02; // считать массив спектра
+        mainFrm.RS232.Send(vAns);
+      end
+      else
+      begin
+        SetLength(vAns, 4);
+        vAns[0] := $39; // выполнить сброс счетчиков дозиметра
+        vAns[1] := $40; // считать массив спектра их флеша
+        vAns[2] := $05; // загрузить данные земера
+        vAns[3] := $02; // считать массив спектра
+        mainFrm.RS232.Send(vAns);
+      end;
 
       USB_massive_loading := true;
 
     end
     else
-      Unit1.Form1.Close;
   end;
 end;
+// =============================================================================
+
+
 // =============================================================================
 procedure TmainFrm.Button4Click(Sender: TObject);
 begin
 
-  Load_spectr(0);
+  Load_spectr(mainFrm.Source.ItemIndex);
 
   end;
 // =============================================================================
@@ -732,9 +709,6 @@ begin
   begin
     RS232.Open;
     RS232.StartListner;
-    CloseTimer.Enabled := false;
-    CloseTimer.interval := 1500;
-    CloseTimer.Enabled := true;
     if (RS232.Active) then
     begin
       DevPresent := true;
@@ -760,12 +734,21 @@ begin
 
       if (RS232.Active = false) then
       begin
+
+        RS232.Close;
+        FreeAndNil(RS232);
+
+        RS232 := TiaRS232.Create;
+        RS232.OnRSReceived := DoOnReceiveEvent;
+        RS232.OnRSSended := DoOnSendedEvent;
         RS232.Properties.PortNum := comport_number;
+
         RS232.Open;
         RS232.StartListner;
-        CloseTimer.Enabled := false;
-        CloseTimer.interval := 100;
-        CloseTimer.Enabled := true;
+
+        mainFrm.Incative.Enabled:=False;
+        mainFrm.Incative.Enabled:=True;
+
       end;
       if (RS232.Active) then
       begin
@@ -774,8 +757,6 @@ begin
         bytes_to_send := 0;
         i := 0;
 
-        // if (date_sent_flag=false) then
-        // bytes_to_send:=bytes_to_send+7;
 
         bytes_to_send := bytes_to_send + 1; // + запрос основных данных
 
@@ -784,11 +765,6 @@ begin
         vAns[i] := $05;
         i := i + 1; // запрос основных данных
 
-        // if(firmware_date='') then
-        // begin
-        // vAns[i]:=$e5; i:=i+1; // считать дату прошивки
-        // vAns[i]:=$e6; i:=i+1; // считать дату прошивки
-        // end;
 
         if Length(vAns) > 0 then
           RS232.Send(vAns);
@@ -796,11 +772,14 @@ begin
       end
       else
       begin
-        if (DevPresent = true) then
-        begin
-          DevPresent := false;
-          firmware_date := '';
-        end;
+        RS232.Close;
+
+        FreeAndNil(RS232);
+
+        RS232 := TiaRS232.Create;
+        RS232.OnRSReceived := DoOnReceiveEvent;
+        RS232.OnRSSended := DoOnSendedEvent;
+
       end;
 
     end;
@@ -808,40 +787,6 @@ begin
 end;
 // =============================================================================
 
-// =============================================================================
-procedure TmainFrm.Timer3Timer(Sender: TObject);
-var
-  vAns: TiaBuf;
-  iy: UInt32;
-begin
-
-  if (usb_send_try < 2) then
-  begin
-    if (address = address_last) and (USB_massive_loading = true) then
-    begin
-      SetLength(vAns, 1);
-      usb_send_try := usb_send_try + 1;
-      if Length(vAns) > 0 then
-        RS232.Send(vAns);
-    end
-    else
-      address_last := address;
-  end
-  else
-  begin
-    address := 0;
-    address_last := 0;
-    usb_send_try := 0;
-    RS232.StopListner;
-    RS232.Close;
-    DevPresent := false;
-    firmware_date := '';
-
-    Unit1.Form1.Close;
-    USB_massive_loading := false;
-
-  end;
-end;
 
 procedure TmainFrm.Voltage_refreshClick(Sender: TObject);
 var
@@ -850,9 +795,6 @@ var
 begin
   RS232.Open;
   RS232.StartListner;
-  CloseTimer.Enabled := false;
-  CloseTimer.interval := 1500;
-  CloseTimer.Enabled := true;
   if (RS232.Active) then
   begin
     DevPresent := true;
@@ -868,13 +810,13 @@ begin
     vAns[2] := (ix shr 8) and $FF;
     vAns[3] := (ix shr 16) and $FF;
 
-    vAns[4] := $00;
+    vAns[4] := StrToInt(mainFrm.Start_channel.Text) and $FF;
     vAns[5] := StrToInt(mainFrm.Sound.Text) and $FF;
     vAns[6] := mainFrm.LED.ItemIndex and $FF;
     vAns[7] := StrToInt(mainFrm.TCorr.Text) and $FF;
     vAns[8] := $00;
     vAns[9] := $00;
-    vAns[10] := $00;
+    vAns[10] := mainFrm.ADC_time.ItemIndex and $FF;
 
 
     RS232.Send(vAns);
@@ -896,7 +838,6 @@ end;
 // =============================================================================
 procedure TmainFrm.FormDestroy(Sender: TObject);
 begin
-  RS232.StopListner;
   FreeAndNil(RS232);
 end;
 // =============================================================================
@@ -932,6 +873,7 @@ Var
   ixx: Integer;
   TempStr: string;
   Y, M, D: word;
+  voltage : Extended;
 
 begin
   packet_size := 64;
@@ -939,9 +881,8 @@ begin
   fBuf_pointer := 0;
   used_bytes := 0;
 
-  CloseTimer.Enabled := false;
-  CloseTimer.interval := 1000;
-  CloseTimer.Enabled := true;
+  mainFrm.Incative.Enabled:=False;
+    mainFrm.Incative.Enabled:=True;
 
   For f := aData_massive_pointer to packet_size - 1 do
   Begin
@@ -955,17 +896,26 @@ begin
       if (aData[used_bytes] = $06) then
       begin // загрузка текущих данных
 
+      mainFrm.Panel2.Visible:=true;
+      mainFrm.Panel1.Visible:=true;
+
         mainFrm.Temperature.Text := IntToStr(aData[used_bytes + 1]);
         if (VoltChange = false) then
         begin
           mainFrm.EVolt.Text :=  IntToStr(aData[used_bytes + 2]  + (aData[used_bytes + 3]  shl 8)  + (aData[used_bytes + 4] shl 16));
-          mainFrm.AKB_Volt.Text := IntToStr(aData[used_bytes + 5]  + (aData[used_bytes + 6]  shl 8));
+
+          voltage:=aData[used_bytes + 5]  + (aData[used_bytes + 6]  shl 8);
+          mainFrm.AKB_Volt.Text := FloatToStr(voltage/100);
+
           mainFrm.Counts.Text :=   IntToStr(aData[used_bytes + 7]  + (aData[used_bytes + 8]  shl 8) + (aData[used_bytes + 9] shl 16)  + (aData[used_bytes + 10] shl 24));
           mainFrm.Spectro_time.Text :=  IntToStr(aData[used_bytes + 11] + (aData[used_bytes + 12] shl 8) + (aData[used_bytes + 13] shl 16) + (aData[used_bytes + 14] shl 24));
           mainFrm.Pump.Text :=     IntToStr(aData[used_bytes + 15] + (aData[used_bytes + 16] shl 8) + (aData[used_bytes + 17] shl 16) + (aData[used_bytes + 18] shl 24));
+
+          mainFrm.Start_channel.Text:= IntToStr(aData[used_bytes + 19]);
           mainFrm.Sound.Text :=        IntToStr(aData[used_bytes + 20]);
           mainFrm.LED.ItemIndex :=              aData[used_bytes + 21];
           mainFrm.TCorr.Text :=        IntToStr(aData[used_bytes + 22]);
+          mainFrm.ADC_time.ItemIndex :=         aData[used_bytes + 23];
 
           if ( mainFrm.Selected_time.Enabled = true ) then
           begin
@@ -980,11 +930,11 @@ begin
                 end;
             end;
           end;
-
          end;
 
 
         used_bytes := used_bytes + 26;
+
 
       end else
       // -----------------------------------------------------------------------------------
@@ -1012,9 +962,6 @@ begin
           vAns[0] := $39;
 
           USB_massive_loading := false;
-          Timer3.Enabled := false;
-          Unit1.Form1.Close;
-
           SaveDialog1.DefaultExt := '.csv';
           SaveDialog1.FileName := 'Spectr_'+mainFrm.Spectro_time.Text+'s.csv';
 
@@ -1052,13 +999,36 @@ end;
 // =============================================================================
 procedure TmainFrm.DoOnSendedEvent(Sender: TObject; const aData: TiaBuf;
   aCount: Cardinal);
-Var
-  f: Integer;
-  ss: String;
+//Var
+//  f: Integer;
+//  ss: String;
 begin
-  ss := '';
-  For f := 0 To Length(aData) - 1 do
-    ss := ss + IntToHex(aData[f], 2) + ' ';
+
+//  RS232.StopListner;
+//  RS232.Close;
+//  RS232.StopListner;
+
+
+//  ss := '';
+//  For f := 0 To Length(aData) - 1 do
+//    ss := ss + IntToHex(aData[f], 2) + ' ';
+
+end;
+
+procedure TmainFrm.IncativeTimer(Sender: TObject);
+begin
+        RS232.Close;
+        FreeAndNil(RS232);
+
+        mainFrm.Incative.Enabled:=False;
+
+        mainFrm.Panel2.Visible:=false;
+        mainFrm.Panel1.Visible:=false;
+
+        RS232 := TiaRS232.Create;
+        RS232.OnRSReceived := DoOnReceiveEvent;
+        RS232.OnRSSended := DoOnSendedEvent;
+        RS232.Properties.PortNum := comport_number;
 
 end;
 
