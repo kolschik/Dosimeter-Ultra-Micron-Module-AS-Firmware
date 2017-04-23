@@ -353,9 +353,9 @@ object mainFrm: TmainFrm
       ParentFont = False
     end
     object AKB_Volt: TEdit
-      Left = 81
+      Left = 26
       Top = 125
-      Width = 90
+      Width = 145
       Height = 26
       Alignment = taRightJustify
       Enabled = False
@@ -400,9 +400,9 @@ object mainFrm: TmainFrm
       OnClick = Button5Click
     end
     object Counts: TEdit
-      Left = 81
+      Left = 27
       Top = 26
-      Width = 91
+      Width = 145
       Height = 26
       Alignment = taRightJustify
       Ctl3D = True
@@ -423,9 +423,9 @@ object mainFrm: TmainFrm
       Text = '0'
     end
     object Pump: TEdit
-      Left = 81
+      Left = 27
       Top = 92
-      Width = 90
+      Width = 144
       Height = 26
       Alignment = taRightJustify
       Enabled = False
@@ -440,9 +440,9 @@ object mainFrm: TmainFrm
       Text = '0'
     end
     object Temperature: TEdit
-      Left = 81
+      Left = 26
       Top = 59
-      Width = 90
+      Width = 145
       Height = 26
       Alignment = taRightJustify
       Enabled = False
@@ -457,9 +457,9 @@ object mainFrm: TmainFrm
       Text = '0'
     end
     object Spectro_time: TEdit
-      Left = 81
+      Left = 27
       Top = 158
-      Width = 90
+      Width = 144
       Height = 26
       Alignment = taRightJustify
       Enabled = False
@@ -946,7 +946,7 @@ object mainFrm: TmainFrm
   object ImageList1: TImageList
     Left = 288
     Bitmap = {
-      494C010105008C00980210001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010105008C009C0210001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000002000000001002000000000000020
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -1220,8 +1220,8 @@ object mainFrm: TmainFrm
   object Timer1: TTimer
     Interval = 500
     OnTimer = Timer1Timer
-    Left = 24
-    Top = 96
+    Left = 360
+    Top = 56
   end
   object SaveDialog1: TSaveDialog
     Filter = 'CSV (*.CSV)|*.csv'
@@ -1231,13 +1231,13 @@ object mainFrm: TmainFrm
   object Com_detect: TTimer
     Interval = 50
     OnTimer = Com_detectTimer
-    Left = 24
-    Top = 47
+    Left = 360
+    Top = 7
   end
   object Incative: TTimer
     Enabled = False
     OnTimer = IncativeTimer
-    Left = 24
-    Top = 152
+    Left = 360
+    Top = 112
   end
 end

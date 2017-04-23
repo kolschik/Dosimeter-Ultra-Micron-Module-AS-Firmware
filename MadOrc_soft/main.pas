@@ -164,6 +164,8 @@ var
 
   usb_send_try: UInt32 = 0;
 
+  Spectro_time_raw: UInt32 = 0;
+
   myDate: TDateTime;
   formattedDateTime: string;
   Voltage_level: Integer;
@@ -908,7 +910,10 @@ begin
           mainFrm.AKB_Volt.Text := FloatToStr(voltage/100);
 
           mainFrm.Counts.Text :=   IntToStr(aData[used_bytes + 7]  + (aData[used_bytes + 8]  shl 8) + (aData[used_bytes + 9] shl 16)  + (aData[used_bytes + 10] shl 24));
-          mainFrm.Spectro_time.Text :=  IntToStr(aData[used_bytes + 11] + (aData[used_bytes + 12] shl 8) + (aData[used_bytes + 13] shl 16) + (aData[used_bytes + 14] shl 24));
+
+          Spectro_time_raw:=  aData[used_bytes + 11] + (aData[used_bytes + 12] shl 8) + (aData[used_bytes + 13] shl 16) + (aData[used_bytes + 14] shl 24);
+          mainFrm.Spectro_time.Text :=  IntToStr(Spectro_time_raw div 3600)+'ч. '+IntToStr((Spectro_time_raw Mod 3600) div 60)+'мин. '+IntToStr(Spectro_time_raw Mod 60)+'сек.';
+
           mainFrm.Pump.Text :=     IntToStr(aData[used_bytes + 15] + (aData[used_bytes + 16] shl 8) + (aData[used_bytes + 17] shl 16) + (aData[used_bytes + 18] shl 24));
 
           mainFrm.Start_channel.Text:= IntToStr(aData[used_bytes + 19]);
@@ -921,7 +926,7 @@ begin
           begin
             if ( time  > 0) then
               begin
-                if ( time <= StrToInt(mainFrm.Spectro_time.Text) ) then
+                if ( time <= Spectro_time_raw ) then
                 begin
                   mainFrm.Selected_time.ItemIndex:=0;
                   Timed_spectr:=true;
@@ -963,7 +968,7 @@ begin
 
           USB_massive_loading := false;
           SaveDialog1.DefaultExt := '.csv';
-          SaveDialog1.FileName := 'Spectr_'+mainFrm.Spectro_time.Text+'s.csv';
+          SaveDialog1.FileName := 'Spectr_'+mainFrm.Spectro_time.Text+'.csv';
 
           If Timed_spectr then
           begin
