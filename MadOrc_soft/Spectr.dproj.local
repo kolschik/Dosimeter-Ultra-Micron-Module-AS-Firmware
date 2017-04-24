@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <BorlandProject>
 	<Transactions>
-    <Transaction>1899.12.30 00:00:00.000.dfm,C:\@AVR\@Project8 USB-Geiger\delphi USB Geiger\About_f.dfm=C:\@AVR\@Project8 USB-Geiger\delphi USB Geiger\Unit1.dfm</Transaction>
     <Transaction>1899.12.30 00:00:00.000.576,C:\Проекты\Спектра-микрон\firmware\MadOrc_soft\Spectr.dproj=C:\Проекты\Спектра-микрон\firmware\MadOrc_soft\Micron.dproj</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.dfm,C:\@AVR\@Project8 USB-Geiger\delphi USB Geiger\About_f.dfm=C:\@AVR\@Project8 USB-Geiger\delphi USB Geiger\Unit1.dfm</Transaction>
     <Transaction>1899.12.30 00:00:00.000.820,C:\Проекты\Ультра-микрон\firmware\MadOrc_soft\Geiger.dproj=C:\Проекты\Ультра-микрон\firmware\MadOrc_soft\Micron.dproj</Transaction>
     <Transaction>1899.12.30 00:00:00.000.586,=D:\Проекты\Ультра-микрон\firmware\MadOrc_soft\iaRS232.PAS</Transaction>
     <Transaction>1899.12.30 00:00:00.000.pas,C:\@AVR\@Project8 USB-Geiger\delphi USB Geiger\About_f.pas=C:\@AVR\@Project8 USB-Geiger\delphi USB Geiger\Unit1.pas</Transaction>

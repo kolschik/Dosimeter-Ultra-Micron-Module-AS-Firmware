@@ -1,10 +1,10 @@
 object mainFrm: TmainFrm
   Left = 0
   Top = 0
+  Width = 1014
+  Height = 511
   BorderStyle = bsSingle
   Caption = 'USB Spectr'
-  ClientHeight = 492
-  ClientWidth = 403
   Color = clWindow
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -13,13 +13,12 @@ object mainFrm: TmainFrm
   Font.Style = []
   OldCreateOrder = False
   Position = poDesigned
-  Scaled = False
   OnCreate = FormCreate
   PixelsPerInch = 96
   TextHeight = 13
   object Label9: TLabel
-    Left = 400
-    Top = 374
+    Left = 392
+    Top = 366
     Width = 5
     Height = 24
     Font.Charset = DEFAULT_CHARSET
@@ -30,8 +29,8 @@ object mainFrm: TmainFrm
     ParentFont = False
   end
   object Label10: TLabel
-    Left = 400
-    Top = 400
+    Left = 392
+    Top = 392
     Width = 5
     Height = 24
     Font.Charset = DEFAULT_CHARSET
@@ -42,8 +41,8 @@ object mainFrm: TmainFrm
     ParentFont = False
   end
   object Label11: TLabel
-    Left = 714
-    Top = 374
+    Left = 706
+    Top = 366
     Width = 5
     Height = 24
     Font.Charset = DEFAULT_CHARSET
@@ -54,8 +53,8 @@ object mainFrm: TmainFrm
     ParentFont = False
   end
   object Label14: TLabel
-    Left = 73
-    Top = 138
+    Left = 65
+    Top = 130
     Width = 255
     Height = 25
     Caption = #1054#1078#1080#1076#1072#1077#1090#1089#1103' '#1087#1086#1076#1082#1083#1102#1095#1077#1085#1080#1077
@@ -67,8 +66,8 @@ object mainFrm: TmainFrm
     ParentFont = False
   end
   object Panel1: TPanel
-    Left = 9
-    Top = 328
+    Left = 1
+    Top = 320
     Width = 386
     Height = 156
     Alignment = taLeftJustify
@@ -244,8 +243,8 @@ object mainFrm: TmainFrm
     end
   end
   object Panel2: TPanel
-    Left = 8
-    Top = 8
+    Left = 0
+    Top = 0
     Width = 386
     Height = 313
     Alignment = taLeftJustify
@@ -488,6 +487,52 @@ object mainFrm: TmainFrm
       Height = 26
       TabOrder = 8
       OnChange = Selected_timeChange
+    end
+  end
+  object ScrollBox1: TScrollBox
+    Left = 392
+    Top = 0
+    Width = 608
+    Height = 476
+    HorzScrollBar.Tracking = True
+    TabOrder = 2
+    object Chart: TJvChart
+      Left = 3
+      Top = 3
+      Width = 2000
+      Height = 449
+      Options.XAxisValuesPerDivision = 0
+      Options.XAxisLabelAlignment = taLeftJustify
+      Options.XAxisDateTimeMode = False
+      Options.PenCount = 2
+      Options.XOrigin = 0
+      Options.YOrigin = 0
+      Options.PrimaryYAxis.YMax = 10.000000000000000000
+      Options.PrimaryYAxis.YLegendDecimalPlaces = 0
+      Options.SecondaryYAxis.YMax = 10.000000000000000000
+      Options.SecondaryYAxis.YLegendDecimalPlaces = 0
+      Options.MouseDragObjects = False
+      Options.LegendRowCount = 0
+      Options.AxisLineWidth = 3
+      Options.HeaderFont.Charset = DEFAULT_CHARSET
+      Options.HeaderFont.Color = clWindowText
+      Options.HeaderFont.Height = -11
+      Options.HeaderFont.Name = 'Tahoma'
+      Options.HeaderFont.Style = []
+      Options.LegendFont.Charset = DEFAULT_CHARSET
+      Options.LegendFont.Color = clWindowText
+      Options.LegendFont.Height = -11
+      Options.LegendFont.Name = 'Tahoma'
+      Options.LegendFont.Style = []
+      Options.AxisFont.Charset = DEFAULT_CHARSET
+      Options.AxisFont.Color = clWindowText
+      Options.AxisFont.Height = -11
+      Options.AxisFont.Name = 'Tahoma'
+      Options.AxisFont.Style = []
+      Options.PaperColor = clWhite
+      Options.AxisLineColor = clBlack
+      Options.CursorColor = clBlack
+      Options.CursorStyle = psSolid
     end
   end
   object MyTray: TJvTrayIcon
@@ -946,7 +991,7 @@ object mainFrm: TmainFrm
   object ImageList1: TImageList
     Left = 288
     Bitmap = {
-      494C010105008C009C0210001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010105008C00A40210001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000002000000001002000000000000020
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -1218,7 +1263,6 @@ object mainFrm: TmainFrm
       000000000000}
   end
   object Timer1: TTimer
-    Interval = 500
     OnTimer = Timer1Timer
     Left = 360
     Top = 56

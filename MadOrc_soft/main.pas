@@ -9,7 +9,7 @@ uses
   shellapi, JvExExtCtrls, MMSystem, iaRS232, Vcl.ExtDlgs, pngimage,
   ShlObj, IdAuthentication, IdBaseComponent, IdComponent, IdTCPConnection,
   IdTCPClient, IdHTTP, IdIOHandler, IdIOHandlerSocket, IdIOHandlerStack, IdSSL,
-  IdSSLOpenSSL, IdMultipartFormData, System.DateUtils, About_f;
+  IdSSLOpenSSL, IdMultipartFormData, System.DateUtils, About_f, JvChart;
 
 type
   TForm1 = class(TForm)
@@ -81,6 +81,8 @@ type
     Label13: TLabel;
     ADC_time: TComboBox;
     Label14: TLabel;
+    Chart: TJvChart;
+    ScrollBox1: TScrollBox;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure ExitBtnClick(Sender: TObject);
@@ -152,6 +154,8 @@ var
   comport_number_select: uint = 6;
   comport_number: uint = 1;
   USB_massive_loading: boolean = false;
+
+  Need_save_csv: boolean = false;
 
   max_address: uint = 2047;
 
@@ -347,8 +351,25 @@ var
   dir: string;
   exe: string;
   f: TextFile;
+  vbar:TJvChartVerticalBar;
+  hbar:TJvChartHorizontalBar;
 
 begin
+
+mainFrm.Chart.Options.XEnd:=2048;
+mainFrm.Chart.Options.PenColor[0]:=clBlack;
+mainFrm.Chart.Options.PenStyle[0]:=psSolid;
+
+mainFrm.Chart.Options.PenColor[1]:=clRed;
+mainFrm.Chart.Options.PenStyle[1]:=psSolid;
+Chart.Options.GradientColor := $00FDEEDB; // powder blue (baby blue) mostly white.
+Chart.Options.GradientDirection :=grDown;
+
+//   Chart.Options.XAxisLegendSkipBy := 5;
+//    Chart.Options.XAxisValuesPerDivision := 24;
+
+
+
 
 mainFrm.LED.AddItem('10%', nil);
 mainFrm.LED.AddItem('20%', nil);
@@ -695,7 +716,7 @@ end;
 // =============================================================================
 procedure TmainFrm.Button4Click(Sender: TObject);
 begin
-
+  Need_save_csv:=true;
   Load_spectr(mainFrm.Source.ItemIndex);
 
   end;
@@ -760,12 +781,14 @@ begin
         i := 0;
 
 
-        bytes_to_send := bytes_to_send + 1; // + запрос основных данных
+        bytes_to_send := bytes_to_send + 3; // + запрос основных данных
 
         SetLength(vAns, bytes_to_send);
 
-        vAns[i] := $05;
-        i := i + 1; // запрос основных данных
+        vAns[0] := $05;
+        vAns[1] := $39; // выполнить сброс счетчиков дозиметра
+        vAns[2] := $02; // считать массив спектра
+
 
 
         if Length(vAns) > 0 then
@@ -894,6 +917,9 @@ begin
 
   While used_bytes < (Length(aData)-1) do
   begin
+      mainFrm.Incative.Enabled:=False;
+      mainFrm.Incative.Interval:=2000;
+      mainFrm.Incative.Enabled:=True;
       // -----------------------------------------------------------------------------------
       if (aData[used_bytes] = $06) then
       begin // загрузка текущих данных
@@ -930,6 +956,7 @@ begin
                 begin
                   mainFrm.Selected_time.ItemIndex:=0;
                   Timed_spectr:=true;
+                  Need_save_csv:=true;
                   mainFrm.Load_spectr(0);
                   time:=0;
                 end;
@@ -963,32 +990,61 @@ begin
         end
         else
         begin
-          SetLength(vAns, 1);
-          vAns[0] := $39;
-
-          USB_massive_loading := false;
-          SaveDialog1.DefaultExt := '.csv';
-          SaveDialog1.FileName := 'Spectr_'+mainFrm.Spectro_time.Text+'.csv';
-
-          If Timed_spectr then
+          if(Need_save_csv) then
           begin
-            Timed_spectr:=false;
-            ShowMessage('—бор спектра завершен!');
-          end;
+            Need_save_csv:=false;
+            SetLength(vAns, 1);
+            vAns[0] := $39;
 
-          If SaveDialog1.Execute then
-          begin
-            try
-              AssignFile(Fx, SaveDialog1.FileName); // св€зали файл с переменной
-              Rewrite(Fx); // создаем пустой файл
-              for ixx := 0 to max_address do
-              begin
-                WriteLn(Fx, IntToStr(ixx), ',', spectra_massive[ixx]);
+            USB_massive_loading := false;
+            SaveDialog1.DefaultExt := '.csv';
+            SaveDialog1.FileName := 'Spectr_'+mainFrm.Spectro_time.Text+'.csv';
+
+            If Timed_spectr then
+            begin
+              Timed_spectr:=false;
+              ShowMessage('—бор спектра завершен!');
+            end;
+
+            If SaveDialog1.Execute then
+            begin
+              try
+                AssignFile(Fx, SaveDialog1.FileName); // св€зали файл с переменной
+                Rewrite(Fx); // создаем пустой файл
+                for ixx := 0 to max_address do
+                begin
+                  WriteLn(Fx, IntToStr(ixx), ',', spectra_massive[ixx]);
+                end;
+              finally
+                CloseFile(Fx);
               end;
-            finally
-              CloseFile(Fx);
+            end;
+          end
+          else
+          begin
+//            mainFrm.Chart.Data.Clear;
+//            mainFrm.Chart.Data.ClearPenValues;
+            mainFrm.Chart.Options.PrimaryYAxis.YMax:=20;
+            for ixx := 0 to max_address do
+            begin
+
+              if((spectra_massive[ixx] div 4)>mainFrm.Chart.Options.PrimaryYAxis.YMax) then
+                  mainFrm.Chart.Options.PrimaryYAxis.YMax:=spectra_massive[ixx] div 4;
+
+              if(spectra_massive[ixx] > mainFrm.Chart.Data.Value[0,ixx]) then
+              begin
+                mainFrm.Chart.Data.Value[1,ixx]:=spectra_massive[ixx] div 4;
+                mainFrm.Chart.Data.Value[0,ixx]:=spectra_massive[ixx];
+              end
+              else
+              begin
+                mainFrm.Chart.Data.Value[0,ixx]:=spectra_massive[ixx];
+                mainFrm.Chart.Data.Value[1,ixx]:=-1;
+              end;
+
             end;
           end;
+          mainFrm.Chart.PlotGraph;
           Timer1.Enabled := true;
         end;
       end else Break;
