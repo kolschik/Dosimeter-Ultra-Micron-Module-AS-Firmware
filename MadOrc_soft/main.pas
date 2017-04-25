@@ -83,6 +83,9 @@ type
     Label14: TLabel;
     Chart: TJvChart;
     ScrollBox1: TScrollBox;
+    Graph_plus: TButton;
+    Graph_minus: TButton;
+    Scale_zero: TButton;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure ExitBtnClick(Sender: TObject);
@@ -109,6 +112,9 @@ type
     procedure SourceChange(Sender: TObject);
     procedure Selected_timeChange(Sender: TObject);
     procedure IncativeTimer(Sender: TObject);
+    procedure Graph_plusClick(Sender: TObject);
+    procedure Graph_minusClick(Sender: TObject);
+    procedure Scale_zeroClick(Sender: TObject);
 
   private
     fBuf: TiaBuf;
@@ -125,7 +131,6 @@ type
     procedure SaveReg;
     function GetMyVersion: uint;
     function PosR2L(const FindS, SrcS: string): Integer;
-    procedure Load_spectr(Type_of_load: Integer);
     procedure WMPowerBroadcast(var MyMessage: TMessage);
       message WM_POWERBROADCAST;
     procedure WMSysCommand(var Message: TMessage); message WM_SYSCOMMAND;
@@ -156,6 +161,7 @@ var
   USB_massive_loading: boolean = false;
 
   Need_save_csv: boolean = false;
+  Need_load_flash: boolean = false;
 
   max_address: uint = 2047;
 
@@ -167,6 +173,8 @@ var
   address_last: UInt32 = 0;
 
   usb_send_try: UInt32 = 0;
+
+  Graph_scale: UInt32 = 1;
 
   Spectro_time_raw: UInt32 = 0;
 
@@ -312,6 +320,13 @@ begin
   reg.CloseKey; // Закрываем раздел
   reg.Free;
 end;
+procedure TmainFrm.Scale_zeroClick(Sender: TObject);
+begin
+
+  Graph_scale:=1;
+
+end;
+
 // =============================================================================
 
 // =============================================================================
@@ -652,74 +667,24 @@ begin
 end;
 // =============================================================================
 
-// =============================================================================
-procedure TmainFrm.Load_spectr(Type_of_load: Integer);
-var
-  vAns: TiaBuf;
-  ix: uint;
-  ibx: uint;
-begin
-
-  myDate := Now;
-
-  for ibx := 0 to max_address do
-  begin
-    spectra_massive[ibx] := 0;
-    spectra_massive_ready[ibx] := false;
-  end;
-
-  mainFrm.Timer1.Enabled := false;
-  address_last := max_address;
-  sleep(500);
-
-  begin
-    // DevPresent:=false;
-
-    mainFrm.RS232.Open;
-    mainFrm.RS232.StartListner;
-
-    for ix := 0 to max_address do
-    begin
-      spectra_massive[ibx] := 0;
-      spectra_massive_ready[ibx] := false;
-    end;
-
-    if (mainFrm.RS232.Active) then
-    begin
-      DevPresent := true;
-
-      if(Type_of_load=0) then
-      begin
-        SetLength(vAns, 2);
-        vAns[0] := $39; // выполнить сброс счетчиков дозиметра
-        vAns[1] := $02; // считать массив спектра
-        mainFrm.RS232.Send(vAns);
-      end
-      else
-      begin
-        SetLength(vAns, 4);
-        vAns[0] := $39; // выполнить сброс счетчиков дозиметра
-        vAns[1] := $40; // считать массив спектра их флеша
-        vAns[2] := $05; // загрузить данные земера
-        vAns[3] := $02; // считать массив спектра
-        mainFrm.RS232.Send(vAns);
-      end;
-
-      USB_massive_loading := true;
-
-    end
-    else
-  end;
-end;
-// =============================================================================
-
 
 // =============================================================================
 procedure TmainFrm.Button4Click(Sender: TObject);
+var
+  ix: uint;
 begin
 
   Need_save_csv:=true;
-  Load_spectr(mainFrm.Source.ItemIndex);
+  if(mainFrm.Source.ItemIndex > 0) then
+    Need_load_flash:=true;
+
+   address_last := max_address;
+   for ix := 0 to max_address do
+   begin
+     spectra_massive[ix] := 0;
+     spectra_massive_ready[ix] := false;
+   end;
+
 
   end;
 // =============================================================================
@@ -751,6 +716,7 @@ var
   vAns: TiaBuf;
   bytes_to_send: uint;
   i: uint;
+  ix: uint;
 begin
   if (DenyCommunications = false) then
   begin
@@ -782,15 +748,31 @@ begin
         bytes_to_send := 0;
         i := 0;
 
+        if(Need_load_flash) then
+        begin
+          Need_load_flash := false;
 
-        bytes_to_send := bytes_to_send + 3; // + запрос основных данных
+          bytes_to_send := bytes_to_send + 4; // + запрос основных данных
 
-        SetLength(vAns, bytes_to_send);
+          SetLength(vAns, bytes_to_send);
 
-        vAns[0] := $05;
-        vAns[1] := $39; // выполнить сброс счетчиков дозиметра
-        vAns[2] := $02; // считать массив спектра
+          vAns[0] := $39; // выполнить сброс счетчиков дозиметра
+          vAns[1] := $40; // считать массив спектра их флеша
+          vAns[2] := $05; // загрузить данные земера
+          vAns[3] := $02; // считать массив спектра
+          mainFrm.RS232.Send(vAns);
+        end
+        else
+        begin
+          bytes_to_send := bytes_to_send + 3; // + запрос основных данных
 
+          SetLength(vAns, bytes_to_send);
+
+          vAns[0] := $05;
+          vAns[1] := $39; // выполнить сброс счетчиков дозиметра
+          vAns[2] := $02; // считать массив спектра
+
+        end;
 
 
         if Length(vAns) > 0 then
@@ -959,7 +941,6 @@ begin
                   mainFrm.Selected_time.ItemIndex:=0;
                   Timed_spectr:=true;
                   Need_save_csv:=true;
-                  mainFrm.Load_spectr(mainFrm.Source.ItemIndex);
                   time:=0;
                 end;
             end;
@@ -992,6 +973,27 @@ begin
         end
         else
         begin
+
+          mainFrm.Chart.Options.PrimaryYAxis.YMax:=20;
+          for ixx := 0 to max_address do
+          begin
+
+            if((spectra_massive[ixx])>mainFrm.Chart.Options.PrimaryYAxis.YMax) then
+                mainFrm.Chart.Options.PrimaryYAxis.YMax:=spectra_massive[ixx];
+
+            if(spectra_massive[ixx] > mainFrm.Chart.Data.Value[0,ixx]) then
+            begin
+              mainFrm.Chart.Data.Value[1,ixx]:=spectra_massive[ixx] div 4;
+              mainFrm.Chart.Data.Value[0,ixx]:=spectra_massive[ixx];
+            end
+            else
+            begin
+              mainFrm.Chart.Data.Value[0,ixx]:=spectra_massive[ixx];
+              mainFrm.Chart.Data.Value[1,ixx]:=-1;
+            end;
+          end;
+
+
           if(Need_save_csv) then
           begin
             Need_save_csv:=false;
@@ -1021,33 +1023,13 @@ begin
                 CloseFile(Fx);
               end;
             end;
-          end
-          else
-          begin
-//            mainFrm.Chart.Data.Clear;
-//            mainFrm.Chart.Data.ClearPenValues;
-            mainFrm.Chart.Options.PrimaryYAxis.YMax:=20;
-            for ixx := 0 to max_address do
-            begin
-
-              if((spectra_massive[ixx])>mainFrm.Chart.Options.PrimaryYAxis.YMax) then
-                  mainFrm.Chart.Options.PrimaryYAxis.YMax:=spectra_massive[ixx];
-
-              if(spectra_massive[ixx] > mainFrm.Chart.Data.Value[0,ixx]) then
-              begin
-                mainFrm.Chart.Data.Value[1,ixx]:=spectra_massive[ixx] div 4;
-                mainFrm.Chart.Data.Value[0,ixx]:=spectra_massive[ixx];
-              end
-              else
-              begin
-                mainFrm.Chart.Data.Value[0,ixx]:=spectra_massive[ixx];
-                mainFrm.Chart.Data.Value[1,ixx]:=-1;
-              end;
-
-            end;
           end;
+
+          mainFrm.Chart.Options.PrimaryYAxis.YMax:=mainFrm.Chart.Options.PrimaryYAxis.YMax/Graph_scale;
           mainFrm.Chart.PlotGraph;
+
           Timer1.Enabled := true;
+
         end;
       end else Break;
       // -----------------------------------------------------------------------------------
@@ -1092,6 +1074,22 @@ begin
         RS232.OnRSReceived := DoOnReceiveEvent;
         RS232.OnRSSended := DoOnSendedEvent;
         RS232.Properties.PortNum := comport_number;
+
+end;
+
+procedure TmainFrm.Graph_minusClick(Sender: TObject);
+begin
+
+  if(Graph_scale > 1) then
+  Graph_scale:=Graph_scale-1;
+
+end;
+
+procedure TmainFrm.Graph_plusClick(Sender: TObject);
+begin
+
+  if(Graph_scale < 10) then
+  Graph_scale:=Graph_scale+1;
 
 end;
 

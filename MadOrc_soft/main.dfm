@@ -3,8 +3,8 @@ object mainFrm: TmainFrm
   Top = 0
   BorderStyle = bsSingle
   Caption = 'USB Spectr'
-  ClientHeight = 482
-  ClientWidth = 1008
+  ClientHeight = 485
+  ClientWidth = 1056
   Color = clWindow
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -66,10 +66,10 @@ object mainFrm: TmainFrm
     ParentFont = False
   end
   object Panel1: TPanel
-    Left = 1
-    Top = 320
+    Left = 0
+    Top = 319
     Width = 386
-    Height = 156
+    Height = 165
     Alignment = taLeftJustify
     Caption = #1053#1072#1089#1090#1088#1086#1081#1082#1072
     Color = clMenu
@@ -87,8 +87,8 @@ object mainFrm: TmainFrm
     TabOrder = 0
     VerticalAlignment = taAlignTop
     object Label1: TLabel
-      Left = 89
-      Top = 45
+      Left = 87
+      Top = 31
       Width = 127
       Height = 18
       Caption = #1053#1072#1087#1088#1103#1078#1077#1085#1080#1077' '#1060#1069#1059
@@ -100,22 +100,22 @@ object mainFrm: TmainFrm
       ParentFont = False
     end
     object Label8: TLabel
-      Left = 313
-      Top = 45
+      Left = 329
+      Top = 63
       Width = 33
       Height = 18
       Caption = #1047#1074#1091#1082
     end
     object Label17: TLabel
-      Left = 89
-      Top = 77
+      Left = 87
+      Top = 63
       Width = 97
       Height = 18
       Caption = #1071#1088#1082#1086#1089#1090#1100' LED'
     end
     object Label18: TLabel
-      Left = 313
-      Top = 77
+      Left = 329
+      Top = 95
       Width = 47
       Height = 18
       Caption = 't-'#1082#1086#1088#1088'.'
@@ -127,8 +127,8 @@ object mainFrm: TmainFrm
       ParentFont = False
     end
     object Label12: TLabel
-      Left = 89
-      Top = 109
+      Left = 87
+      Top = 95
       Width = 141
       Height = 18
       Caption = #1055#1077#1088#1074#1099#1081' '#1082#1072#1085#1072#1083' '#1040#1062#1055
@@ -140,15 +140,15 @@ object mainFrm: TmainFrm
       ParentFont = False
     end
     object Label13: TLabel
-      Left = 313
-      Top = 13
+      Left = 329
+      Top = 31
       Width = 43
       Height = 18
       Caption = 't-'#1040#1062#1055
     end
     object EVolt: TEdit
-      Left = 11
-      Top = 42
+      Left = 9
+      Top = 28
       Width = 70
       Height = 26
       Alignment = taRightJustify
@@ -163,8 +163,8 @@ object mainFrm: TmainFrm
       OnClick = EVoltChange
     end
     object Voltage_refresh: TButton
-      Left = 266
-      Top = 118
+      Left = 270
+      Top = 129
       Width = 106
       Height = 28
       Caption = #1057#1086#1093#1088#1072#1085#1080#1090#1100
@@ -178,16 +178,16 @@ object mainFrm: TmainFrm
       OnClick = Voltage_refreshClick
     end
     object LED: TComboBox
-      Left = 11
-      Top = 73
+      Left = 9
+      Top = 59
       Width = 70
       Height = 26
       TabOrder = 2
       OnClick = EVoltChange
     end
     object TCorr: TEdit
-      Left = 235
-      Top = 74
+      Left = 251
+      Top = 92
       Width = 70
       Height = 26
       Alignment = taRightJustify
@@ -202,8 +202,8 @@ object mainFrm: TmainFrm
       OnClick = EVoltChange
     end
     object Sound: TEdit
-      Left = 235
-      Top = 42
+      Left = 251
+      Top = 59
       Width = 70
       Height = 26
       Alignment = taRightJustify
@@ -218,8 +218,8 @@ object mainFrm: TmainFrm
       OnClick = EVoltChange
     end
     object Start_channel: TEdit
-      Left = 10
-      Top = 106
+      Left = 8
+      Top = 92
       Width = 70
       Height = 26
       Alignment = taRightJustify
@@ -234,8 +234,8 @@ object mainFrm: TmainFrm
       OnClick = EVoltChange
     end
     object ADC_time: TComboBox
-      Left = 235
-      Top = 10
+      Left = 251
+      Top = 28
       Width = 70
       Height = 26
       TabOrder = 6
@@ -328,9 +328,9 @@ object mainFrm: TmainFrm
     object Label6: TLabel
       Left = 193
       Top = 161
-      Width = 178
+      Width = 136
       Height = 18
-      Caption = #1042#1088#1077#1084#1103' '#1085#1072#1082#1086#1087#1083#1077#1085#1080#1103' ('#1089#1077#1082'.)'
+      Caption = #1042#1088#1077#1084#1103' '#1085#1072#1082#1086#1087#1083#1077#1085#1080#1103
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -16
@@ -490,14 +490,14 @@ object mainFrm: TmainFrm
     end
   end
   object ScrollBox1: TScrollBox
-    Left = 392
+    Left = 423
     Top = 0
-    Width = 608
-    Height = 476
+    Width = 633
+    Height = 484
     HorzScrollBar.Tracking = True
     TabOrder = 2
     object Chart: TJvChart
-      Left = 3
+      Left = -2
       Top = 3
       Width = 2000
       Height = 449
@@ -534,6 +534,51 @@ object mainFrm: TmainFrm
       Options.CursorColor = clBlack
       Options.CursorStyle = psSolid
     end
+  end
+  object Graph_plus: TButton
+    Left = 392
+    Top = 8
+    Width = 25
+    Height = 25
+    Caption = '+'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -16
+    Font.Name = 'MS Sans Serif'
+    Font.Style = []
+    ParentFont = False
+    TabOrder = 3
+    OnClick = Graph_plusClick
+  end
+  object Graph_minus: TButton
+    Left = 392
+    Top = 39
+    Width = 25
+    Height = 25
+    Caption = '-'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -16
+    Font.Name = 'MS Sans Serif'
+    Font.Style = []
+    ParentFont = False
+    TabOrder = 4
+    OnClick = Graph_minusClick
+  end
+  object Scale_zero: TButton
+    Left = 392
+    Top = 70
+    Width = 25
+    Height = 25
+    Caption = '0'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'MS Sans Serif'
+    Font.Style = []
+    ParentFont = False
+    TabOrder = 5
+    OnClick = Scale_zeroClick
   end
   object MyTray: TJvTrayIcon
     Active = True
@@ -991,7 +1036,7 @@ object mainFrm: TmainFrm
   object ImageList1: TImageList
     Left = 288
     Bitmap = {
-      494C010105008C00A80210001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010105008C00B00210001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000002000000001002000000000000020
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -1264,8 +1309,8 @@ object mainFrm: TmainFrm
   end
   object Timer1: TTimer
     OnTimer = Timer1Timer
-    Left = 360
-    Top = 56
+    Left = 336
+    Top = 48
   end
   object SaveDialog1: TSaveDialog
     Filter = 'CSV (*.CSV)|*.csv'
@@ -1275,13 +1320,13 @@ object mainFrm: TmainFrm
   object Com_detect: TTimer
     Interval = 50
     OnTimer = Com_detectTimer
-    Left = 360
-    Top = 7
+    Left = 336
+    Top = 65535
   end
   object Incative: TTimer
     Enabled = False
     OnTimer = IncativeTimer
-    Left = 360
-    Top = 112
+    Left = 336
+    Top = 96
   end
 end
