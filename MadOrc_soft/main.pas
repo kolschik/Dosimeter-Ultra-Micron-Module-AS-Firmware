@@ -670,6 +670,7 @@ begin
 
   mainFrm.Timer1.Enabled := false;
   address_last := max_address;
+  sleep(500);
 
   begin
     // DevPresent:=false;
@@ -716,6 +717,7 @@ end;
 // =============================================================================
 procedure TmainFrm.Button4Click(Sender: TObject);
 begin
+
   Need_save_csv:=true;
   Load_spectr(mainFrm.Source.ItemIndex);
 
@@ -957,7 +959,7 @@ begin
                   mainFrm.Selected_time.ItemIndex:=0;
                   Timed_spectr:=true;
                   Need_save_csv:=true;
-                  mainFrm.Load_spectr(0);
+                  mainFrm.Load_spectr(mainFrm.Source.ItemIndex);
                   time:=0;
                 end;
             end;
@@ -1028,8 +1030,8 @@ begin
             for ixx := 0 to max_address do
             begin
 
-              if((spectra_massive[ixx] div 4)>mainFrm.Chart.Options.PrimaryYAxis.YMax) then
-                  mainFrm.Chart.Options.PrimaryYAxis.YMax:=spectra_massive[ixx] div 4;
+              if((spectra_massive[ixx])>mainFrm.Chart.Options.PrimaryYAxis.YMax) then
+                  mainFrm.Chart.Options.PrimaryYAxis.YMax:=spectra_massive[ixx];
 
               if(spectra_massive[ixx] > mainFrm.Chart.Data.Value[0,ixx]) then
               begin

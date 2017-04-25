@@ -165,6 +165,14 @@ void USB_work()
             Settings.feu_voltage += (Receive_Buffer[current_rcvd_pointer + 3] & 0xff) << 16;
             current_rcvd_pointer += 3;
             eeprom_write(0x10, Settings.feu_voltage);
+            if(Settings.feu_voltage > 750)
+            {
+              TIM_SetCompare2(TIM3, 3);
+            } else
+            {
+              TIM_SetCompare2(TIM3, 2);
+            }
+
             dac_reload();
 
             // Первый канал АЦП - 1 бит

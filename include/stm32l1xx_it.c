@@ -241,8 +241,6 @@ void TIM3_IRQHandler(void)
         if(tmptim3 > 0)
         {
           tmptim3 = 0;
-          //TIM_ITConfig(TIM3, TIM_IT_Update, DISABLE);
-          //TIM_ITConfig(TIM3, TIM_IT_CC2, DISABLE);
           TIM_CCxCmd(TIM3, TIM_Channel_2, TIM_CCx_Disable);     // запретить накачку
           //PUMP_DEAD_TIME = DISABLE;
 
@@ -407,6 +405,7 @@ void TIM9_IRQHandler(void)
         counts = counter_pump;
         PumpData.Agressive = DISABLE;
         TIM_CCxCmd(TIM3, TIM_Channel_2, TIM_CCx_Enable);        // разрешить накачку   
+        PumpData.Active = DISABLE;
       }
     }
     // -----------------------------

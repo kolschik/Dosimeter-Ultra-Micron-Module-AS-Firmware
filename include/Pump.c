@@ -30,14 +30,10 @@ void PumpCmd(FunctionalState pump)
       {
         PumpData.Active = pump;
 
-        //PUMP_DEAD_TIME = ENABLE;        // начинаем отсчет мертвого времени накачки
-
         // Установка нового значения таймера накачки 6000 имп./c.
         TIM_SetAutoreload(TIM3, (timer_freq / 6000));
 
         TIM_CCxCmd(TIM3, TIM_Channel_2, TIM_CCx_Enable);        // разрешить накачку   
-//        TIM_ITConfig(TIM3, TIM_IT_Update, ENABLE);
-//        TIM_ClearITPendingBit(TIM3, TIM_IT_Update);
       }
 
     } else

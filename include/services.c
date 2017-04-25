@@ -239,6 +239,8 @@ void Power_on(void)
   Settings.Start_channel = eeprom_read(0x2C);
   Settings.ADC_time = eeprom_read(0x30);
 
+
+
   delay_ms(550);                // ожимаем запуска аналогового блока
 
   adc_init();
@@ -254,6 +256,15 @@ void Power_on(void)
   tim4_Config();                // обслуживание звука
   tim9_Config();                // Счет 0.1 секунды
   tim10_Config();               // Обслуживание контроля напряжения
+
+  if(Settings.feu_voltage > 750)
+  {
+    TIM_SetCompare2(TIM3, 3);
+  } else
+  {
+    TIM_SetCompare2(TIM3, 2);
+  }
+
 
   EXTI15_Config();              // Детектор фронта
   EXTI8_Config();               // Кнопка
