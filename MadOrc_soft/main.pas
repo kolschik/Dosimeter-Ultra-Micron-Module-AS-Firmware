@@ -170,6 +170,10 @@ var
 
   spectra_massive_1_sec: array [0 .. 2048] of UInt32;
   spectra_massive_2_sec: array [0 .. 2048] of UInt32;
+  spectra_massive_3_sec: array [0 .. 2048] of UInt32;
+  spectra_massive_4_sec: array [0 .. 2048] of UInt32;
+  spectra_massive_5_sec: array [0 .. 2048] of UInt32;
+  spectra_massive_6_sec: array [0 .. 2048] of UInt32;
 
   spectra_massive_ready: array [0 .. 2048] of boolean;
 
@@ -1034,7 +1038,11 @@ begin
 
           for ixx := 0 to max_address do
           begin
-            mainFrm.Chart.Data.Value[1,ixx]:=(spectra_massive_1_sec[ixx] + spectra_massive_2_sec[ixx]) * (mainFrm.Chart.Options.PrimaryYAxis.YMax / 40);
+            mainFrm.Chart.Data.Value[1,ixx]:=(spectra_massive_1_sec[ixx] + spectra_massive_2_sec[ixx] + spectra_massive_3_sec[ixx] + spectra_massive_4_sec[ixx] + spectra_massive_5_sec[ixx] + spectra_massive_6_sec[ixx]) * (mainFrm.Chart.Options.PrimaryYAxis.YMax / 100);
+            spectra_massive_6_sec[ixx]:=spectra_massive_5_sec[ixx];
+            spectra_massive_5_sec[ixx]:=spectra_massive_4_sec[ixx];
+            spectra_massive_4_sec[ixx]:=spectra_massive_3_sec[ixx];
+            spectra_massive_3_sec[ixx]:=spectra_massive_2_sec[ixx];
             spectra_massive_2_sec[ixx]:=spectra_massive_1_sec[ixx];
           end;
 
