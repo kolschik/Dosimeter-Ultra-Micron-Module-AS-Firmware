@@ -92,6 +92,7 @@ typedef struct
   uint8_t Impulse_dead_time;
   uint8_t Start_channel;
   uint8_t ADC_time;
+  uint8_t Allow_precis_stable;
 } SettingsDef;
 
 
@@ -138,10 +139,11 @@ extern uint32_t counter_pump;
 extern uint32_t spectro_time;
 extern __IO uint16_t ADC_ConvertedValue[];
 
-extern uint32_t pump_per_second;
+extern int pump_per_second;
+extern int pump_divider;
 extern int pump_per_second_mass[];
-#define timer_freq 4000000
 
+#define timer_freq 4000000
 
 void LEDString(void);
 void LEDUpdate(void);

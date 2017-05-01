@@ -3,6 +3,7 @@
 #include "STM32L1xx.h"          // Device header
 #include "main.h"
 #include "math.h"
+#include "timers.h"
 
 #define DOR_OFFSET                 ((uint32_t)0x0000002C)
 
@@ -238,6 +239,7 @@ void Power_on(void)
   Settings.Impulse_dead_time = eeprom_read(0x28);
   Settings.Start_channel = eeprom_read(0x2C);
   Settings.ADC_time = eeprom_read(0x30);
+  Settings.Allow_precis_stable = eeprom_read(0x34);
 
 
 
@@ -257,14 +259,7 @@ void Power_on(void)
   tim9_Config();                // Счет 0.1 секунды
   tim10_Config();               // Обслуживание контроля напряжения
 
-  if(Settings.feu_voltage > 750)
-  {
-    TIM_SetCompare2(TIM3, 3);
-  } else
-  {
-    TIM_SetCompare2(TIM3, 2);
-  }
-
+  Pump_time_re_set();
 
   EXTI15_Config();              // Детектор фронта
   EXTI8_Config();               // Кнопка
@@ -307,6 +302,25 @@ int MCP73831_state_detect(void)
 
   return Unknown_State;
 
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Установка длительности импульса накачки
+
+void Pump_time_re_set(void)
+{
+
+  if(Settings.feu_voltage > 750)
+  {
+    TIM_SetCompare2(TIM3, 2);
+    pump_divider = 10;
+  } else
+  {
+
+    TIM_SetCompare2(TIM3, 2);
+    pump_divider = 35;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

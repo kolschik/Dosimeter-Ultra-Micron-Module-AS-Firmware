@@ -146,7 +146,7 @@ void USB_work()
           Send_Buffer[21] = Settings.LED_intens & 0xff; // Управление интенсовностью подсветки
           Send_Buffer[22] = Settings.T_korr & 0xff;     // Температурная коррекция
           Send_Buffer[23] = Settings.ADC_time & 0xff;
-          Send_Buffer[24] = Settings.Impulse_dead_time & 0xff;  // колличество накачек в секунду
+          Send_Buffer[24] = Settings.Allow_precis_stable & 0xff;        // разрешение мягкой накачки
           Send_Buffer[25] = debug_mode & 0xff;  // колличество накачек в секунду
 
 
@@ -165,14 +165,7 @@ void USB_work()
             Settings.feu_voltage += (Receive_Buffer[current_rcvd_pointer + 3] & 0xff) << 16;
             current_rcvd_pointer += 3;
             eeprom_write(0x10, Settings.feu_voltage);
-            if(Settings.feu_voltage > 750)
-            {
-              TIM_SetCompare2(TIM3, 3);
-            } else
-            {
-              TIM_SetCompare2(TIM3, 2);
-            }
-
+            Pump_time_re_set();
             dac_reload();
 
             // Первый канал АЦП - 1 бит
@@ -202,22 +195,23 @@ void USB_work()
             current_rcvd_pointer++;
             eeprom_write(0x20, Settings.T_korr);
 
-            current_rcvd_pointer++;
-
             // Мертвое время импульса - 1 бит
-            Settings.Impulse_dead_time = Receive_Buffer[current_rcvd_pointer + 1] & 0xff;
+//            Settings.Impulse_dead_time = Receive_Buffer[current_rcvd_pointer + 1] & 0xff;
             current_rcvd_pointer++;
-            eeprom_write(0x28, Settings.Impulse_dead_time);
-            TIM_SetCompare1(TIM10, Settings.Impulse_dead_time);
+//            eeprom_write(0x28, Settings.Impulse_dead_time);
+//            TIM_SetCompare1(TIM10, Settings.Impulse_dead_time);
 
-            // Режим отладки - 1 бит
-            if((Receive_Buffer[current_rcvd_pointer + 1] & 0xff) > 0)
+            // Рвзрешение мягкой накачки - 1 бит
+            Settings.Allow_precis_stable = Receive_Buffer[current_rcvd_pointer + 1] & 0xff;
+            current_rcvd_pointer++;
+            if(Settings.Allow_precis_stable == 0)
             {
-              debug_mode = ENABLE;
-            } else
-            {
-              debug_mode = DISABLE;
+              PumpData.good_stable_pumps = 0;
+              PumpData.Agressive = ENABLE;
+              PumpCompCmd(INIT_COMP);
             }
+            eeprom_write(0x34, Settings.Allow_precis_stable);
+
 
             ////////////////////////////////////
             // Время АЦП - 1 бит

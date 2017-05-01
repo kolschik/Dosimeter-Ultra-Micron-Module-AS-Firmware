@@ -7,5 +7,6 @@ void LED_show(uint16_t, uint16_t);
 int MCP73831_state_detect(void);
 void Power_off(void);
 void Power_on(void);
+void Pump_time_re_set(void);
 
 #endif

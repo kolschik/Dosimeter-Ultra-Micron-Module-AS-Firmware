@@ -86,6 +86,7 @@ type
     Graph_plus: TButton;
     Graph_minus: TButton;
     Scale_zero: TButton;
+    Allow_precis_stable: TCheckBox;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure ExitBtnClick(Sender: TObject);
@@ -166,6 +167,9 @@ var
   max_address: uint = 2047;
 
   spectra_massive: array [0 .. 2048] of UInt32;
+
+  spectra_massive_1_sec: array [0 .. 2048] of UInt32;
+  spectra_massive_2_sec: array [0 .. 2048] of UInt32;
 
   spectra_massive_ready: array [0 .. 2048] of boolean;
 
@@ -372,10 +376,10 @@ var
 begin
 
 mainFrm.Chart.Options.XEnd:=2048;
-mainFrm.Chart.Options.PenColor[0]:=clBlack;
+mainFrm.Chart.Options.PenColor[0]:=clRed;
 mainFrm.Chart.Options.PenStyle[0]:=psSolid;
 
-mainFrm.Chart.Options.PenColor[1]:=clRed;
+mainFrm.Chart.Options.PenColor[1]:=clBlack;
 mainFrm.Chart.Options.PenStyle[1]:=psSolid;
 Chart.Options.GradientColor := $00FDEEDB; // powder blue (baby blue) mostly white.
 Chart.Options.GradientDirection :=grDown;
@@ -824,7 +828,7 @@ begin
     vAns[6] := mainFrm.LED.ItemIndex and $FF;
     vAns[7] := StrToInt(mainFrm.TCorr.Text) and $FF;
     vAns[8] := $00;
-    vAns[9] := $00;
+    vAns[9] := mainFrm.Allow_precis_stable.Checked.ToInteger and $FF;
     vAns[10] := mainFrm.ADC_time.ItemIndex and $FF;
 
 
@@ -931,6 +935,7 @@ begin
           mainFrm.LED.ItemIndex :=              aData[used_bytes + 21];
           mainFrm.TCorr.Text :=        IntToStr(aData[used_bytes + 22]);
           mainFrm.ADC_time.ItemIndex :=         aData[used_bytes + 23];
+          mainFrm.Allow_precis_stable.Checked := aData[used_bytes + 24].ToBoolean;
 
           if ( mainFrm.Selected_time.Enabled = true ) then
           begin
@@ -983,13 +988,13 @@ begin
 
             if(spectra_massive[ixx] > mainFrm.Chart.Data.Value[0,ixx]) then
             begin
-              mainFrm.Chart.Data.Value[1,ixx]:=spectra_massive[ixx] div 4;
+              spectra_massive_1_sec[ixx]:= Round(spectra_massive[ixx] - mainFrm.Chart.Data.Value[0,ixx]);
               mainFrm.Chart.Data.Value[0,ixx]:=spectra_massive[ixx];
             end
             else
             begin
               mainFrm.Chart.Data.Value[0,ixx]:=spectra_massive[ixx];
-              mainFrm.Chart.Data.Value[1,ixx]:=-1;
+              spectra_massive_1_sec[ixx]:=0;
             end;
           end;
 
@@ -1026,6 +1031,13 @@ begin
           end;
 
           mainFrm.Chart.Options.PrimaryYAxis.YMax:=mainFrm.Chart.Options.PrimaryYAxis.YMax/Graph_scale;
+
+          for ixx := 0 to max_address do
+          begin
+            mainFrm.Chart.Data.Value[1,ixx]:=(spectra_massive_1_sec[ixx] + spectra_massive_2_sec[ixx]) * (mainFrm.Chart.Options.PrimaryYAxis.YMax / 40);
+            spectra_massive_2_sec[ixx]:=spectra_massive_1_sec[ixx];
+          end;
+
           mainFrm.Chart.PlotGraph;
 
           Timer1.Enabled := true;

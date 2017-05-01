@@ -218,7 +218,7 @@ void ADC1_IRQHandler(void)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Накачка
-uint32_t tmptim3 = 0, counts;
+int tmptim3 = 0, counts;
 
 void TIM3_IRQHandler(void)
 {
@@ -294,10 +294,11 @@ void TIM4_IRQHandler(void)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // 0.1 секунда
-int tim9cnt, tim9cnt_spectr_heatup;
+int tim9cnt, tim9cnt2, tim9cnt_spectr_heatup;
 void TIM9_IRQHandler(void)
 {
   uint32_t i;
+  int tmpx = 0;
   if(TIM_GetITStatus(TIM9, TIM_IT_Update) != RESET)
   {
     TIM_ClearITPendingBit(TIM9, TIM_IT_Update);
@@ -380,10 +381,10 @@ void TIM9_IRQHandler(void)
     // Если требуется значительная компенсация, переключаем в режим жесткой накачки
     if((PumpData.two_sec_sum > 4500) || (PumpData.two_sec_sum < -4500))
     {
-      if(PumpData.good_stable_pumps > 100)
-        PumpData.good_stable_pumps = 100;
+      if(PumpData.good_stable_pumps > 250)
+        PumpData.good_stable_pumps = 250;
 
-      if(PumpData.good_stable_pumps < 70)
+      if(PumpData.good_stable_pumps < 50)
       {
         PumpData.good_stable_pumps = 0;
         if(!PumpData.Agressive)
@@ -398,38 +399,54 @@ void TIM9_IRQHandler(void)
     } else
     {
       PumpData.good_stable_pumps++;
-      if(PumpData.good_stable_pumps > 100)      // 10 секунд накачка стабильна
+      if((PumpData.good_stable_pumps > 250) && PumpData.Agressive == ENABLE)    // 25 секунд накачка стабильна
       {
-        PumpCompCmd(NVIC_DEINIT);
-        PumpData.Average_pump = counter_pump;
-        counts = counter_pump;
-        PumpData.Agressive = DISABLE;
-        TIM_CCxCmd(TIM3, TIM_Channel_2, TIM_CCx_Enable);        // разрешить накачку   
-        PumpData.Active = DISABLE;
+        if(Settings.Allow_precis_stable == 1)
+        {
+          PumpCompCmd(NVIC_DEINIT);
+          PumpData.Average_pump = counter_pump;
+          counts = counter_pump;
+          PumpData.Agressive = DISABLE;
+          TIM_CCxCmd(TIM3, TIM_Channel_2, TIM_CCx_Enable);      // разрешить накачку   
+          PumpData.Active = DISABLE;
+        }
       }
     }
     // -----------------------------
 
     if(!PumpData.Agressive)     // Если накачку надо нежно стабилизировать
     {
-      pump_per_second = counts + ((pump_per_second_mass[1] + pump_per_second_mass[2] + pump_per_second_mass[3]) / 50);
+      tmpx = pump_per_second_mass[1] + pump_per_second_mass[2];
 
-
-      // Удержание накачки в окне стабилизации (+-100 имп/c, не не менее 50-ти импульсов)
-      if(PumpData.Average_pump > 150)
+      if(tmpx > 0)
       {
-        if(pump_per_second < (PumpData.Average_pump - 100))
-          pump_per_second = PumpData.Average_pump - 100;
+        pump_per_second = counts + (tmpx / pump_divider);
       } else
       {
-        if(pump_per_second < 50)
-          pump_per_second = 50;
+        pump_per_second = counts + ((tmpx / pump_divider) * 2);
       }
 
-      if(pump_per_second > (PumpData.Average_pump + 100))
+      // Удержание накачки в окне стабилизации (+-100 имп/c, но не менее 62-x импульсов)
+      if((PumpData.Average_pump + 100) < pump_per_second)
+      {
         pump_per_second = PumpData.Average_pump + 100;
+      }
+
+      if(PumpData.Average_pump > 162)
+      {
+        if((PumpData.Average_pump - 100) > pump_per_second)
+        {
+          pump_per_second = PumpData.Average_pump - 100;
+        }
+      }
+
+      if(pump_per_second < 62)  // 4 000 000 Гц тик таймера / 0xFFFF счетчик = 62
+        pump_per_second = 62;
       // -----------------------------
 
+      //   if(tim9cnt2 >= 5)         // Каждые 0.5 секунды
+//      {
+//        tim9cnt2 = 0;
       // Установка нового значения таймера накачки
       i = timer_freq / (pump_per_second);
       if(i > 0xFFFF)
@@ -437,6 +454,8 @@ void TIM9_IRQHandler(void)
 
       TIM_SetAutoreload(TIM3, i);
       counts = counter_pump;
+//      } else
+//        tim9cnt2++;
       // -----------------------------
     }
     // -----------------------------
