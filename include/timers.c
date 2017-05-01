@@ -173,7 +173,7 @@ void tim9_Config()              //  0.1 секунда
 
   TIM_BaseConfig.TIM_Prescaler = (uint16_t) (SystemCoreClock / 1000) - 1;       // Делитель (1 тик = 1 мс)
   TIM_BaseConfig.TIM_ClockDivision = 0;
-  TIM_BaseConfig.TIM_Period = 100;      // 10 гц
+  TIM_BaseConfig.TIM_Period = 100 - 1;  // 10 гц
   TIM_BaseConfig.TIM_CounterMode = TIM_CounterMode_Up;  // Отсчет от нуля до TIM_Period
 
   TIM_TimeBaseInit(TIM9, &TIM_BaseConfig);
