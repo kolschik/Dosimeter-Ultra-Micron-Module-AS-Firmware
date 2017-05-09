@@ -87,6 +87,7 @@ type
     Graph_minus: TButton;
     Scale_zero: TButton;
     Allow_precis_stable: TCheckBox;
+    Bits: TButton;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure ExitBtnClick(Sender: TObject);
@@ -116,6 +117,7 @@ type
     procedure Graph_plusClick(Sender: TObject);
     procedure Graph_minusClick(Sender: TObject);
     procedure Scale_zeroClick(Sender: TObject);
+    procedure BitsClick(Sender: TObject);
 
   private
     fBuf: TiaBuf;
@@ -145,6 +147,7 @@ var
   VoltChange: boolean = false;
   Timed_spectr: boolean = false;
   DenyCommunications: boolean = false;
+  massive_11bit: boolean = true;
   pingback: Integer;
   time: Integer;
   needexit: boolean = false;
@@ -176,6 +179,8 @@ var
   spectra_massive_6_sec: array [0 .. 2048] of UInt32;
 
   spectra_massive_ready: array [0 .. 2048] of boolean;
+
+  pump_massive: array [0 .. 60] of UInt32;
 
   address: UInt32 = 0;
   address_last: UInt32 = 0;
@@ -677,6 +682,37 @@ end;
 
 
 // =============================================================================
+procedure TmainFrm.BitsClick(Sender: TObject);
+var
+  ixx: uint;
+begin
+
+  if(massive_11bit) then
+  begin
+    massive_11bit:= false;
+    mainFrm.Bits.Caption:='10b';
+  end
+  else
+  begin
+    massive_11bit:= true;
+    mainFrm.Bits.Caption:='11b';
+  end;
+
+  for ixx := 0 to max_address do
+  begin
+    spectra_massive_6_sec[ixx]:=0;
+    spectra_massive_5_sec[ixx]:=0;
+    spectra_massive_4_sec[ixx]:=0;
+    spectra_massive_3_sec[ixx]:=0;
+    spectra_massive_2_sec[ixx]:=0;
+    spectra_massive_1_sec[ixx]:=0;
+    mainFrm.Chart.Data.Value[1,ixx]:=0;
+    mainFrm.Chart.Data.Value[0,ixx]:=0;
+  end;
+
+
+end;
+
 procedure TmainFrm.Button4Click(Sender: TObject);
 var
   ix: uint;
@@ -725,7 +761,29 @@ var
   bytes_to_send: uint;
   i: uint;
   ix: uint;
+  min,max,ixx: Integer;
 begin
+
+  mainFrm.Pump.Color:=$009BFFB5;
+
+  max:=pump_massive[1];
+  min:=pump_massive[1];
+
+  for ixx := 2 to 10 do
+  begin
+
+    if(pump_massive[ixx]>max) then
+      max:=pump_massive[ixx];
+
+    if(pump_massive[ixx]<min) then
+      min:=pump_massive[ixx];
+
+  end;
+
+  if(max-min > 30) then
+    mainFrm.Pump.Color:=$009B9BFF;
+
+
   if (DenyCommunications = false) then
   begin
     if (USB_massive_loading = false) then
@@ -887,7 +945,7 @@ Var
   FileName: string;
   i: Integer;
   used_bytes: Integer;
-  ixx: Integer;
+  tmp,ixx: Integer;
   TempStr: string;
   Y, M, D: word;
   voltage : Extended;
@@ -932,7 +990,14 @@ begin
           Spectro_time_raw:=  aData[used_bytes + 11] + (aData[used_bytes + 12] shl 8) + (aData[used_bytes + 13] shl 16) + (aData[used_bytes + 14] shl 24);
           mainFrm.Spectro_time.Text :=  IntToStr(Spectro_time_raw div 3600)+'÷. '+IntToStr((Spectro_time_raw Mod 3600) div 60)+'ì. '+IntToStr(Spectro_time_raw Mod 60)+'ñ.';
 
-          mainFrm.Pump.Text :=     IntToStr(aData[used_bytes + 15] + (aData[used_bytes + 16] shl 8) + (aData[used_bytes + 17] shl 16) + (aData[used_bytes + 18] shl 24));
+          pump_massive[0]:=aData[used_bytes + 15] + (aData[used_bytes + 16] shl 8) + (aData[used_bytes + 17] shl 16) + (aData[used_bytes + 18] shl 24);
+          mainFrm.Pump.Text :=     IntToStr(pump_massive[0]);
+
+          for ixx := 0 to 59 do
+          begin
+            pump_massive[59-ixx]:=pump_massive[59-ixx-1];
+          end;
+
 
           mainFrm.Start_channel.Text:= IntToStr(aData[used_bytes + 19]);
           mainFrm.Sound.Text :=        IntToStr(aData[used_bytes + 20]);
@@ -982,6 +1047,18 @@ begin
         end
         else
         begin
+
+          if(massive_11bit = false) then
+          begin
+            for ixx := 0 to (max_address div 2) do
+            begin
+              tmp:=(spectra_massive[ixx*2]+spectra_massive[(ixx*2)+1]) div 2;
+              spectra_massive[ixx*2]:=  tmp;
+              spectra_massive[(ixx*2)+1]:=tmp;
+            end;
+          end;
+
+
 
           mainFrm.Chart.Options.PrimaryYAxis.YMax:=20;
           for ixx := 0 to max_address do

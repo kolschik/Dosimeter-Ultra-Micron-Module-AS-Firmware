@@ -436,6 +436,7 @@ object mainFrm: TmainFrm
       Width = 144
       Height = 26
       Alignment = taRightJustify
+      Color = 10198015
       Enabled = False
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
@@ -588,6 +589,15 @@ object mainFrm: TmainFrm
     ParentFont = False
     TabOrder = 5
     OnClick = Scale_zeroClick
+  end
+  object Bits: TButton
+    Left = 392
+    Top = 101
+    Width = 25
+    Height = 25
+    Caption = '11b'
+    TabOrder = 6
+    OnClick = BitsClick
   end
   object MyTray: TJvTrayIcon
     Active = True
@@ -1045,7 +1055,7 @@ object mainFrm: TmainFrm
   object ImageList1: TImageList
     Left = 288
     Bitmap = {
-      494C010105008C00B80210001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010105008C00D00210001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000002000000001002000000000000020
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
