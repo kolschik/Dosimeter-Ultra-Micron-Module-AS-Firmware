@@ -1092,6 +1092,8 @@ begin
             SaveDialog1.DefaultExt := '.csv';
             SaveDialog1.FileName := 'Spectr_'+mainFrm.Spectro_time.Text+'.csv';
 
+// ============================================================================
+            Timer1.Enabled := false;
             If Timed_spectr then
             begin
               Timed_spectr:=false;
@@ -1111,6 +1113,8 @@ begin
                 CloseFile(Fx);
               end;
             end;
+            Timer1.Enabled := true;
+// ============================================================================
           end;
 
           mainFrm.Chart.Options.PrimaryYAxis.YMax:=mainFrm.Chart.Options.PrimaryYAxis.YMax/Graph_scale;
@@ -1126,8 +1130,6 @@ begin
           end;
 
           mainFrm.Chart.PlotGraph;
-
-          Timer1.Enabled := true;
 
         end;
       end else Break;
