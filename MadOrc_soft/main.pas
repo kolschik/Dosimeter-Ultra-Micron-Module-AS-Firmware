@@ -429,6 +429,7 @@ mainFrm.Selected_time.Items.AddObject('1 час',         TObject(3600));
 mainFrm.Selected_time.Items.AddObject('2 часа',        TObject(7200));
 mainFrm.Selected_time.Items.AddObject('3 часа',        TObject(10800));
 mainFrm.Selected_time.Items.AddObject('5 часов',       TObject(18000));
+mainFrm.Selected_time.Items.AddObject('6 часов',       TObject(21600));
 mainFrm.Selected_time.Items.AddObject('10 часов',      TObject(36000));
 mainFrm.Selected_time.ItemIndex:=0;
 
@@ -1082,6 +1083,7 @@ begin
 
           if(Need_save_csv) then
           begin
+            Timer1.Enabled := false;
             Need_save_csv:=false;
             SetLength(vAns, 1);
             vAns[0] := $39;
