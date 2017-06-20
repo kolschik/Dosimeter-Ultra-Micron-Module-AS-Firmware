@@ -994,7 +994,7 @@ begin
 
           cps:=Total_counts / Spectro_time_raw;
 
-          mainFrm.Counts.Text := 'Now:' + IntToStr(aData[used_bytes + 7]  + (aData[used_bytes + 8]  shl 8) + (aData[used_bytes + 9] shl 16)  + (aData[used_bytes + 10] shl 24)) + 'cps  Avg:' + FloatToStrF(cps, ffFixed, 10, 2)+'cps  Tot:'+IntToStr(Total_counts);
+          mainFrm.Counts.Text := 'Now:' + IntToStr(aData[used_bytes + 7]  + (aData[used_bytes + 8]  shl 8) + (aData[used_bytes + 9] shl 16)  + (aData[used_bytes + 10] shl 24)) + 'cps  Avg:' + FloatToStrF(cps, ffFixed, 10, 2)+'cps  Tot:'+IntToStr(Total_counts div 1000)+'k';
 
           pump_massive[0]:=aData[used_bytes + 15] + (aData[used_bytes + 16] shl 8) + (aData[used_bytes + 17] shl 16) + (aData[used_bytes + 18] shl 24);
           mainFrm.Pump.Text :=     IntToStr(pump_massive[0]);
