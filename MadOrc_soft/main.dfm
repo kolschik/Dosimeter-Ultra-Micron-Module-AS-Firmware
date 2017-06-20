@@ -361,9 +361,9 @@ object mainFrm: TmainFrm
       ParentFont = False
     end
     object AKB_Volt: TEdit
-      Left = 26
+      Left = 11
       Top = 125
-      Width = 145
+      Width = 160
       Height = 26
       Alignment = taRightJustify
       Enabled = False
@@ -408,9 +408,9 @@ object mainFrm: TmainFrm
       OnClick = Button5Click
     end
     object Counts: TEdit
-      Left = 27
+      Left = 11
       Top = 26
-      Width = 145
+      Width = 161
       Height = 26
       Alignment = taRightJustify
       Ctl3D = True
@@ -431,9 +431,9 @@ object mainFrm: TmainFrm
       Text = '0'
     end
     object Pump: TEdit
-      Left = 27
+      Left = 11
       Top = 92
-      Width = 144
+      Width = 160
       Height = 26
       Alignment = taRightJustify
       Color = 10198015
@@ -449,9 +449,9 @@ object mainFrm: TmainFrm
       Text = '0'
     end
     object Temperature: TEdit
-      Left = 26
+      Left = 11
       Top = 59
-      Width = 145
+      Width = 160
       Height = 26
       Alignment = taRightJustify
       Enabled = False
@@ -466,9 +466,9 @@ object mainFrm: TmainFrm
       Text = '0'
     end
     object Spectro_time: TEdit
-      Left = 27
+      Left = 11
       Top = 158
-      Width = 144
+      Width = 160
       Height = 26
       Alignment = taRightJustify
       Enabled = False
@@ -483,17 +483,17 @@ object mainFrm: TmainFrm
       Text = '0'
     end
     object Source: TComboBox
-      Left = 27
+      Left = 11
       Top = 192
-      Width = 145
+      Width = 161
       Height = 26
       TabOrder = 7
       OnChange = SourceChange
     end
     object Selected_time: TComboBox
-      Left = 26
+      Left = 11
       Top = 224
-      Width = 145
+      Width = 160
       Height = 26
       TabOrder = 8
       OnChange = Selected_timeChange
@@ -1055,7 +1055,7 @@ object mainFrm: TmainFrm
   object ImageList1: TImageList
     Left = 288
     Bitmap = {
-      494C010105008C00D00210001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010105008C00E40210001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000002000000001002000000000000020
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
