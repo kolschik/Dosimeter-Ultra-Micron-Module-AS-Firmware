@@ -295,19 +295,6 @@ object mainFrm: TmainFrm
       Font.Style = []
       ParentFont = False
     end
-    object Label3: TLabel
-      Left = 193
-      Top = 29
-      Width = 88
-      Height = 18
-      Caption = #1057#1095#1077#1090' ('#1080#1084#1087'/'#1089')'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -16
-      Font.Name = 'Arial'
-      Font.Style = []
-      ParentFont = False
-    end
     object Label4: TLabel
       Left = 193
       Top = 95
@@ -360,6 +347,12 @@ object mainFrm: TmainFrm
       Font.Style = []
       ParentFont = False
     end
+    object Tot_cnt: TLabel
+      Left = 288
+      Top = 29
+      Width = 64
+      Height = 18
+    end
     object AKB_Volt: TEdit
       Left = 11
       Top = 125
@@ -410,9 +403,9 @@ object mainFrm: TmainFrm
     object Counts: TEdit
       Left = 11
       Top = 26
-      Width = 161
+      Width = 361
       Height = 26
-      Alignment = taRightJustify
+      Alignment = taCenter
       Ctl3D = True
       DoubleBuffered = False
       Enabled = False
@@ -938,7 +931,7 @@ object mainFrm: TmainFrm
     Visibility = [tvAutoHide]
     OnClick = MyTrayClick
     OnDblClick = MyTrayDoubleClick
-    Left = 192
+    Left = 48
   end
   object TrayMenu: TPopupMenu
     Left = 64
@@ -1050,12 +1043,13 @@ object mainFrm: TmainFrm
     end
   end
   object XPManifest1: TXPManifest
-    Left = 224
+    Left = 80
   end
   object ImageList1: TImageList
-    Left = 288
+    Left = 208
+    Top = 160
     Bitmap = {
-      494C010105008C00E40210001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010105008C00E80210001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000002000000001002000000000000020
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -1328,19 +1322,19 @@ object mainFrm: TmainFrm
   end
   object Timer1: TTimer
     OnTimer = Timer1Timer
-    Left = 336
-    Top = 48
+    Left = 240
+    Top = 144
   end
   object SaveDialog1: TSaveDialog
     Filter = 'CSV (*.CSV)|*.csv'
-    Left = 256
+    Left = 112
     Top = 65535
   end
   object Com_detect: TTimer
     Interval = 50
     OnTimer = Com_detectTimer
-    Left = 336
-    Top = 65535
+    Left = 192
+    Top = 103
   end
   object Incative: TTimer
     Enabled = False

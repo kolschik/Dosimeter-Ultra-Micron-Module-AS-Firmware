@@ -54,7 +54,6 @@ type
     Label1: TLabel;
     Voltage_refresh: TButton;
     Label2: TLabel;
-    Label3: TLabel;
     Label4: TLabel;
     Counts: TEdit;
     Pump: TEdit;
@@ -88,6 +87,7 @@ type
     Scale_zero: TButton;
     Allow_precis_stable: TCheckBox;
     Bits: TButton;
+    Tot_cnt: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure ExitBtnClick(Sender: TObject);
@@ -188,7 +188,7 @@ var
   usb_send_try: UInt32 = 0;
 
   Graph_scale: UInt32 = 1;
-
+  Total_counts: UInt32 = 0;
   Spectro_time_raw: UInt32 = 0;
 
   myDate: TDateTime;
@@ -952,6 +952,7 @@ Var
   TempStr: string;
   Y, M, D: word;
   voltage : Extended;
+  cps : Extended;
 
 begin
   packet_size := 64;
@@ -988,10 +989,12 @@ begin
           voltage:=aData[used_bytes + 5]  + (aData[used_bytes + 6]  shl 8);
           mainFrm.AKB_Volt.Text := FloatToStr(voltage/100);
 
-          mainFrm.Counts.Text :=   IntToStr(aData[used_bytes + 7]  + (aData[used_bytes + 8]  shl 8) + (aData[used_bytes + 9] shl 16)  + (aData[used_bytes + 10] shl 24));
-
           Spectro_time_raw:=  aData[used_bytes + 11] + (aData[used_bytes + 12] shl 8) + (aData[used_bytes + 13] shl 16) + (aData[used_bytes + 14] shl 24);
           mainFrm.Spectro_time.Text :=  IntToStr(Spectro_time_raw div 3600)+'÷ '+IntToStr((Spectro_time_raw Mod 3600) div 60)+'ì '+IntToStr(Spectro_time_raw Mod 60)+'ñ ('+IntToStr(Spectro_time_raw)+')';
+
+          cps:=Total_counts / Spectro_time_raw;
+
+          mainFrm.Counts.Text := 'Now:' + IntToStr(aData[used_bytes + 7]  + (aData[used_bytes + 8]  shl 8) + (aData[used_bytes + 9] shl 16)  + (aData[used_bytes + 10] shl 24)) + 'cps  Avg:' + FloatToStrF(cps, ffFixed, 10, 2)+'cps  Tot:'+IntToStr(Total_counts);
 
           pump_massive[0]:=aData[used_bytes + 15] + (aData[used_bytes + 16] shl 8) + (aData[used_bytes + 17] shl 16) + (aData[used_bytes + 18] shl 24);
           mainFrm.Pump.Text :=     IntToStr(pump_massive[0]);
@@ -1064,9 +1067,11 @@ begin
 
 
           mainFrm.Chart.Options.PrimaryYAxis.YMax:=20;
+          Total_counts:=0;
           for ixx := 0 to max_address do
           begin
 
+            Total_counts:=Total_counts+spectra_massive[ixx];
             if((spectra_massive[ixx])>mainFrm.Chart.Options.PrimaryYAxis.YMax) then
                 mainFrm.Chart.Options.PrimaryYAxis.YMax:=spectra_massive[ixx];
 
