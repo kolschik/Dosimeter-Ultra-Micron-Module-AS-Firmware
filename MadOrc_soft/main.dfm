@@ -157,6 +157,7 @@ object mainFrm: TmainFrm
       Font.Height = -16
       Font.Name = 'Arial'
       Font.Style = []
+      NumbersOnly = True
       ParentFont = False
       TabOrder = 0
       Text = '0'
@@ -196,6 +197,7 @@ object mainFrm: TmainFrm
       Font.Height = -16
       Font.Name = 'Arial'
       Font.Style = []
+      NumbersOnly = True
       ParentFont = False
       TabOrder = 3
       Text = '0'
@@ -212,6 +214,7 @@ object mainFrm: TmainFrm
       Font.Height = -16
       Font.Name = 'Arial'
       Font.Style = []
+      NumbersOnly = True
       ParentFont = False
       TabOrder = 4
       Text = '0'
@@ -228,6 +231,7 @@ object mainFrm: TmainFrm
       Font.Height = -16
       Font.Name = 'Arial'
       Font.Style = []
+      NumbersOnly = True
       ParentFont = False
       TabOrder = 5
       Text = '0'
@@ -386,7 +390,7 @@ object mainFrm: TmainFrm
       OnClick = Button4Click
     end
     object Button5: TButton
-      Left = 235
+      Left = 234
       Top = 268
       Width = 138
       Height = 25
@@ -507,7 +511,7 @@ object mainFrm: TmainFrm
       Options.XAxisValuesPerDivision = 0
       Options.XAxisLabelAlignment = taLeftJustify
       Options.XAxisDateTimeMode = False
-      Options.PenCount = 2
+      Options.PenCount = 3
       Options.XOrigin = 0
       Options.YOrigin = 0
       Options.PrimaryYAxis.YMax = 10.000000000000000000
@@ -591,6 +595,32 @@ object mainFrm: TmainFrm
     Caption = '11b'
     TabOrder = 6
     OnClick = BitsClick
+  end
+  object Total_imp_graph: TButton
+    Left = 392
+    Top = 132
+    Width = 25
+    Height = 23
+    Caption = 'T'
+    TabOrder = 7
+    OnClick = Total_imp_graphClick
+  end
+  object Now_imp_graph: TButton
+    Left = 392
+    Top = 161
+    Width = 25
+    Height = 25
+    Caption = 'N'
+    TabOrder = 8
+  end
+  object Graph_smooth: TButton
+    Left = 392
+    Top = 192
+    Width = 25
+    Height = 26
+    Caption = 'S'
+    TabOrder = 9
+    OnClick = Graph_smoothClick
   end
   object MyTray: TJvTrayIcon
     Active = True
@@ -1049,7 +1079,7 @@ object mainFrm: TmainFrm
     Left = 208
     Top = 160
     Bitmap = {
-      494C010105008C00EC0210001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010105008C00F40210001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000002000000001002000000000000020
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

@@ -88,6 +88,9 @@ type
     Allow_precis_stable: TCheckBox;
     Bits: TButton;
     Tot_cnt: TLabel;
+    Total_imp_graph: TButton;
+    Now_imp_graph: TButton;
+    Graph_smooth: TButton;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure ExitBtnClick(Sender: TObject);
@@ -118,6 +121,9 @@ type
     procedure Graph_minusClick(Sender: TObject);
     procedure Scale_zeroClick(Sender: TObject);
     procedure BitsClick(Sender: TObject);
+    procedure Total_imp_graphClick(Sender: TObject);
+    procedure Graph_smoothClick(Sender: TObject);
+    procedure clear_device();
 
   private
     fBuf: TiaBuf;
@@ -169,7 +175,15 @@ var
 
   max_address: uint = 2047;
 
+  spectra_massive_multipile: array [0 .. 50, 0 .. 2048] of UInt32;
+  spectra_massive_multipile_coefficent: array [0 .. 50] of Extended;
+  spectra_massive_time_data: array [0 .. 50] of UInt32;
+  spectra_massive_multipile_address: uint = 0;
+  spectra_massive_multipile_enable_write: boolean = true;
+
+
   spectra_massive: array [0 .. 2048] of UInt32;
+  raw_spectra_massive: array [0 .. 2048] of UInt32;
 
   spectra_massive_1_sec: array [0 .. 2048] of UInt32;
   spectra_massive_2_sec: array [0 .. 2048] of UInt32;
@@ -198,6 +212,8 @@ var
   firmware_date: string;
 
 implementation
+
+uses Unit1;
 
 {$R *.dfm}
 
@@ -390,6 +406,7 @@ mainFrm.Chart.Options.PenStyle[0]:=psSolid;
 
 mainFrm.Chart.Options.PenColor[1]:=clBlack;
 mainFrm.Chart.Options.PenStyle[1]:=psSolid;
+
 Chart.Options.GradientColor := $00FDEEDB; // powder blue (baby blue) mostly white.
 Chart.Options.GradientDirection :=grDown;
 
@@ -709,6 +726,7 @@ begin
     spectra_massive_3_sec[ixx]:=0;
     spectra_massive_2_sec[ixx]:=0;
     spectra_massive_1_sec[ixx]:=0;
+//    mainFrm.Chart.Data.Value[2,ixx]:=0;
     mainFrm.Chart.Data.Value[1,ixx]:=0;
     mainFrm.Chart.Data.Value[0,ixx]:=0;
   end;
@@ -718,7 +736,7 @@ end;
 
 procedure TmainFrm.Button4Click(Sender: TObject);
 var
-  ix: uint;
+  ix,iy: uint;
 begin
 
   Need_save_csv:=true;
@@ -738,6 +756,37 @@ begin
 
 // =============================================================================
 procedure TmainFrm.Button5Click(Sender: TObject);
+var
+i,ixx: Uint32;
+coeff: Extended;
+begin
+  mainFrm.clear_device;
+
+  coeff:=spectra_massive_multipile_coefficent[spectra_massive_multipile_address];
+
+  // -----------------------------------------------------
+  for i := 0 to max_address do // суммирование и перегрузка общего массива
+  begin
+    for ixx := 0 to 50 do // суммирование и перехрузка общего массива
+    begin
+      spectra_massive_multipile[ixx,i]:=0;
+      spectra_massive_multipile_coefficent[ixx]:=0;
+      spectra_massive_time_data[ixx]:=0;
+    end;
+  end;
+          // -----------------------------------------------------
+
+  spectra_massive_multipile_address:= 0;
+  spectra_massive_multipile_enable_write:= true;
+
+  spectra_massive_multipile_coefficent[spectra_massive_multipile_address]:=coeff;
+
+
+end;
+// =============================================================================
+
+// =============================================================================
+procedure TmainFrm.clear_device();
 var
   vAns: TiaBuf;
   ix: uint;
@@ -863,6 +912,11 @@ begin
     end;
   end;
 end;
+procedure TmainFrm.Total_imp_graphClick(Sender: TObject);
+begin
+//  mainFrm.Chart.Options.
+end;
+
 // =============================================================================
 
 
@@ -953,6 +1007,10 @@ Var
   Y, M, D: word;
   voltage : Extended;
   cps : Extended;
+  ixx2: UInt32;
+  ixy2: UInt32;
+  window2: UInt32;
+  deny_load_massive: Boolean;
 
 begin
   packet_size := 64;
@@ -990,6 +1048,12 @@ begin
           mainFrm.AKB_Volt.Text := FloatToStr(voltage/100);
 
           Spectro_time_raw:=  aData[used_bytes + 11] + (aData[used_bytes + 12] shl 8) + (aData[used_bytes + 13] shl 16) + (aData[used_bytes + 14] shl 24);
+          if spectra_massive_multipile_enable_write then
+             spectra_massive_time_data[spectra_massive_multipile_address]:=Spectro_time_raw; // Сохранение в массив массивов
+          Spectro_time_raw:=0;
+          for ixx := 0 to 49 do
+          Spectro_time_raw:=Spectro_time_raw+spectra_massive_time_data[ixx];
+
           mainFrm.Spectro_time.Text :=  IntToStr(Spectro_time_raw div 3600)+'ч '+IntToStr((Spectro_time_raw Mod 3600) div 60)+'м '+IntToStr(Spectro_time_raw Mod 60)+'с ('+IntToStr(Spectro_time_raw)+')';
 
           if(Spectro_time_raw>0) then
@@ -1046,100 +1110,163 @@ begin
         massive_element := massive_element + aData[used_bytes + 6];
         used_bytes := used_bytes + 7;
 
-        if (address < max_address - 1) then
+        if (address < max_address-1) then
         begin
-          spectra_massive[address] := massive_element;
+          raw_spectra_massive[address] := massive_element;
           spectra_massive_ready[address] := true;
+
+          if spectra_massive_multipile_enable_write then
+            spectra_massive_multipile[spectra_massive_multipile_address,address]:=massive_element; // Сохранение в массив массивов
 
         end
         else
         begin
 
-          if(massive_11bit = false) then
+          // -----------------------------------------------------
+          deny_load_massive:=false;
+          for i := 0 to max_address-2 do // Проверка заполнения массива
+            if spectra_massive_ready[i] = false then
+              deny_load_massive:=true;
+          // -----------------------------------------------------
+          if deny_load_massive=false then
           begin
-            for ixx := 0 to (max_address div 2) do
+            // -----------------------------------------------------
+            for i := 0 to max_address do // Перенос сырых данных
             begin
-              tmp:=(spectra_massive[ixx*2]+spectra_massive[(ixx*2)+1]) div 2;
-              spectra_massive[ixx*2]:=  tmp;
-              spectra_massive[(ixx*2)+1]:=tmp;
+              spectra_massive[i] := 0;
+              spectra_massive[i]:=raw_spectra_massive[i]; // Сохранение в массив массивов
             end;
-          end;
+            // -----------------------------------------------------
 
 
+            // Обработка новых данных коэфицентом
+            Unit1.Mesh_Array(spectra_massive,spectra_massive_multipile_coefficent[spectra_massive_multipile_address]);
 
-          mainFrm.Chart.Options.PrimaryYAxis.YMax:=20;
-          Total_counts:=0;
-          for ixx := 0 to max_address do
-          begin
-
-            Total_counts:=Total_counts+spectra_massive[ixx];
-            if((spectra_massive[ixx])>mainFrm.Chart.Options.PrimaryYAxis.YMax) then
-                mainFrm.Chart.Options.PrimaryYAxis.YMax:=spectra_massive[ixx];
-
-            if(spectra_massive[ixx] > mainFrm.Chart.Data.Value[0,ixx]) then
+            // -----------------------------------------------------
+            for i := 0 to max_address do // Подготовка новой части  общего массива
             begin
-              spectra_massive_1_sec[ixx]:= Round(spectra_massive[ixx] - mainFrm.Chart.Data.Value[0,ixx]);
-              mainFrm.Chart.Data.Value[0,ixx]:=spectra_massive[ixx];
-            end
-            else
-            begin
-              mainFrm.Chart.Data.Value[0,ixx]:=spectra_massive[ixx];
-              spectra_massive_1_sec[ixx]:=0;
+              if spectra_massive_multipile_enable_write then
+                spectra_massive_multipile[spectra_massive_multipile_address,i]:=spectra_massive[i]; // Сохранение в массив массивов
             end;
-          end;
+            // -----------------------------------------------------
 
 
-          if(Need_save_csv) then
-          begin
-            Timer1.Enabled := false;
-            Need_save_csv:=false;
-            SetLength(vAns, 1);
-            vAns[0] := $39;
-
-            USB_massive_loading := false;
-            SaveDialog1.DefaultExt := '.csv';
-            SaveDialog1.FileName := 'Spectr_'+mainFrm.Spectro_time.Text+'.csv';
-
-// ============================================================================
-            Timer1.Enabled := false;
-            If Timed_spectr then
+            // -----------------------------------------------------
+            for i := 0 to max_address do // суммирование и перегрузка общего массива
             begin
-              Timed_spectr:=false;
-              ShowMessage('Сбор спектра завершен!');
-            end;
-
-            If SaveDialog1.Execute then
-            begin
-              try
-                AssignFile(Fx, SaveDialog1.FileName); // связали файл с переменной
-                Rewrite(Fx); // создаем пустой файл
-                for ixx := 0 to max_address do
-                begin
-                  WriteLn(Fx, IntToStr(ixx), ',', spectra_massive[ixx]);
-                end;
-              finally
-                CloseFile(Fx);
+              for ixx := 0 to spectra_massive_multipile_address-1 do // суммирование и перехрузка общего массива
+              begin
+                spectra_massive[i] := spectra_massive[i] + spectra_massive_multipile[ixx,i];
               end;
             end;
-            Timer1.Enabled := true;
-// ============================================================================
+            // -----------------------------------------------------
+
+            if(massive_11bit = false) then
+            begin
+              for ixx := 0 to (max_address div 2) do
+              begin
+                tmp:=(spectra_massive[ixx*2]+spectra_massive[(ixx*2)+1]) div 2;
+                spectra_massive[ixx*2]:=  tmp;
+                spectra_massive[(ixx*2)+1]:=tmp;
+              end;
+            end;
+
+
+
+            mainFrm.Chart.Options.PrimaryYAxis.YMax:=20;
+            Total_counts:=0;
+            for ixx := 0 to max_address do
+            begin
+
+              Total_counts:=Total_counts+spectra_massive[ixx];
+              if((spectra_massive[ixx])>mainFrm.Chart.Options.PrimaryYAxis.YMax) then
+                  mainFrm.Chart.Options.PrimaryYAxis.YMax:=spectra_massive[ixx];
+
+              if(spectra_massive[ixx] > mainFrm.Chart.Data.Value[0,ixx]) then
+              begin
+                spectra_massive_1_sec[ixx]:= Round(spectra_massive[ixx] - mainFrm.Chart.Data.Value[0,ixx]);
+                mainFrm.Chart.Data.Value[0,ixx]:=spectra_massive[ixx];
+              end
+              else
+              begin
+                mainFrm.Chart.Data.Value[0,ixx]:=spectra_massive[ixx];
+                spectra_massive_1_sec[ixx]:=0;
+              end;
+            end;
+
+
+            if(Need_save_csv) then
+            begin
+              Timer1.Enabled := false;
+              Need_save_csv:=false;
+              SetLength(vAns, 1);
+              vAns[0] := $39;
+
+              USB_massive_loading := false;
+              SaveDialog1.DefaultExt := '.csv';
+              SaveDialog1.FileName := 'Spectr_'+mainFrm.Spectro_time.Text+'.csv';
+
+              // ============================================================================
+              Timer1.Enabled := false;
+              If Timed_spectr then
+              begin
+                Timed_spectr:=false;
+                ShowMessage('Сбор спектра завершен!');
+              end;
+
+              If SaveDialog1.Execute then
+              begin
+                try
+                  AssignFile(Fx, SaveDialog1.FileName); // связали файл с переменной
+                  Rewrite(Fx); // создаем пустой файл
+                  for ixx := 0 to max_address do
+                  begin
+                    WriteLn(Fx, IntToStr(ixx), ',', spectra_massive[ixx]);
+                  end;
+                finally
+                  CloseFile(Fx);
+                end;
+              end;
+              Timer1.Enabled := true;
+  // = ===========================================================================
+            end;
+
+            mainFrm.Chart.Options.PrimaryYAxis.YMax:=mainFrm.Chart.Options.PrimaryYAxis.YMax/Graph_scale;
+
+            for ixx := 0 to max_address do
+            begin
+              mainFrm.Chart.Data.Value[1,ixx]:=(spectra_massive_1_sec[ixx] + spectra_massive_2_sec[ixx] + spectra_massive_3_sec[ixx] + spectra_massive_4_sec[ixx] + spectra_massive_5_sec[ixx] + spectra_massive_6_sec[ixx]) * (mainFrm.Chart.Options.PrimaryYAxis.YMax / 100);
+              spectra_massive_6_sec[ixx]:=spectra_massive_5_sec[ixx];
+              spectra_massive_5_sec[ixx]:=spectra_massive_4_sec[ixx];
+              spectra_massive_4_sec[ixx]:=spectra_massive_3_sec[ixx];
+              spectra_massive_3_sec[ixx]:=spectra_massive_2_sec[ixx];
+              spectra_massive_2_sec[ixx]:=spectra_massive_1_sec[ixx];
+            end;
+            // Заполнение графика стабилизатора
+            // -----------------------------------------------
+            window2:=7;
+
+            for ixx := window2 to max_address-window2 do
+            begin
+              Unit1.Form1.JvChart1.Data.Value[0,ixx]:=raw_spectra_massive[ixx];
+
+              for ixy2 := 1 to window2 do
+              begin
+                Unit1.Form1.JvChart1.Data.Value[0,ixx]:= Unit1.Form1.JvChart1.Data.Value[0,ixx] + raw_spectra_massive[ixx+ixy2] + raw_spectra_massive[ixx-ixy2];
+              end;
+
+              Unit1.Form1.JvChart1.Data.Value[0,ixx]:=Unit1.Form1.JvChart1.Data.Value[0,ixx] / ((window2*2)+1);
+
+           end;
+
           end;
 
-          mainFrm.Chart.Options.PrimaryYAxis.YMax:=mainFrm.Chart.Options.PrimaryYAxis.YMax/Graph_scale;
-
-          for ixx := 0 to max_address do
-          begin
-            mainFrm.Chart.Data.Value[1,ixx]:=(spectra_massive_1_sec[ixx] + spectra_massive_2_sec[ixx] + spectra_massive_3_sec[ixx] + spectra_massive_4_sec[ixx] + spectra_massive_5_sec[ixx] + spectra_massive_6_sec[ixx]) * (mainFrm.Chart.Options.PrimaryYAxis.YMax / 100);
-            spectra_massive_6_sec[ixx]:=spectra_massive_5_sec[ixx];
-            spectra_massive_5_sec[ixx]:=spectra_massive_4_sec[ixx];
-            spectra_massive_4_sec[ixx]:=spectra_massive_3_sec[ixx];
-            spectra_massive_3_sec[ixx]:=spectra_massive_2_sec[ixx];
-            spectra_massive_2_sec[ixx]:=spectra_massive_1_sec[ixx];
-          end;
+            // -----------------------------------------------
 
           mainFrm.Chart.PlotGraph;
 
         end;
+
       end else Break;
       // -----------------------------------------------------------------------------------
 
@@ -1199,6 +1326,14 @@ begin
 
   if(Graph_scale < 10) then
   Graph_scale:=Graph_scale+1;
+
+end;
+
+procedure TmainFrm.Graph_smoothClick(Sender: TObject);
+begin
+    spectra_massive_multipile_enable_write:=false;
+    Unit1.Form1.Timer1.Enabled:=true;
+    Unit1.Form1.ShowModal;
 
 end;
 
