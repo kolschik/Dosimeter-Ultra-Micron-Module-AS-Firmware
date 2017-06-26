@@ -91,6 +91,7 @@ type
     Total_imp_graph: TButton;
     Now_imp_graph: TButton;
     Graph_smooth: TButton;
+    HV_divider: TCheckBox;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure ExitBtnClick(Sender: TObject);
@@ -124,6 +125,8 @@ type
     procedure Total_imp_graphClick(Sender: TObject);
     procedure Graph_smoothClick(Sender: TObject);
     procedure clear_device();
+    procedure HV_dividerClick(Sender: TObject);
+    procedure HV_dividerKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 
   private
     fBuf: TiaBuf;
@@ -174,6 +177,12 @@ var
   Need_load_flash: boolean = false;
 
   max_address: uint = 2047;
+
+  stab_calibr: UInt32;
+  stab_window: UInt32;
+  stab_coefficent: Extended;
+  HV_Div: bool;
+
 
   spectra_massive_multipile: array [0 .. 50, 0 .. 2048] of UInt32;
   spectra_massive_multipile_coefficent: array [0 .. 50] of Extended;
@@ -345,7 +354,14 @@ begin
   reg.RootKey := HKEY_CURRENT_USER; // Для текущего пользователя
   reg.OpenKey('Software\Micron\Spectr', true); // Открываем раздел
 
+  HV_div:=mainFrm.HV_divider.Checked;
+
   reg.WriteInteger('comport', comport_number_select);
+  reg.WriteInteger('calibr', stab_calibr);
+  reg.WriteInteger('window', stab_window);
+  reg.WriteBool('HVDivider', HV_div);
+  reg.WriteFloat('coefficent', stab_coefficent);
+
   reg.CloseKey; // Закрываем раздел
   reg.Free;
 end;
@@ -474,6 +490,14 @@ mainFrm.Selected_time.ItemIndex:=0;
   begin
     try
       comport_number_select := reg.ReadInteger('comport');
+      stab_calibr      := reg.ReadInteger('calibr');
+      stab_window      := reg.ReadInteger('window');
+      stab_coefficent  := reg.ReadFloat('coefficent');
+      HV_div           := reg.ReadBool('HVDivider');
+
+      spectra_massive_multipile_coefficent[0]:=stab_coefficent;
+      mainFrm.HV_divider.Checked:=HV_div;
+
     except
       comport_number_select := 6;
     end;
@@ -483,6 +507,10 @@ mainFrm.Selected_time.ItemIndex:=0;
     reg.OpenKey('Software\Micron\Spectr', true);
     try
       reg.WriteInteger('comport', 1);
+      reg.WriteFloat('coefficent', 1);
+      reg.WriteInteger('calibr', 480);
+      reg.WriteInteger('window', 50);
+      reg.WriteBool('HVDivider', false);
     except
     end;
     reg.CloseKey; // Закрываем раздел
@@ -770,10 +798,15 @@ begin
     for ixx := 0 to 50 do // суммирование и перехрузка общего массива
     begin
       spectra_massive_multipile[ixx,i]:=0;
-      spectra_massive_multipile_coefficent[ixx]:=0;
-      spectra_massive_time_data[ixx]:=0;
     end;
   end;
+
+  for ixx := 0 to 50 do // суммирование и перехрузка общего массива
+  begin
+    spectra_massive_multipile_coefficent[ixx]:=0;
+    spectra_massive_time_data[ixx]:=0;
+  end;
+
           // -----------------------------------------------------
 
   spectra_massive_multipile_address:= 0;
@@ -783,6 +816,19 @@ begin
 
 
 end;
+procedure TmainFrm.HV_dividerClick(Sender: TObject);
+begin
+
+  HV_div:=mainFrm.HV_divider.Checked;
+  SaveReg;
+
+end;
+
+procedure TmainFrm.HV_dividerKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+begin
+
+end;
+
 // =============================================================================
 
 // =============================================================================
@@ -924,6 +970,7 @@ procedure TmainFrm.Voltage_refreshClick(Sender: TObject);
 var
   vAns: TiaBuf;
   ix: uint;
+  voltage: Extended;
 begin
   RS232.Open;
   RS232.StartListner;
@@ -934,7 +981,13 @@ begin
     VoltChange := false;
     mainFrm.Panel1.Color := clMenu;
 
-    ix := StrToInt(mainFrm.EVolt.Text);
+    voltage := StrToInt(mainFrm.EVolt.Text);
+
+    if HV_div then
+      voltage:=(voltage/5.1)*15;
+
+    ix :=  Round(voltage);
+
 
     SetLength(vAns, 11);
     vAns[0] := $07; // Передача напряжения и настроек
@@ -1042,9 +1095,18 @@ begin
         mainFrm.Temperature.Text := IntToStr(aData[used_bytes + 1]);
         if (VoltChange = false) then
         begin
-          mainFrm.EVolt.Text :=  IntToStr(aData[used_bytes + 2]  + (aData[used_bytes + 3]  shl 8)  + (aData[used_bytes + 4] shl 16));
+
+          voltage:=aData[used_bytes + 2]  + (aData[used_bytes + 3]  shl 8)  + (aData[used_bytes + 4] shl 16);
+
+          if HV_div then
+          voltage:=(voltage/15)*5.1;
+
+          mainFrm.EVolt.Text :=  IntToStr(Round(voltage));
+
+          ///////////////////////////////////////////////////////
 
           voltage:=aData[used_bytes + 5]  + (aData[used_bytes + 6]  shl 8);
+
           mainFrm.AKB_Volt.Text := FloatToStr(voltage/100);
 
           Spectro_time_raw:=  aData[used_bytes + 11] + (aData[used_bytes + 12] shl 8) + (aData[used_bytes + 13] shl 16) + (aData[used_bytes + 14] shl 24);
@@ -1334,6 +1396,14 @@ begin
     spectra_massive_multipile_enable_write:=false;
     Unit1.Form1.Timer1.Enabled:=true;
     Unit1.Form1.ShowModal;
+  // -----------------------------------------------------
+  for i := 0 to max_address do // отрисовка графика
+  begin
+    Unit1.Form1.JvChart1.Data.Value[0,i]:=0;
+    Unit1.Form1.JvChart1.Data.Value[1,i]:=0;
+    Unit1.Form1.JvChart1.Data.Value[2,i]:=0;
+  end;
+  // -----------------------------------------------------
 
 end;
 

@@ -3,7 +3,7 @@ object mainFrm: TmainFrm
   Top = 0
   BorderStyle = bsSingle
   Caption = 'USB Spectr'
-  ClientHeight = 485
+  ClientHeight = 512
   ClientWidth = 1056
   Color = clWindow
   Font.Charset = DEFAULT_CHARSET
@@ -69,7 +69,7 @@ object mainFrm: TmainFrm
     Left = 0
     Top = 319
     Width = 386
-    Height = 165
+    Height = 194
     Alignment = taLeftJustify
     Caption = #1053#1072#1089#1090#1088#1086#1081#1082#1072
     Color = clMenu
@@ -165,7 +165,7 @@ object mainFrm: TmainFrm
     end
     object Voltage_refresh: TButton
       Left = 270
-      Top = 129
+      Top = 153
       Width = 106
       Height = 28
       Caption = #1057#1086#1093#1088#1072#1085#1080#1090#1100
@@ -253,6 +253,16 @@ object mainFrm: TmainFrm
       Caption = #1057#1090#1072#1073#1080#1083#1080#1079#1072#1094#1080#1103' '#1042#1042
       TabOrder = 7
       OnEnter = EVoltChange
+    end
+    object HV_divider: TCheckBox
+      Left = 65
+      Top = 160
+      Width = 176
+      Height = 17
+      Caption = #1044#1077#1083#1080#1090#1077#1083#1100' 5'#1043#1054#1084'/15'#1052
+      TabOrder = 8
+      OnClick = HV_dividerClick
+      OnEnter = HV_dividerClick
     end
   end
   object Panel2: TPanel
@@ -500,7 +510,7 @@ object mainFrm: TmainFrm
     Left = 423
     Top = 0
     Width = 633
-    Height = 484
+    Height = 513
     HorzScrollBar.Tracking = True
     TabOrder = 2
     object Chart: TJvChart
@@ -1079,7 +1089,7 @@ object mainFrm: TmainFrm
     Left = 208
     Top = 160
     Bitmap = {
-      494C010105008C00F40210001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010105008C00FC0210001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000002000000001002000000000000020
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
