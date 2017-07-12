@@ -33,6 +33,7 @@ void PumpCmd(FunctionalState pump)
         // Установка нового значения таймера накачки 6000 имп./c.
         TIM_SetAutoreload(TIM3, (timer_freq / 6000));
 
+        PUMP_DEAD_TIME = ENABLE;
         TIM_CCxCmd(TIM3, TIM_Channel_2, TIM_CCx_Enable);        // разрешить накачку   
       }
 
