@@ -85,10 +85,10 @@ void tim3_Config()              //  Генерация накачки
   TIM_OC2PreloadConfig(TIM3, TIM_OCPreload_Enable);     // Разрешение буфферизированной перегрузки канала
   TIM_CCxCmd(TIM3, TIM_Channel_2, TIM_CCx_Enable);      // Разрешение канала
 
-  // Настройка отсчета времени гашения импульса, 15 мкс
+  // Настройка отсчета времени гашения импульса, 30 мкс
   TIM_OCStructInit(&TIM_OCConfig);
   TIM_OCConfig.TIM_OCMode = TIM_OCMode_PWM1;
-  TIM_OCConfig.TIM_Pulse = 60;
+  TIM_OCConfig.TIM_Pulse = 120;
 
   TIM_OC1Init(TIM3, &TIM_OCConfig);     // Конфигурирование канала
   TIM_OC1PreloadConfig(TIM3, TIM_OCPreload_Enable);     // Разрешение буфферизированной перегрузки канала

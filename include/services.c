@@ -319,7 +319,7 @@ void Pump_time_re_set(void)
   } else
   {
 */
-  TIM_SetCompare2(TIM3, 2);
+  TIM_SetCompare2(TIM3, 3);
   pump_divider = 35;
 //  }
 
