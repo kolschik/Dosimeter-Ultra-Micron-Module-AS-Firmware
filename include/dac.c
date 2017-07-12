@@ -38,16 +38,16 @@ void dac_reload()
   float voltage;
 
   voltage = ((float) Settings.feu_voltage / 5005.1) * 5.1;      // 780 вольт = 794.78 мВ
-  ADCData.DAC_voltage_raw = voltage / ADCData.Calibration_bit_voltage;  // коррекция значения по напряжению опоры
+  //ADCData.DAC_voltage_raw = voltage / ADCData.Calibration_bit_voltage;  // коррекция значения по напряжению опоры
+  ADCData.DAC_voltage_raw = voltage / 0.000739577;      // Установка напряжения БЕЗ учета опоры
   // 0,0007326В на 1 бит
-  // ADCData.DAC_voltage_raw должно быть примерно равно 1084, при 780 вольтах.
 
-  if((ADCData.DAC_voltage_raw > (DAC_GetDataOutputValue(DAC_Channel_2) + 3))    // вилка по напряжению +-1 бит
-     || (ADCData.DAC_voltage_raw < (DAC_GetDataOutputValue(DAC_Channel_2) - 3)))
-  {
-    dac_off();
-    dac_on();
-    DAC_SetChannel2Data(DAC_Align_12b_R, ADCData.DAC_voltage_raw);      // Set DAC Channel2 DHR register: DAC_OUT2 = (1.224 * 128) / 256 = 0.612 V 
-  }
+//  if((ADCData.DAC_voltage_raw > (DAC_GetDataOutputValue(DAC_Channel_2) + 3))    // вилка по напряжению +-3 бит
+//     || (ADCData.DAC_voltage_raw < (DAC_GetDataOutputValue(DAC_Channel_2) - 3)))
+//  {
+  dac_off();
+  dac_on();
+  DAC_SetChannel2Data(DAC_Align_12b_R, ADCData.DAC_voltage_raw);        // Set DAC Channel2 DHR register: DAC_OUT2 = (1.224 * 128) / 256 = 0.612 V 
+//  }
   DAC_SoftwareTriggerCmd(DAC_Channel_2, ENABLE);
 }

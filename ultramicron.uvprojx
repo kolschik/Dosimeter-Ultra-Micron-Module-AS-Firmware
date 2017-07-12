@@ -334,7 +334,7 @@
             <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls>--debug</MiscControls>
-              <Define>USE_STDPERIPH_DRIVER, USE_STM32L152_EVAL, STM32L1XX_MD version_401</Define>
+              <Define>USE_STDPERIPH_DRIVER, USE_STM32L152_EVAL, STM32L1XX_MD version_401 new_pcb</Define>
               <Undefine></Undefine>
               <IncludePath>.\include;.\include\control;.\include\display;.\STM32L1xx_StdPeriph_Lib_V1.3.1\Libraries\STM32L1xx_StdPeriph_Driver\inc;.\STM32L1xx_StdPeriph_Lib_V1.3.1\Project\STM32L1xx_StdPeriph_Templates;.\STM32_USB-FS-Device_Lib_V4.0.0\Projects\VirtualComport_Loopback\inc;.\STM32_USB-FS-Device_Lib_V4.0.0\Libraries\STM32_USB-FS-Device_Driver\inc;.\STM32_USB-FS-Device_Lib_V4.0.0\Projects\VirtualComport_Loopback\inc;.\STM32L1xx_StdPeriph_Lib_V1.3.1\Libraries\CMSIS\Include</IncludePath>
             </VariousControls>

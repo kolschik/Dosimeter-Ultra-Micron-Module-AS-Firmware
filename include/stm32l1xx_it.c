@@ -265,7 +265,14 @@ void TIM3_IRQHandler(void)
     if(PUMP_DEAD_TIME)
     {
       PUMP_MASSIVE[0]++;
-      PUMP_DEAD_TIME = DISABLE; // заканчиваем отсчет мертвого времени накачки
+      if(PumpData.Agressive)
+      {
+        if(PumpData.Active == DISABLE)  // если накачку надо выключить
+          PUMP_DEAD_TIME = DISABLE;     // заканчиваем отсчет мертвого времени накачки        
+      } else
+      {
+        PUMP_DEAD_TIME = DISABLE;       // заканчиваем отсчет мертвого времени накачки        
+      }
     }
   }
 }

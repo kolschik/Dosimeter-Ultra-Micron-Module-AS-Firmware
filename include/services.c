@@ -311,16 +311,18 @@ int MCP73831_state_detect(void)
 void Pump_time_re_set(void)
 {
 
-  if(Settings.feu_voltage > 750)
+/*  if(Settings.feu_voltage > 750)
   {
+
     TIM_SetCompare2(TIM3, 2);
     pump_divider = 10;
   } else
   {
+*/
+  TIM_SetCompare2(TIM3, 2);
+  pump_divider = 35;
+//  }
 
-    TIM_SetCompare2(TIM3, 2);
-    pump_divider = 35;
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -346,6 +348,52 @@ void LED_show(uint16_t digit, uint16_t segment)
       break;
     }
 
+#ifdef new_pcb
+
+    switch (segment)
+    {
+    case C_SEG_A:
+      GPIOA->BSRRH = (uint16_t) 0x0008; // Включить C_SEG_A
+      break;
+
+
+    case C_SEG_B:
+      GPIOA->BSRRH = (uint16_t) 0x0080; // Включить C_SEG_B
+      break;
+
+
+    case C_SEG_C:
+      GPIOB->BSRRH = (uint16_t) 0x0001; // Включить C_SEG_C
+      break;
+
+
+    case C_SEG_D:
+      GPIOA->BSRRH = (uint16_t) 0x0040; // Включить C_SEG_D
+      break;
+
+
+    case C_SEG_E:
+      GPIOA->BSRRH = (uint16_t) 0x0004; // Включить C_SEG_E
+      break;
+
+
+    case C_SEG_F:
+      GPIOB->BSRRH = (uint16_t) 0x0002; // Включить C_SEG_F
+      break;
+
+
+    case C_SEG_G:
+      GPIOB->BSRRH = (uint16_t) 0x1000; // Включить C_SEG_G
+      break;
+
+    }
+  } else
+  {
+    GPIOA->BSRRL = (uint16_t) 0x00CC;   // Выключить C_SEG_A  C_SEG_B  C_SEG_D  C_SEG_E
+    GPIOB->BSRRL = (uint16_t) 0x1003;   // Выключить C_SEG_С  C_SEG_А  C_SEG_G
+    GPIOB->BSRRL = (uint16_t) 0x0C04;   // Выключить разрад 1, 2, 3
+  }
+#else
 
     switch (segment)
     {
@@ -391,6 +439,7 @@ void LED_show(uint16_t digit, uint16_t segment)
     GPIOB->BSRRL = (uint16_t) 0x0C04;   // Выключить разрад 1, 2, 3
   }
 
+#endif
 }
 
 ///////////////////////////////////////////////////////////////

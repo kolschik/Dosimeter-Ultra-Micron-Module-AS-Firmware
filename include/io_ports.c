@@ -21,6 +21,35 @@ void io_init(void)
   GPIO_SetBits(GPIOB, GPIO_Pin_6);
 
 
+#ifdef new_pcb
+// ===============================================================================================  
+// Ножки дисплея
+  GPIO_StructInit(&GPIO_InitStructure);
+  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_3 | GPIO_Pin_7 | GPIO_Pin_6 | GPIO_Pin_2;
+  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
+  GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
+  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_40MHz;
+  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+  GPIO_Init(GPIOA, &GPIO_InitStructure);
+
+  GPIO_StructInit(&GPIO_InitStructure);
+  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2 | GPIO_Pin_10 | GPIO_Pin_11;
+  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
+  GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_40MHz;
+  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+  GPIO_Init(GPIOB, &GPIO_InitStructure);
+
+  GPIO_StructInit(&GPIO_InitStructure);
+  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_12;
+  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
+  GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
+  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_40MHz;
+  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+  GPIO_Init(GPIOB, &GPIO_InitStructure);
+
+#else
+
 // ===============================================================================================  
 // Ножки дисплея
   GPIO_StructInit(&GPIO_InitStructure);
@@ -31,12 +60,6 @@ void io_init(void)
   GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
   GPIO_Init(GPIOA, &GPIO_InitStructure);
 
-  GPIO_ResetBits(GPIOA, GPIO_Pin_3);
-  GPIO_ResetBits(GPIOA, GPIO_Pin_7);
-  GPIO_ResetBits(GPIOA, GPIO_Pin_6);
-  GPIO_ResetBits(GPIOA, GPIO_Pin_2);
-
-
   GPIO_StructInit(&GPIO_InitStructure);
   GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_12 | GPIO_Pin_2 | GPIO_Pin_10 | GPIO_Pin_11;
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
@@ -44,6 +67,14 @@ void io_init(void)
   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_40MHz;
   GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
   GPIO_Init(GPIOB, &GPIO_InitStructure);
+
+#endif
+
+  GPIO_ResetBits(GPIOA, GPIO_Pin_3);
+  GPIO_ResetBits(GPIOA, GPIO_Pin_7);
+  GPIO_ResetBits(GPIOA, GPIO_Pin_6);
+  GPIO_ResetBits(GPIOA, GPIO_Pin_2);
+
 
   GPIO_ResetBits(GPIOB, GPIO_Pin_0);
   GPIO_ResetBits(GPIOB, GPIO_Pin_1);
