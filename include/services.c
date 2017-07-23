@@ -236,7 +236,7 @@ void Power_on(void)
   Settings.Sound = eeprom_read(0x18);
   Settings.LED_intens = eeprom_read(0x1C);
   Settings.T_korr = eeprom_read(0x20);
-  Settings.Impulse_dead_time = eeprom_read(0x28);
+  Settings.Pump_impulse_time = eeprom_read(0x28);
   Settings.Start_channel = eeprom_read(0x2C);
   Settings.ADC_time = eeprom_read(0x30);
   Settings.Allow_precis_stable = eeprom_read(0x34);
@@ -319,7 +319,10 @@ void Pump_time_re_set(void)
   } else
   {
 */
-  TIM_SetCompare2(TIM3, 3);
+  if(Settings.Pump_impulse_time > 15 || Settings.Pump_impulse_time < 1)
+    Settings.Pump_impulse_time = 1;
+
+  TIM_SetCompare2(TIM3, Settings.Pump_impulse_time);
   pump_divider = 35;
 //  }
 

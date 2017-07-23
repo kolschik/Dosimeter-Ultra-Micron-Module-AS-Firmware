@@ -9,7 +9,8 @@ uses
   shellapi, JvExExtCtrls, MMSystem, iaRS232, Vcl.ExtDlgs, pngimage,
   ShlObj, IdAuthentication, IdBaseComponent, IdComponent, IdTCPConnection,
   IdTCPClient, IdHTTP, IdIOHandler, IdIOHandlerSocket, IdIOHandlerStack, IdSSL,
-  IdSSLOpenSSL, IdMultipartFormData, System.DateUtils, About_f, JvChart;
+  IdSSLOpenSSL, IdMultipartFormData, System.DateUtils, About_f, JvChart,
+  System.ImageList;
 
 type
   TForm1 = class(TForm)
@@ -92,6 +93,8 @@ type
     Now_imp_graph: TButton;
     Graph_smooth: TButton;
     HV_divider: TCheckBox;
+    Label3: TLabel;
+    Pump_time: TEdit;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure ExitBtnClick(Sender: TObject);
@@ -422,6 +425,7 @@ mainFrm.Chart.Options.PenStyle[0]:=psSolid;
 
 mainFrm.Chart.Options.PenColor[1]:=clBlack;
 mainFrm.Chart.Options.PenStyle[1]:=psSolid;
+
 
 Chart.Options.GradientColor := $00FDEEDB; // powder blue (baby blue) mostly white.
 Chart.Options.GradientDirection :=grDown;
@@ -999,7 +1003,7 @@ begin
     vAns[5] := StrToInt(mainFrm.Sound.Text) and $FF;
     vAns[6] := mainFrm.LED.ItemIndex and $FF;
     vAns[7] := StrToInt(mainFrm.TCorr.Text) and $FF;
-    vAns[8] := $00;
+    vAns[8] := StrToInt(mainFrm.Pump_time.Text) and $FF;
     vAns[9] := mainFrm.Allow_precis_stable.Checked.ToInteger and $FF;
     vAns[10] := mainFrm.ADC_time.ItemIndex and $FF;
 
@@ -1138,6 +1142,7 @@ begin
           mainFrm.TCorr.Text :=        IntToStr(aData[used_bytes + 22]);
           mainFrm.ADC_time.ItemIndex :=         aData[used_bytes + 23];
           mainFrm.Allow_precis_stable.Checked := aData[used_bytes + 24].ToBoolean;
+          mainFrm.Pump_time.Text :=    IntToStr(aData[used_bytes + 25]);
 
           if ( mainFrm.Selected_time.Enabled = true ) then
           begin

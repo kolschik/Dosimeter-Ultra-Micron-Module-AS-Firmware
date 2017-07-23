@@ -147,7 +147,7 @@ void USB_work()
           Send_Buffer[22] = Settings.T_korr & 0xff;     // Температурная коррекция
           Send_Buffer[23] = Settings.ADC_time & 0xff;
           Send_Buffer[24] = Settings.Allow_precis_stable & 0xff;        // разрешение мягкой накачки
-          Send_Buffer[25] = debug_mode & 0xff;  // колличество накачек в секунду
+          Send_Buffer[25] = Settings.Pump_impulse_time & 0xff;  // Время импульса накачки
 
 
 
@@ -195,11 +195,11 @@ void USB_work()
             current_rcvd_pointer++;
             eeprom_write(0x20, Settings.T_korr);
 
-            // Мертвое время импульса - 1 бит
-//            Settings.Impulse_dead_time = Receive_Buffer[current_rcvd_pointer + 1] & 0xff;
+            // Длительность импульса накачки - 1 бит
+            Settings.Pump_impulse_time = Receive_Buffer[current_rcvd_pointer + 1] & 0xff;
             current_rcvd_pointer++;
-//            eeprom_write(0x28, Settings.Impulse_dead_time);
-//            TIM_SetCompare1(TIM10, Settings.Impulse_dead_time);
+            eeprom_write(0x28, Settings.Pump_impulse_time);
+            Pump_time_re_set();
 
             // Рвзрешение мягкой накачки - 1 бит
             Settings.Allow_precis_stable = Receive_Buffer[current_rcvd_pointer + 1] & 0xff;

@@ -28,6 +28,7 @@ typedef enum
 #define Led_Sleep_time_address                                  0x40
 #define Power_comp_address                                			0x48
 #define EnergoEfficency_address                              		0x4C
+#define Pump_impulse_time_address                            		0x50
 
 #define VRef_address																		        0x74
 

@@ -114,7 +114,7 @@ object mainFrm: TmainFrm
       Caption = #1071#1088#1082#1086#1089#1090#1100' LED'
     end
     object Label18: TLabel
-      Left = 329
+      Left = 327
       Top = 95
       Width = 47
       Height = 18
@@ -146,6 +146,19 @@ object mainFrm: TmainFrm
       Height = 18
       Caption = 't-'#1040#1062#1055
     end
+    object Label3: TLabel
+      Left = 328
+      Top = 127
+      Width = 40
+      Height = 18
+      Caption = 't-'#1080#1084#1087'.'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Arial'
+      Font.Style = []
+      ParentFont = False
+    end
     object EVolt: TEdit
       Left = 9
       Top = 28
@@ -165,7 +178,7 @@ object mainFrm: TmainFrm
     end
     object Voltage_refresh: TButton
       Left = 270
-      Top = 153
+      Top = 159
       Width = 106
       Height = 28
       Caption = #1057#1086#1093#1088#1072#1085#1080#1090#1100
@@ -263,6 +276,23 @@ object mainFrm: TmainFrm
       TabOrder = 8
       OnClick = HV_dividerClick
       OnEnter = HV_dividerClick
+    end
+    object Pump_time: TEdit
+      Left = 250
+      Top = 124
+      Width = 70
+      Height = 26
+      Alignment = taRightJustify
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Arial'
+      Font.Style = []
+      NumbersOnly = True
+      ParentFont = False
+      TabOrder = 9
+      Text = '0'
+      OnClick = EVoltChange
     end
   end
   object Panel2: TPanel
@@ -529,7 +559,7 @@ object mainFrm: TmainFrm
       Options.SecondaryYAxis.YMax = 10.000000000000000000
       Options.SecondaryYAxis.YLegendDecimalPlaces = 0
       Options.MouseDragObjects = False
-      Options.LegendRowCount = 0
+      Options.LegendRowCount = 1
       Options.AxisLineWidth = 3
       Options.HeaderFont.Charset = DEFAULT_CHARSET
       Options.HeaderFont.Color = clWindowText
@@ -1089,7 +1119,7 @@ object mainFrm: TmainFrm
     Left = 208
     Top = 160
     Bitmap = {
-      494C010105008C00FC0210001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010105008C00040310001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000002000000001002000000000000020
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

@@ -89,10 +89,10 @@ typedef struct
   uint8_t Sound;
   uint8_t LED_intens;
   uint8_t T_korr;
-  uint8_t Impulse_dead_time;
   uint8_t Start_channel;
   uint8_t ADC_time;
   uint8_t Allow_precis_stable;
+  uint8_t Pump_impulse_time;
 } SettingsDef;
 
 
