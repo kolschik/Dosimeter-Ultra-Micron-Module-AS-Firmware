@@ -207,9 +207,9 @@ void tim10_Config()             //  Обслуживание контроля напряжения
 
   TIM_TimeBaseStructInit(&TIM_BaseConfig);
 
-  TIM_BaseConfig.TIM_Prescaler = (uint16_t) (SystemCoreClock / 5000) - 1;       // частота 5000 Гц.
+  TIM_BaseConfig.TIM_Prescaler = (uint16_t) (SystemCoreClock / 200) - 1;        // частота 200 Гц.
   TIM_BaseConfig.TIM_ClockDivision = 0;
-  TIM_BaseConfig.TIM_Period = 1;        // Апдейт 2500 Гц
+  TIM_BaseConfig.TIM_Period = 1;        // Апдейт 100 Гц
   TIM_BaseConfig.TIM_CounterMode = TIM_CounterMode_Up;
 
   TIM_TimeBaseInit(TIM10, &TIM_BaseConfig);

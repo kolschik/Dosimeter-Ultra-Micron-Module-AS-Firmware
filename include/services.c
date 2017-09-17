@@ -224,7 +224,6 @@ void Power_off(void)
 void Power_on(void)
 {
   PowerState.Off_mode = DISABLE;
-  PumpData.Agressive = ENABLE;
   PowerState.Low_bat = DISABLE;
   io_init();
   set_pll_for_usb();
@@ -239,8 +238,6 @@ void Power_on(void)
   Settings.Pump_impulse_time = eeprom_read(0x28);
   Settings.Start_channel = eeprom_read(0x2C);
   Settings.ADC_time = eeprom_read(0x30);
-  Settings.Allow_precis_stable = eeprom_read(0x34);
-
 
 
   delay_ms(550);                // ожимаем запуска аналогового блока

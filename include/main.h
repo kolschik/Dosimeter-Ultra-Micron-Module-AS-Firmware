@@ -60,9 +60,7 @@
 typedef struct
 {
   FunctionalState Active;       //   
-  FunctionalState Agressive;    //  
   uint32_t Average_pump;        // Среднее колличество импульсов накачки, требуемое для поддержания заданного напряжения
-  int two_sec_sum;              // Сумма состояния компаратора за две секунды
   uint32_t good_stable_pumps;   // стабильных состояний компаратора
 
 } PumpDataDef;
@@ -91,7 +89,6 @@ typedef struct
   uint8_t T_korr;
   uint8_t Start_channel;
   uint8_t ADC_time;
-  uint8_t Allow_precis_stable;
   uint8_t Pump_impulse_time;
 } SettingsDef;
 

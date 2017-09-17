@@ -146,7 +146,7 @@ void USB_work()
           Send_Buffer[21] = Settings.LED_intens & 0xff; // ”правление интенсовностью подсветки
           Send_Buffer[22] = Settings.T_korr & 0xff;     // “емпературна€ коррекци€
           Send_Buffer[23] = Settings.ADC_time & 0xff;
-          Send_Buffer[24] = Settings.Allow_precis_stable & 0xff;        // разрешение м€гкой накачки
+          Send_Buffer[24] = 0x00;       // разрешение м€гкой накачки
           Send_Buffer[25] = Settings.Pump_impulse_time & 0xff;  // ¬рем€ импульса накачки
 
 
@@ -202,16 +202,16 @@ void USB_work()
             Pump_time_re_set();
 
             // –взрешение м€гкой накачки - 1 бит
-            Settings.Allow_precis_stable = Receive_Buffer[current_rcvd_pointer + 1] & 0xff;
+//            Settings.Allow_precis_stable = Receive_Buffer[current_rcvd_pointer + 1] & 0xff;
             current_rcvd_pointer++;
-            if(Settings.Allow_precis_stable == 0)
+/*            if(Settings.Allow_precis_stable == 0)
             {
               PumpData.good_stable_pumps = 0;
               PumpData.Agressive = ENABLE;
               PumpCompCmd(INIT_COMP);
             }
             eeprom_write(0x34, Settings.Allow_precis_stable);
-
+*/
 
             ////////////////////////////////////
             // ¬рем€ ј÷ѕ - 1 бит

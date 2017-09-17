@@ -11,6 +11,7 @@ void COMP_IRQHandler(void)
     EXTI_ClearITPendingBit(EXTI_Line22);
     {
       PumpCmd(DISABLE);
+
     }
   }
 }
@@ -22,27 +23,27 @@ void COMP_IRQHandler(void)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void PumpCmd(FunctionalState pump)
 {
-  if(PumpData.Agressive)        // Если накачку надо жестко стабилизировать
+//  if(PumpData.Agressive)        // Если накачку надо жестко стабилизировать
+//  {
+  if(pump == ENABLE)
   {
-    if(pump == ENABLE)
+    if((PumpData.Active == DISABLE) && (!PUMP_DEAD_TIME))
     {
-      if((PumpData.Active == DISABLE) && (!PUMP_DEAD_TIME))
-      {
-        PumpData.Active = pump;
-
-        // Установка нового значения таймера накачки 6000 имп./c.
-        TIM_SetAutoreload(TIM3, (timer_freq / 6000));
-
-        PUMP_DEAD_TIME = ENABLE;
-        TIM_CCxCmd(TIM3, TIM_Channel_2, TIM_CCx_Enable);        // разрешить накачку   
-      }
-
-    } else
-    {
-      TIM_CCxCmd(TIM3, TIM_Channel_2, TIM_CCx_Disable); // запретить накачку
       PumpData.Active = pump;
+
+      // Установка нового значения таймера накачки 6000 имп./c.
+      TIM_SetAutoreload(TIM3, (timer_freq / 6000));
+
+      PUMP_DEAD_TIME = ENABLE;
+      TIM_CCxCmd(TIM3, TIM_Channel_2, TIM_CCx_Enable);  // разрешить накачку   
     }
+
+  } else
+  {
+    TIM_CCxCmd(TIM3, TIM_Channel_2, TIM_CCx_Disable);   // запретить накачку
+    PumpData.Active = pump;
   }
+//  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

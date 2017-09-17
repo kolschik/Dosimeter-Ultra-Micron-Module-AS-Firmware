@@ -42,12 +42,12 @@ void dac_reload()
   ADCData.DAC_voltage_raw = voltage / 0.000739577;      // Установка напряжения БЕЗ учета опоры
   // 0,0007326В на 1 бит
 
-//  if((ADCData.DAC_voltage_raw > (DAC_GetDataOutputValue(DAC_Channel_2) + 3))    // вилка по напряжению +-3 бит
-//     || (ADCData.DAC_voltage_raw < (DAC_GetDataOutputValue(DAC_Channel_2) - 3)))
-//  {
-  dac_off();
-  dac_on();
-  DAC_SetChannel2Data(DAC_Align_12b_R, ADCData.DAC_voltage_raw);        // Set DAC Channel2 DHR register: DAC_OUT2 = (1.224 * 128) / 256 = 0.612 V 
-//  }
+  if((ADCData.DAC_voltage_raw > (DAC_GetDataOutputValue(DAC_Channel_2) + 1))    // вилка по напряжению +-3 бит
+     || (ADCData.DAC_voltage_raw < (DAC_GetDataOutputValue(DAC_Channel_2) - 1)))
+  {
+    dac_off();
+    dac_on();
+    DAC_SetChannel2Data(DAC_Align_12b_R, ADCData.DAC_voltage_raw);      // Set DAC Channel2 DHR register: DAC_OUT2 = (1.224 * 128) / 256 = 0.612 V 
+  }
   DAC_SoftwareTriggerCmd(DAC_Channel_2, ENABLE);
 }
