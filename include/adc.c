@@ -100,7 +100,7 @@ void adc_init(void)
     break;
 
   default:
-    ADC_InjectedChannelConfig(ADC1, ADC_Channel_0, 1, ADC_SampleTime_24Cycles);
+    ADC_InjectedChannelConfig(ADC1, ADC_Channel_0, 1, ADC_SampleTime_24Cycles); //24
     break;
   }
 

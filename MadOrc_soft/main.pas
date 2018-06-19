@@ -1278,22 +1278,17 @@ begin
               If Timed_spectr then
               begin
                 Timed_spectr:=false;
-                ShowMessage('—бор спектра завершен!');
+
+                AssignFile(Fx, 'Spectr_'+mainFrm.Spectro_time.Text+'.csv'); // св€зали файл с переменной
+                Rewrite(Fx); // создаем пустой файл
+                for ixx := 0 to max_address do
+                begin
+                  WriteLn(Fx, IntToStr(ixx), ',', spectra_massive[ixx]);
+                end;
+                CloseFile(Fx);
+                ShowMessage('—бор спектра завершен! файл Spectr_'+mainFrm.Spectro_time.Text+'.csv сохранен ');
               end;
 
-              If SaveDialog1.Execute then
-              begin
-                try
-                  AssignFile(Fx, SaveDialog1.FileName); // св€зали файл с переменной
-                  Rewrite(Fx); // создаем пустой файл
-                  for ixx := 0 to max_address do
-                  begin
-                    WriteLn(Fx, IntToStr(ixx), ',', spectra_massive[ixx]);
-                  end;
-                finally
-                  CloseFile(Fx);
-                end;
-              end;
               Timer1.Enabled := true;
   // = ===========================================================================
             end;
